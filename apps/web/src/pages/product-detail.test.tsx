@@ -1,0 +1,32 @@
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ApiError, api } from '../lib/api';
+import { useCartStore } from '../store/cart';
+import { makeProduct, renderApp } from '../test/utils';
+
+beforeEach(() => {
+  useCartStore.setState({ items: [] });
+  vi.restoreAllMocks();
+});
+
+describe('ProductDetailPage', () => {
+  it('renders product details and adds to cart', async () => {
+    vi.spyOn(api, 'getProduct').mockResolvedValue({ product: makeProduct() });
+    vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
+    renderApp('/product/pokemon-151-booster-box-bb-151');
+
+    expect(await screen.findByRole('heading', { name: /151 Booster Box/i })).toBeInTheDocument();
+    expect(screen.getByText('In stock')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Add .* to cart/i }));
+    expect(useCartStore.getState().items).toHaveLength(1);
+  });
+
+  it('shows a not-found state when the product is missing', async () => {
+    vi.spyOn(api, 'getProduct').mockRejectedValue(new ApiError('Product not found', 404));
+    vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
+    renderApp('/product/ghost');
+    await waitFor(() => expect(screen.getByText('Product not found')).toBeInTheDocument());
+  });
+});

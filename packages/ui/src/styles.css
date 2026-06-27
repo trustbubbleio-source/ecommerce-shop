@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark theme with a purple accent — all values are HSL channels. */
+    --background: 255 30% 6%;
+    --foreground: 255 20% 96%;
+
+    --card: 255 24% 9%;
+    --card-foreground: 255 20% 96%;
+
+    --popover: 255 28% 8%;
+    --popover-foreground: 255 20% 96%;
+
+    --primary: 264 80% 64%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 255 18% 16%;
+    --secondary-foreground: 255 20% 92%;
+
+    --muted: 255 16% 14%;
+    --muted-foreground: 255 12% 66%;
+
+    --accent: 270 85% 70%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 62% 46%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 255 16% 20%;
+    --input: 255 16% 18%;
+    --ring: 264 80% 64%;
+
+    --radius: 0.85rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Custom focus ring used across interactive primitives. */
+  :focus-visible {
+    outline: none;
+  }
+
+  ::selection {
+    @apply bg-primary/30 text-foreground;
+  }
+
+  /* Slim, on-brand scrollbars. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-secondary;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply from-primary via-accent to-primary bg-gradient-to-r bg-clip-text text-transparent;
+  }
+
+  /* Hides scrollbars on horizontal scrollers (mobile carousels). */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

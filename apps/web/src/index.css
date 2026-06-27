@@ -1,0 +1,25 @@
+@import '@akknerds/ui/styles.css';
+
+/* ── App-specific layers (must follow the single @import above) ───────── */
+@layer base {
+  body {
+    background-image:
+      radial-gradient(60rem 60rem at 80% -10%, hsl(264 80% 30% / 0.25), transparent 60%),
+      radial-gradient(50rem 50rem at -10% 10%, hsl(280 80% 30% / 0.18), transparent 55%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  /* Aurora glow used behind the hero. */
+  .aurora {
+    background:
+      radial-gradient(40% 60% at 70% 20%, hsl(264 85% 60% / 0.35), transparent 70%),
+      radial-gradient(40% 50% at 20% 30%, hsl(290 85% 60% / 0.25), transparent 70%);
+    filter: blur(20px);
+  }
+
+  .tap-highlight-none {
+    -webkit-tap-highlight-color: transparent;
+  }
+}

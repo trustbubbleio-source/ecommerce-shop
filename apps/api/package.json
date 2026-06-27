@@ -1,0 +1,36 @@
+{
+  "name": "@akknerds/api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rimraf dist .turbo coverage"
+  },
+  "dependencies": {
+    "@akknerds/shared": "workspace:*",
+    "@hono/node-server": "^1.13.7",
+    "@hono/zod-validator": "^0.4.2",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "hono": "^4.6.16",
+    "jose": "^5.9.6",
+    "nanoid": "^5.0.9",
+    "stripe": "^17.5.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.5",
+    "@vitest/coverage-v8": "^2.1.8",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}
