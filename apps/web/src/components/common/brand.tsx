@@ -1,25 +1,37 @@
 import { cn } from '@akknerds/ui';
 import { Link } from 'react-router-dom';
+import logo from '../../assets/rarity/logo2.png';
 import { SITE } from '../../config/site';
-import { Pokeball } from './pokeball';
 
-export function Brand({ className }: { className?: string }) {
+type BrandSize = 'sm' | 'md' | 'lg';
+
+const SIZE_CLASS: Record<BrandSize, string> = {
+  sm: 'h-9',
+  md: 'h-11',
+  lg: 'h-20',
+};
+
+export function Brand({
+  className,
+  size = 'md',
+}: {
+  className?: string;
+  size?: BrandSize;
+}) {
   return (
     <Link
       to="/"
-      className={cn(
-        'group inline-flex items-center gap-2 font-extrabold tracking-tight',
-        className,
-      )}
+      className={cn('group inline-flex shrink-0 items-center', className)}
       aria-label={`${SITE.name} home`}
     >
-      <span className="bg-primary text-primary-foreground shadow-glow grid size-9 place-items-center rounded-lg transition-transform group-hover:scale-105">
-        <Pokeball className="size-5" />
-      </span>
-      <span className="text-lg">
-        <span className="text-foreground">akk</span>
-        <span className="text-gradient">NERDS</span>
-      </span>
+      <img
+        src={logo}
+        alt={SITE.name}
+        className={cn(
+          'w-auto object-contain transition-transform group-hover:scale-105',
+          SIZE_CLASS[size],
+        )}
+      />
     </Link>
   );
 }

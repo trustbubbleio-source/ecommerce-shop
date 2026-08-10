@@ -1,16 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@akknerds/ui';
+import { formatPrice } from '@akknerds/shared';
 import { Navigate } from 'react-router-dom';
 import { CartSummary } from '../components/cart/cart-summary';
-import { PageHeader } from '../components/common/page-header';
 import { CheckoutForm } from '../components/checkout/checkout-form';
+import { PageHeader } from '../components/common/page-header';
 import { ProductArt } from '../components/product/product-art';
-import { formatPrice } from '@akknerds/shared';
+import { isPrelaunchActive } from '../config/launch';
 import { useCartStore } from '../store/cart';
 
 export function CheckoutPage() {
   const items = useCartStore((s) => s.items);
 
-  if (items.length === 0) {
+  if (isPrelaunchActive() || items.length === 0) {
     return <Navigate to="/cart" replace />;
   }
 

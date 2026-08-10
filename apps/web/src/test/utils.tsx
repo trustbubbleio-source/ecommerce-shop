@@ -80,6 +80,8 @@ export function makeProduct(overrides: Partial<Product> = {}): Product {
     rating: 4.9,
     reviewCount: 120,
     tags: ['sealed'],
+    images: [],
+    language: 'english',
     releaseDate: '2023-09-22',
     ...overrides,
   };

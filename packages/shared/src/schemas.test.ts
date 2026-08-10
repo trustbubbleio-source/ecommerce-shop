@@ -3,9 +3,26 @@ import {
   addressSchema,
   checkoutInputSchema,
   contactInputSchema,
+  createProductInputSchema,
   loginInputSchema,
   registerInputSchema,
 } from './schemas.js';
+
+const validProduct = {
+  name: 'Charizard ex',
+  description: 'NM single from 151.',
+  category: 'single-card' as const,
+  set: '151' as const,
+  series: 'Scarlet & Violet' as const,
+  price: 4999,
+  stock: 3,
+  accent: '#a855f7',
+  images: ['products/test.jpg'],
+  rarity: 'ultra-rare' as const,
+  condition: 'near-mint' as const,
+  language: 'english' as const,
+  releaseDate: '2024-01-01',
+};
 
 describe('registerInputSchema', () => {
   it('accepts a valid registration and lowercases the email', () => {
@@ -106,5 +123,49 @@ describe('contactInputSchema', () => {
         message: 'I would like to know about shipping times to Europe.',
       }).success,
     ).toBe(true);
+  });
+});
+
+describe('createProductInputSchema', () => {
+  it('accepts a valid product', () => {
+    expect(createProductInputSchema.safeParse(validProduct).success).toBe(true);
+  });
+
+  it('requires at least one image', () => {
+    expect(createProductInputSchema.safeParse({ ...validProduct, images: [] }).success).toBe(false);
+  });
+
+  it('rejects zero stock', () => {
+    expect(createProductInputSchema.safeParse({ ...validProduct, stock: 0 }).success).toBe(false);
+  });
+
+  it('requires rarity and condition', () => {
+    expect(
+      createProductInputSchema.safeParse({ ...validProduct, rarity: undefined }).success,
+    ).toBe(false);
+    expect(
+      createProductInputSchema.safeParse({ ...validProduct, condition: undefined }).success,
+    ).toBe(false);
+  });
+
+  it('enforces name and description length limits', () => {
+    expect(
+      createProductInputSchema.safeParse({ ...validProduct, name: 'a'.repeat(51) }).success,
+    ).toBe(false);
+    expect(
+      createProductInputSchema.safeParse({ ...validProduct, description: 'a'.repeat(1501) }).success,
+    ).toBe(false);
+  });
+
+  it('accepts plain or fraction card numbers', () => {
+    expect(
+      createProductInputSchema.safeParse({ ...validProduct, cardNumber: '208' }).success,
+    ).toBe(true);
+    expect(
+      createProductInputSchema.safeParse({ ...validProduct, cardNumber: '208/325' }).success,
+    ).toBe(true);
+    expect(
+      createProductInputSchema.safeParse({ ...validProduct, cardNumber: '208/' }).success,
+    ).toBe(false);
   });
 });

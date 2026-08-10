@@ -38,7 +38,7 @@ describe('POST /api/webhooks/stripe', () => {
       email: 'buyer@example.com',
       items: [{ productId: 'bb-151', quantity: 1 }],
     });
-    expect(deps.orders.get(checkout.orderId)?.status).toBe('pending');
+    expect((await deps.orders.get(checkout.orderId))?.status).toBe('pending');
 
     const { res } = await jsonRequest(
       app,
@@ -50,7 +50,7 @@ describe('POST /api/webhooks/stripe', () => {
       },
     );
     expect(res.status).toBe(200);
-    expect(deps.orders.get(checkout.orderId)?.status).toBe('paid');
+    expect((await deps.orders.get(checkout.orderId))?.status).toBe('paid');
   });
 
   it('rejects a request without a signature header', async () => {

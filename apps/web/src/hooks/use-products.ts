@@ -1,17 +1,38 @@
-import { useQuery } from '@tanstack/react-query';
-import { type ProductsQuery, api } from '../lib/api';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { type ProductsQuery, SHOP_PAGE_SIZE, api } from '../lib/api';
 
 export const productKeys = {
   all: ['products'] as const,
   list: (query: ProductsQuery) => ['products', 'list', query] as const,
+  infinite: (query: ProductsQuery) => ['products', 'infinite', query] as const,
   detail: (idOrSlug: string) => ['products', 'detail', idOrSlug] as const,
   meta: () => ['products', 'meta'] as const,
 };
 
-export function useProducts(query: ProductsQuery = {}) {
+export function useProducts(query: ProductsQuery = {}, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: productKeys.list(query),
     queryFn: () => api.listProducts(query),
+    staleTime: 60_000,
+    enabled: options?.enabled ?? true,
+  });
+}
+
+/** Paginated shop catalogue — load more appends the next offset page. */
+export function useInfiniteProducts(query: ProductsQuery = {}) {
+  return useInfiniteQuery({
+    queryKey: productKeys.infinite(query),
+    queryFn: ({ pageParam }) =>
+      api.listProducts({
+        ...query,
+        limit: SHOP_PAGE_SIZE,
+        offset: pageParam,
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _pages, lastOffset) => {
+      if (!lastPage.hasMore) return undefined;
+      return lastOffset + SHOP_PAGE_SIZE;
+    },
     staleTime: 60_000,
   });
 }

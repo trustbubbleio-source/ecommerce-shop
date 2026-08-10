@@ -1,4 +1,4 @@
-# akkNERDS — Pokémon TCG Storefront
+# One More Rip — Pokémon TCG Storefront
 
 A production-ready, mobile-first e-commerce app for selling Pokémon TCG booster
 boxes, Elite Trainer Boxes, packs and single cards. Dark theme with a purple

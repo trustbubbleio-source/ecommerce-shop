@@ -1,6 +1,10 @@
 import {
+  CARD_CONDITIONS,
   PRODUCT_CATEGORIES,
+  PRODUCT_LANGUAGES,
+  type CardCondition,
   type ProductCategory,
+  type ProductLanguage,
   SORT_OPTIONS,
   type SortKey,
 } from '@akknerds/shared';
@@ -11,6 +15,8 @@ export interface ProductFilters {
   series: string;
   search: string;
   inStock: boolean;
+  language: ProductLanguage | '';
+  condition: CardCondition | '';
   sort: SortKey;
 }
 
@@ -19,20 +25,30 @@ export const DEFAULT_FILTERS: ProductFilters = {
   series: '',
   search: '',
   inStock: false,
+  language: '',
+  condition: '',
   sort: 'featured',
 };
 
 const VALID_SORTS = new Set<string>(SORT_OPTIONS.map((o) => o.value));
 const VALID_CATEGORIES = new Set<string>(PRODUCT_CATEGORIES);
+const VALID_LANGUAGES = new Set<string>(PRODUCT_LANGUAGES);
+const VALID_CONDITIONS = new Set<string>(CARD_CONDITIONS);
 
 export function parseFilters(params: URLSearchParams): ProductFilters {
   const category = params.get('category');
   const sort = params.get('sort');
+  const language = params.get('language');
+  const condition = params.get('condition');
   return {
     category: category && VALID_CATEGORIES.has(category) ? (category as ProductCategory) : 'all',
     series: params.get('series') ?? '',
     search: params.get('search') ?? '',
     inStock: params.get('inStock') === 'true',
+    language:
+      language && VALID_LANGUAGES.has(language) ? (language as ProductLanguage) : '',
+    condition:
+      condition && VALID_CONDITIONS.has(condition) ? (condition as CardCondition) : '',
     sort: sort && VALID_SORTS.has(sort) ? (sort as SortKey) : 'featured',
   };
 }
@@ -44,6 +60,8 @@ export function filtersToParams(filters: ProductFilters): URLSearchParams {
   if (filters.series) params.set('series', filters.series);
   if (filters.search) params.set('search', filters.search);
   if (filters.inStock) params.set('inStock', 'true');
+  if (filters.language) params.set('language', filters.language);
+  if (filters.condition) params.set('condition', filters.condition);
   if (filters.sort !== 'featured') params.set('sort', filters.sort);
   return params;
 }
@@ -54,6 +72,8 @@ export function toProductsQuery(filters: ProductFilters): ProductsQuery {
     series: filters.series || undefined,
     search: filters.search || undefined,
     inStock: filters.inStock || undefined,
+    language: filters.language || undefined,
+    condition: filters.condition || undefined,
     sort: filters.sort,
   };
 }
@@ -64,6 +84,8 @@ export function isDefaultFilters(filters: ProductFilters): boolean {
     filters.series === '' &&
     filters.search === '' &&
     !filters.inStock &&
+    filters.language === '' &&
+    filters.condition === '' &&
     filters.sort === 'featured'
   );
 }

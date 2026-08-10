@@ -10,6 +10,7 @@ import {
 import { ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PRELAUNCH, isPrelaunchActive } from '../../config/launch';
 import { cartCount, useCartStore } from '../../store/cart';
 import { CartLineItem } from '../cart/cart-line-item';
 import { CartSummary } from '../cart/cart-summary';
@@ -20,6 +21,7 @@ export function CartDrawer() {
   const items = useCartStore((s) => s.items);
   const count = cartCount(items);
   const navigate = useNavigate();
+  const prelaunch = isPrelaunchActive();
 
   const go = (to: string) => {
     setOpen(false);
@@ -70,9 +72,15 @@ export function CartDrawer() {
             </div>
             <SheetFooter className="flex flex-col gap-3">
               <CartSummary items={items} />
-              <Button block size="lg" onClick={() => go('/checkout')}>
-                Checkout
-              </Button>
+              {prelaunch ? (
+                <Button block size="lg" disabled>
+                  {PRELAUNCH.buttonLabel}
+                </Button>
+              ) : (
+                <Button block size="lg" onClick={() => go('/checkout')}>
+                  Checkout
+                </Button>
+              )}
               <Button variant="outline" block onClick={() => go('/cart')}>
                 View full cart
               </Button>

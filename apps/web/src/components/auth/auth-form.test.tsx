@@ -11,6 +11,7 @@ const user: PublicUser = {
   id: 'usr_1',
   email: 'ash@pallet.town',
   name: 'Ash',
+  role: 'customer',
   createdAt: '2024-01-01T00:00:00.000Z',
 };
 

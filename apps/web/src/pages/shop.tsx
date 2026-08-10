@@ -8,6 +8,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  Spinner,
 } from '@akknerds/ui';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -15,7 +16,7 @@ import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../components/common/page-header';
 import { ProductFiltersPanel } from '../components/product/product-filters';
 import { ProductGrid } from '../components/product/product-grid';
-import { useCatalogMeta, useProducts } from '../hooks/use-products';
+import { useCatalogMeta, useInfiniteProducts } from '../hooks/use-products';
 import {
   type ProductFilters,
   filtersToParams,
@@ -27,16 +28,23 @@ export function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filters = useMemo(() => parseFilters(searchParams), [searchParams]);
+  const query = useMemo(() => toProductsQuery(filters), [filters]);
 
   const meta = useCatalogMeta();
-  const products = useProducts(toProductsQuery(filters));
+  const products = useInfiniteProducts(query);
 
   const update = (patch: Partial<ProductFilters>) => {
     setSearchParams(filtersToParams({ ...filters, ...patch }), { replace: true });
   };
   const reset = () => setSearchParams(new URLSearchParams());
 
-  const total = products.data?.total ?? 0;
+  const flatProducts = useMemo(
+    () => products.data?.pages.flatMap((page) => page.products) ?? [],
+    [products.data?.pages],
+  );
+  const total = products.data?.pages[0]?.total ?? 0;
+  const loaded = flatProducts.length;
+  const isInitialLoading = products.isLoading && !products.data;
 
   return (
     <div className="container py-8">
@@ -104,10 +112,41 @@ export function ShopPage() {
           </div>
 
           <p className="text-muted-foreground text-sm" aria-live="polite">
-            {products.isLoading ? 'Loading…' : `${total} product${total === 1 ? '' : 's'}`}
+            {isInitialLoading
+              ? 'Loading…'
+              : total === 0
+                ? '0 products'
+                : loaded < total
+                  ? `Showing ${loaded} of ${total} products`
+                  : `${total} product${total === 1 ? '' : 's'}`}
           </p>
 
-          <ProductGrid products={products.data?.products} isLoading={products.isLoading} />
+          <ProductGrid
+            products={flatProducts}
+            isLoading={isInitialLoading}
+            skeletonCount={8}
+          />
+
+          {products.hasNextPage ? (
+            <div className="flex justify-center pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="min-w-44"
+                disabled={products.isFetchingNextPage}
+                onClick={() => void products.fetchNextPage()}
+              >
+                {products.isFetchingNextPage ? (
+                  <>
+                    <Spinner /> Loading…
+                  </>
+                ) : (
+                  'Load more'
+                )}
+              </Button>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

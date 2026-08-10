@@ -27,7 +27,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'akknerds-auth',
+      name: 'onemorerip-auth',
       // Re-attach the persisted token to the API client after rehydration.
       onRehydrateStorage: () => (state) => {
         if (state?.token) setAuthToken(state.token);

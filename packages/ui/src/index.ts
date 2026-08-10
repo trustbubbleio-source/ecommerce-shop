@@ -24,6 +24,7 @@ export {
   DialogTrigger,
 } from './components/dialog.js';
 export { Field, type FieldProps } from './components/field.js';
+export { ImageLightbox, type ImageLightboxProps } from './components/image-lightbox.js';
 export { Input, type InputProps } from './components/input.js';
 export { Label } from './components/label.js';
 export { QuantityStepper, type QuantityStepperProps } from './components/quantity-stepper.js';

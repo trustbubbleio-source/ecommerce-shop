@@ -25,7 +25,7 @@ export function webhookRoutes(deps: AppDeps) {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as { id: string };
-      deps.orders.markStatusBySession(session.id, 'paid');
+      await deps.orders.markStatusBySession(session.id, 'paid');
     }
 
     return c.json({ received: true });

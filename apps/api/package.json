@@ -13,7 +13,12 @@
     "clean": "rimraf dist .turbo coverage"
   },
   "dependencies": {
+    "@akknerds/card-fetcher": "workspace:*",
+    "@akknerds/price-fetcher": "workspace:*",
+    "@akknerds/db": "workspace:*",
     "@akknerds/shared": "workspace:*",
+    "@aws-sdk/client-s3": "^3.758.0",
+    "@prisma/client": "^6.8.2",
     "@hono/node-server": "^1.13.7",
     "@hono/zod-validator": "^0.4.2",
     "bcryptjs": "^2.4.3",

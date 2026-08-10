@@ -7,11 +7,11 @@ import { ProductCard } from './product-card';
 function ProductCardSkeleton() {
   return (
     <div className="border-border bg-card flex flex-col gap-3 rounded-xl border p-0">
-      <Skeleton className="aspect-[4/5] w-full rounded-b-none" />
-      <div className="flex flex-col gap-2 p-4">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-3 w-1/3" />
-        <Skeleton className="mt-2 h-9 w-full" />
+      <Skeleton className="aspect-[5/7] w-full rounded-b-none" />
+      <div className="flex flex-col gap-2 p-3">
+        <Skeleton className="h-4 w-1/3" />
+        <Skeleton className="h-3 w-1/2" />
+        <Skeleton className="h-9 w-full" />
       </div>
     </div>
   );

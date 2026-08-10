@@ -5,11 +5,11 @@ import { logger } from 'hono/logger';
 import type { AppDeps, AppEnv } from './context.js';
 import { loadEnv } from './env.js';
 import { PaymentService } from './lib/payments.js';
+import { StorageService } from './lib/storage.js';
 import { authOptional } from './middleware/auth.js';
-import { OrderRepository } from './repositories/orders.js';
-import { ProductRepository } from './repositories/products.js';
-import { UserRepository } from './repositories/users.js';
+import { createMemoryRepositories } from './repositories/factory.js';
 import { authRoutes } from './routes/auth.js';
+import { adminRoutes } from './routes/admin.js';
 import { checkoutRoutes } from './routes/checkout.js';
 import { contactRoutes } from './routes/contact.js';
 import { orderRoutes } from './routes/orders.js';
@@ -24,12 +24,14 @@ export interface CreatedApp {
 /** Build a fully-wired API instance. Dependencies are injectable for testing. */
 export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
   const env = overrides.env ?? loadEnv();
+  const memory = createMemoryRepositories();
   const deps: AppDeps = {
     env,
-    users: overrides.users ?? new UserRepository(),
-    orders: overrides.orders ?? new OrderRepository(),
-    products: overrides.products ?? new ProductRepository(),
+    users: overrides.users ?? memory.users,
+    orders: overrides.orders ?? memory.orders,
+    products: overrides.products ?? memory.products,
     payments: overrides.payments ?? new PaymentService(env),
+    storage: overrides.storage ?? new StorageService(env.storage),
   };
 
   const app = new Hono<AppEnv>();
@@ -42,10 +44,16 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
 
   const api = new Hono<AppEnv>();
   api.get('/health', (c) =>
-    c.json({ status: 'ok', stripe: deps.payments.enabled ? 'live' : 'mock' }),
+    c.json({
+      status: 'ok',
+      stripe: deps.payments.enabled ? 'live' : 'mock',
+      database: env.databaseEnabled ? 'postgres' : 'memory',
+      storage: env.storage.enabled ? 's3' : 'none',
+    }),
   );
   api.route('/products', productRoutes(deps));
   api.route('/auth', authRoutes(deps));
+  api.route('/admin', adminRoutes(deps));
   api.route('/checkout', checkoutRoutes(deps));
   api.route('/orders', orderRoutes(deps));
   api.route('/contact', contactRoutes(deps));

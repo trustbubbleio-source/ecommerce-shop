@@ -8,7 +8,7 @@ export function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <p className="text-muted-foreground text-sm">Sign in to your akkNERDS account.</p>
+          <p className="text-muted-foreground text-sm">Sign in to your One More Rip account.</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <AuthForm mode="login" />

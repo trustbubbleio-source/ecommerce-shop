@@ -5,11 +5,13 @@ import { CartLineItem } from '../components/cart/cart-line-item';
 import { CartSummary } from '../components/cart/cart-summary';
 import { EmptyState } from '../components/common/empty-state';
 import { PageHeader } from '../components/common/page-header';
+import { PRELAUNCH, isPrelaunchActive } from '../config/launch';
 import { useCartStore } from '../store/cart';
 
 export function CartPage() {
   const items = useCartStore((s) => s.items);
   const clear = useCartStore((s) => s.clear);
+  const prelaunch = isPrelaunchActive();
 
   if (items.length === 0) {
     return (
@@ -54,9 +56,15 @@ export function CartPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <CartSummary items={items} />
-            <Button asChild block size="lg">
-              <Link to="/checkout">Proceed to checkout</Link>
-            </Button>
+            {prelaunch ? (
+              <Button block size="lg" disabled>
+                {PRELAUNCH.buttonLabel}
+              </Button>
+            ) : (
+              <Button asChild block size="lg">
+                <Link to="/checkout">Proceed to checkout</Link>
+              </Button>
+            )}
             <Button asChild variant="outline" block>
               <Link to="/shop">Continue shopping</Link>
             </Button>

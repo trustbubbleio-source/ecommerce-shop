@@ -18,11 +18,18 @@ export function UserMenu() {
 
   const firstName = user.name.split(' ')[0];
   return (
-    <Button asChild variant="ghost" size="sm" aria-label="Your account">
-      <Link to="/account" className="gap-2">
-        <User className="size-4" />
-        <span className="hidden max-w-24 truncate sm:inline">{firstName}</span>
-      </Link>
-    </Button>
+    <div className="flex items-center gap-1">
+      {user.role === 'admin' && (
+        <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+          <Link to="/admin">Admin</Link>
+        </Button>
+      )}
+      <Button asChild variant="ghost" size="sm" aria-label="Your account">
+        <Link to="/account" className="gap-2">
+          <User className="size-4" />
+          <span className="hidden max-w-24 truncate sm:inline">{firstName}</span>
+        </Link>
+      </Button>
+    </div>
   );
 }

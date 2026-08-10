@@ -2,55 +2,50 @@ import {
   PRODUCTS,
   PRODUCT_CATEGORIES,
   PRODUCT_SERIES,
+  PRODUCT_SETS,
+  computeCatalogStats,
+  type CreateProductInput,
   type Product,
-  type ProductFilter,
-  type SortKey,
-  getProductById,
-  getProductBySlug,
-  queryProducts,
 } from '@akknerds/shared';
+import { newProductFromInput, applyProductInput } from '../lib/product-factory.js';
+import type {
+  CatalogMeta,
+  ListOptions,
+  ProductPage,
+  ProductRepository as IProductRepository,
+} from './interfaces.js';
+import { pageProducts } from './product-page.js';
 
-export interface ListOptions {
-  filter?: ProductFilter;
-  sort?: SortKey;
-  featured?: boolean;
-  isNew?: boolean;
-  limit?: number;
-}
-
-export interface CatalogMeta {
-  categories: { value: string; count: number }[];
-  series: string[];
-  priceRange: { min: number; max: number };
-}
+export type { CatalogMeta, ListOptions };
 
 /**
- * Read-only access to the product catalog. Backed by the shared in-memory
- * catalog today; swap this single class for a DB-backed implementation to go
- * to production without touching the routes.
+ * In-memory product catalog. Used when DATABASE_URL is not configured.
  */
-export class ProductRepository {
-  constructor(private readonly products: Product[] = PRODUCTS) {}
+export class ProductRepository implements IProductRepository {
+  private readonly products: Product[];
 
-  list(options: ListOptions = {}): Product[] {
-    let result = queryProducts(this.products, { filter: options.filter, sort: options.sort });
-    if (options.featured !== undefined) {
-      result = result.filter((p) => p.featured === options.featured);
-    }
-    if (options.isNew !== undefined) {
-      result = result.filter((p) => p.isNew === options.isNew);
-    }
-    if (typeof options.limit === 'number') {
-      result = result.slice(0, Math.max(0, options.limit));
-    }
-    return result;
+  constructor(seed: Product[] = PRODUCTS) {
+    this.products = [...seed];
   }
 
-  getByIdOrSlug(idOrSlug: string): Product | undefined {
-    return getProductById(idOrSlug) ?? getProductBySlug(idOrSlug);
+  async listPage(options: ListOptions = {}): Promise<ProductPage> {
+    return pageProducts(this.products, options);
   }
 
-  meta(): CatalogMeta {
+  async list(options: ListOptions = {}): Promise<Product[]> {
+    const { products } = await this.listPage(options);
+    return products;
+  }
+
+  async getByIdOrSlug(idOrSlug: string): Promise<Product | undefined> {
+    return this.products.find((p) => p.id === idOrSlug || p.slug === idOrSlug);
+  }
+
+  async catalogStats() {
+    return computeCatalogStats(this.products);
+  }
+
+  async meta(): Promise<CatalogMeta> {
     const categories = PRODUCT_CATEGORIES.map((value) => ({
       value,
       count: this.products.filter((p) => p.category === value).length,
@@ -60,10 +55,25 @@ export class ProductRepository {
     return {
       categories,
       series: PRODUCT_SERIES,
+      sets: PRODUCT_SETS,
       priceRange: {
         min: prices.length ? Math.min(...prices) : 0,
         max: prices.length ? Math.max(...prices) : 0,
       },
     };
+  }
+
+  async create(input: CreateProductInput): Promise<Product> {
+    const product = newProductFromInput(input);
+    this.products.push(product);
+    return product;
+  }
+
+  async update(id: string, input: CreateProductInput): Promise<Product | undefined> {
+    const index = this.products.findIndex((p) => p.id === id);
+    if (index === -1) return undefined;
+    const updated = applyProductInput(this.products[index]!, input);
+    this.products[index] = updated;
+    return updated;
   }
 }

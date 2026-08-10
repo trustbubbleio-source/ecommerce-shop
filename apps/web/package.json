@@ -13,6 +13,7 @@
     "clean": "rimraf dist .turbo coverage"
   },
   "dependencies": {
+    "@akknerds/chat": "workspace:*",
     "@akknerds/shared": "workspace:*",
     "@akknerds/ui": "workspace:*",
     "@stripe/stripe-js": "^5.4.0",

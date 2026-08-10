@@ -3,41 +3,35 @@
  * Monetary values are always integers in the smallest currency unit (cents).
  */
 
-export type ProductCategory =
-  | 'booster-box'
-  | 'elite-trainer-box'
-  | 'booster-pack'
-  | 'single-card'
-  | 'bundle'
-  | 'accessory';
+export type {
+  CardCondition,
+  CardRarity,
+  ProductCategory,
+  ProductLanguage,
+  ProductSeries,
+  ProductSet,
+} from './enums.js';
 
-export type CardRarity =
-  | 'common'
-  | 'uncommon'
-  | 'rare'
-  | 'holo-rare'
-  | 'ultra-rare'
-  | 'secret-rare'
-  | 'illustration-rare';
-
-export type CardCondition = 'mint' | 'near-mint' | 'lightly-played' | 'moderately-played';
+export type UserRole = 'customer' | 'admin';
 
 export interface Product {
   id: string;
   slug: string;
   name: string;
   description: string;
-  category: ProductCategory;
+  category: import('./enums.js').ProductCategory;
   /** Set name, e.g. "151" or "Obsidian Flames". */
-  set: string;
+  set: import('./enums.js').ProductSet;
   /** Series the set belongs to, e.g. "Scarlet & Violet". */
-  series: string;
+  series: import('./enums.js').ProductSeries;
   /** Current price in cents. */
   price: number;
   /** Original price in cents when discounted; absent if not on sale. */
   compareAtPrice?: number;
   currency: string;
-  /** Optional real image URL; the UI renders branded art when absent. */
+  /** CDN-relative paths (primary image first). Served via CloudFront. */
+  images: string[];
+  /** @deprecated Prefer images[0]. Kept for backward compatibility. */
   image?: string;
   /** Hex accent used by the generated product art. */
   accent: string;
@@ -47,8 +41,12 @@ export interface Product {
   rating: number;
   reviewCount: number;
   tags: string[];
-  rarity?: CardRarity;
-  condition?: CardCondition;
+  rarity?: import('./enums.js').CardRarity;
+  condition?: import('./enums.js').CardCondition;
+  /** Card/product print language. */
+  language: import('./enums.js').ProductLanguage;
+  /** Collector number, e.g. "178/165". Shown on shop card previews. */
+  cardNumber?: string;
   releaseDate: string;
 }
 
@@ -94,6 +92,7 @@ export interface PublicUser {
   id: string;
   email: string;
   name: string;
+  role: UserRole;
   createdAt: string;
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { categoryLabel, discountPercent, formatPrice, slugify, titleCase } from './format.js';
+import { categoryLabel, discountPercent, formatPrice, productPreviewBadge, slugify, titleCase } from './format.js';
 
 describe('formatPrice', () => {
   it('formats cents into USD by default', () => {
@@ -26,6 +26,7 @@ describe('categoryLabel', () => {
     expect(categoryLabel('booster-box')).toBe('Booster Box');
     expect(categoryLabel('elite-trainer-box')).toBe('Elite Trainer Box');
     expect(categoryLabel('single-card')).toBe('Single Card');
+    expect(categoryLabel('graded-slab')).toBe('Graded Slabs');
   });
 
   it('falls back to title-cased label for unknown categories', () => {
@@ -38,6 +39,22 @@ describe('titleCase', () => {
     expect(titleCase('hello world')).toBe('Hello World');
     expect(titleCase('  spaced   out ')).toBe('Spaced Out');
     expect(titleCase('')).toBe('');
+  });
+});
+
+describe('productPreviewBadge', () => {
+  it('returns card number without a rarity suffix', () => {
+    expect(
+      productPreviewBadge({
+        category: 'single-card',
+        cardNumber: '178/165',
+        rarity: 'secret-rare',
+      }),
+    ).toBe('178/165');
+  });
+
+  it('falls back to category for sealed products', () => {
+    expect(productPreviewBadge({ category: 'booster-pack' })).toBe('Booster Pack');
   });
 });
 

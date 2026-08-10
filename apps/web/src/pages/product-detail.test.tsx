@@ -23,6 +23,26 @@ describe('ProductDetailPage', () => {
     expect(useCartStore.getState().items).toHaveLength(1);
   });
 
+  it('shows the full single-card image without cropping on the detail page', async () => {
+    vi.spyOn(api, 'getProduct').mockResolvedValue({
+      product: makeProduct({
+        category: 'single-card',
+        name: 'Arcanine EX',
+        slug: 'arcanine-ex',
+        images: ['cards/arcanine.png'],
+        image: 'cards/arcanine.png',
+      }),
+    });
+    vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
+    const { container } = renderApp('/product/arcanine-ex');
+
+    await screen.findByRole('heading', { name: /Arcanine EX/i });
+    const mainImage = container.querySelector('img[alt="Arcanine EX"]');
+    expect(mainImage).toBeTruthy();
+    expect(mainImage?.className).toContain('object-contain');
+    expect(mainImage?.className).not.toContain('object-cover');
+  });
+
   it('shows a not-found state when the product is missing', async () => {
     vi.spyOn(api, 'getProduct').mockRejectedValue(new ApiError('Product not found', 404));
     vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });

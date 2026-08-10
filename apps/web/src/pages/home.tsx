@@ -2,8 +2,10 @@ import { Button } from '@akknerds/ui';
 import { ArrowRight, ShieldCheck, Sparkles, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Pokeball } from '../components/common/pokeball';
+import { NewsletterSubscribe } from '../components/common/newsletter-subscribe';
 import { SectionHeader } from '../components/common/section';
 import { ProductGrid } from '../components/product/product-grid';
+import { PRELAUNCH } from '../config/launch';
 import { CATEGORY_TILES } from '../config/site';
 import { useProducts } from '../hooks/use-products';
 
@@ -69,6 +71,39 @@ function Hero() {
   );
 }
 
+function LaunchAnnouncement() {
+  if (!PRELAUNCH.active) return null;
+
+  return (
+    <section className="container py-12">
+      <div className="border-border relative overflow-hidden rounded-2xl border px-6 py-10 text-center sm:px-10 sm:py-14">
+        <div
+          className="from-primary/15 via-accent/10 pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent"
+          aria-hidden="true"
+        />
+        <div
+          className="bg-grid-faint pointer-events-none absolute inset-0 opacity-15 [background-size:28px_28px]"
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-4">
+          <span className="border-primary/30 bg-primary/10 text-primary inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
+            {PRELAUNCH.homeEyebrow}
+          </span>
+          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+            {PRELAUNCH.homeTitle}
+          </h2>
+          <p className="text-muted-foreground text-base leading-relaxed sm:text-lg">
+            {PRELAUNCH.homeBody}
+          </p>
+          <p className="text-primary text-sm font-semibold tracking-wide">
+            Online shop · Physical store · October 15, 2026
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Categories() {
   return (
     <section className="container py-12">
@@ -122,6 +157,7 @@ export function HomePage() {
     <>
       <Hero />
       <ValueProps />
+      <LaunchAnnouncement />
       <Categories />
 
       <section className="container py-12">
@@ -136,6 +172,8 @@ export function HomePage() {
           skeletonCount={8}
         />
       </section>
+
+      <NewsletterSubscribe />
 
       <section className="container pb-16">
         <SectionHeader

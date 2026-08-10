@@ -9,7 +9,7 @@ export function RegisterPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Create your account</CardTitle>
           <p className="text-muted-foreground text-sm">
-            Join akkNERDS for faster checkout and order tracking.
+            Join One More Rip for faster checkout and order tracking.
           </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">

@@ -73,12 +73,12 @@ module.exports = {
         'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
         'fade-out': { from: { opacity: '1' }, to: { opacity: '0' } },
         'zoom-in': {
-          from: { opacity: '0', transform: 'scale(0.96)' },
-          to: { opacity: '1', transform: 'scale(1)' },
+          from: { opacity: '0', transform: 'translate(-50%, -50%) scale(0.96)' },
+          to: { opacity: '1', transform: 'translate(-50%, -50%) scale(1)' },
         },
         'zoom-out': {
-          from: { opacity: '1', transform: 'scale(1)' },
-          to: { opacity: '0', transform: 'scale(0.96)' },
+          from: { opacity: '1', transform: 'translate(-50%, -50%) scale(1)' },
+          to: { opacity: '0', transform: 'translate(-50%, -50%) scale(0.96)' },
         },
         'slide-in-right': { from: { transform: 'translateX(100%)' }, to: { transform: 'translateX(0)' } },
         'slide-out-right': { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(100%)' } },

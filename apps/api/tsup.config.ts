@@ -7,6 +7,7 @@ export default defineConfig({
   clean: true,
   splitting: false,
   sourcemap: true,
-  // Bundle the workspace package (it ships TypeScript source) into the output.
+  // Bundle workspace packages (they ship TypeScript source) into the output.
   noExternal: [/^@akknerds\//],
+  external: ['@prisma/client', '.prisma/client', '@aws-sdk/client-s3'],
 });

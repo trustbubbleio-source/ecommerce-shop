@@ -1,6 +1,6 @@
 import { contactInputSchema } from '@akknerds/shared';
 import { Alert, Button, Field, Input, Spinner, Textarea, useToast } from '@akknerds/ui';
-import { Mail, MessageSquare, Send } from 'lucide-react';
+import { Mail, MapPin, MessageSquare, Send } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { PageHeader } from '../components/common/page-header';
 import { SITE } from '../config/site';
@@ -62,9 +62,27 @@ export function ContactPage() {
             </span>
             <div>
               <p className="text-foreground font-semibold">Email us</p>
-              <a href={`mailto:${SITE.email}`} className="text-primary text-sm hover:underline">
-                {SITE.email}
+              <a
+                href={`mailto:${SITE.emailContact}`}
+                className="text-primary text-sm hover:underline"
+              >
+                {SITE.emailContact}
               </a>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="bg-primary/15 text-primary grid size-10 shrink-0 place-items-center rounded-lg">
+              <MapPin className="size-5" />
+            </span>
+            <div>
+              <p className="text-foreground font-semibold">Physical store</p>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                {SITE.store.street}
+                <br />
+                {SITE.store.postalCode} {SITE.store.city}
+                <br />
+                {SITE.store.country}
+              </p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -73,7 +91,7 @@ export function ContactPage() {
             </span>
             <div>
               <p className="text-foreground font-semibold">Response time</p>
-              <p className="text-muted-foreground text-sm">Within one business day, Mon–Fri.</p>
+              <p className="text-muted-foreground text-sm">Within one business day, Mon-Fri.</p>
             </div>
           </div>
         </div>

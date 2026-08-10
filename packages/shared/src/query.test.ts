@@ -39,6 +39,18 @@ describe('queryProducts', () => {
     expect(result.every((p) => p.stock > 0)).toBe(true);
   });
 
+  it('filters by language and condition', () => {
+    const singles = PRODUCTS.filter((p) => p.category === 'single-card');
+    if (singles.length === 0) return;
+    const sample = singles[0]!;
+    const withCondition = { ...sample, condition: 'near-mint' as const, language: 'english' as const };
+    const catalog = [withCondition];
+    expect(
+      queryProducts(catalog, { filter: { language: 'english', condition: 'near-mint' } }),
+    ).toHaveLength(1);
+    expect(queryProducts(catalog, { filter: { language: 'japanese' } })).toHaveLength(0);
+  });
+
   it('sorts by price ascending and descending', () => {
     const asc = queryProducts(PRODUCTS, { sort: 'price-asc' });
     const desc = queryProducts(PRODUCTS, { sort: 'price-desc' });

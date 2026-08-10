@@ -1,14 +1,17 @@
-import { categoryLabel, titleCase } from '@akknerds/shared';
-import { Badge, Button, QuantityStepper, Rating, Separator, Skeleton } from '@akknerds/ui';
-import { ArrowLeft, PackageX, RotateCcw, ShieldCheck, Truck } from 'lucide-react';
+import { categoryLabel, isCardStyleCategory, languageLabel, productImageUrls, titleCase } from '@akknerds/shared';
+import { Badge, Button, ImageLightbox, QuantityStepper, Rating, Separator, Skeleton, cn } from '@akknerds/ui';
+import { ArrowLeft, Expand, PackageX, RotateCcw, ShieldCheck, Truck } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { EmptyState } from '../components/common/empty-state';
 import { SectionHeader } from '../components/common/section';
 import { AddToCartButton } from '../components/product/add-to-cart-button';
+import { LaunchBadge } from '../components/product/launch-badge';
 import { PriceTag } from '../components/product/price-tag';
 import { ProductArt } from '../components/product/product-art';
+import { RarityIcon } from '../components/product/rarity-icon';
 import { ProductGrid } from '../components/product/product-grid';
+import { PRELAUNCH, isPrelaunchActive } from '../config/launch';
 import { useProduct, useProducts } from '../hooks/use-products';
 
 function DetailSkeleton() {
@@ -32,6 +35,8 @@ export function ProductDetailPage() {
   const product = data?.product;
   const related = useProducts({ category: product?.category, limit: 5 });
   const [quantity, setQuantity] = useState(1);
+  const [activeImage, setActiveImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -53,6 +58,11 @@ export function ProductDetailPage() {
   }
 
   const soldOut = product.stock <= 0;
+  const prelaunch = isPrelaunchActive();
+  const gallery = productImageUrls(product, import.meta.env.VITE_ASSET_CDN_URL);
+  const isCardStyle = isCardStyleCategory(product.category);
+  const mainImageAspect = isCardStyle ? 'aspect-[5/7]' : 'aspect-square';
+  const mainImageFit = isCardStyle ? 'object-contain p-4' : 'object-cover';
   const relatedProducts = (related.data?.products ?? [])
     .filter((p) => p.id !== product.id)
     .slice(0, 4);
@@ -67,19 +77,84 @@ export function ProductDetailPage() {
       </Link>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        <div className="border-border overflow-hidden rounded-2xl border">
-          <div className="aspect-square">
-            <ProductArt product={product} />
+        <div
+          className={cn(
+            'flex flex-col gap-3',
+            isCardStyle && 'mx-auto w-full max-w-[20rem]',
+          )}
+        >
+          <div className="border-border relative overflow-hidden rounded-2xl border">
+            <LaunchBadge />
+            <div className={cn('bg-muted/20', mainImageAspect)}>
+              {gallery.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setLightboxOpen(true)}
+                  aria-label="Expand image"
+                  className="group focus-visible:ring-ring relative block size-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2"
+                >
+                  <img
+                    src={gallery[activeImage]}
+                    alt={product.name}
+                    className={cn('size-full', mainImageFit)}
+                  />
+                  <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-black/40 p-2 text-white/90 opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">
+                    <Expand className="size-4" />
+                  </span>
+                </button>
+              ) : (
+                <ProductArt product={product} />
+              )}
+            </div>
           </div>
+          {gallery.length > 1 && (
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+              {gallery.map((url, index) => (
+                <button
+                  key={url}
+                  type="button"
+                  className={cn(
+                    'border-border bg-muted/20 overflow-hidden rounded-lg border',
+                    isCardStyle ? 'aspect-[5/7]' : 'aspect-square',
+                    index === activeImage && 'ring-primary ring-2',
+                  )}
+                  onClick={() => setActiveImage(index)}
+                  aria-label={`Show image ${index + 1}`}
+                >
+                  <img
+                    src={url}
+                    alt=""
+                    className={cn('size-full', isCardStyle ? 'object-contain p-1' : 'object-cover')}
+                    loading="lazy"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {gallery.length > 0 && (
+            <ImageLightbox
+              images={gallery}
+              open={lightboxOpen}
+              onOpenChange={setLightboxOpen}
+              index={activeImage}
+              onIndexChange={setActiveImage}
+              alt={product.name}
+            />
+          )}
         </div>
 
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{categoryLabel(product.category)}</Badge>
+              <Badge variant="muted">{languageLabel(product.language)}</Badge>
               {product.isNew && <Badge>New</Badge>}
               {product.rarity && (
-                <Badge variant="outline">{titleCase(product.rarity.replace(/-/g, ' '))}</Badge>
+                <Badge variant="outline" className="gap-1.5">
+                  <RarityIcon rarity={product.rarity} />
+                  {titleCase(product.rarity.replace(/-/g, ' '))}
+                </Badge>
               )}
               {product.condition && (
                 <Badge variant="muted">{titleCase(product.condition.replace(/-/g, ' '))}</Badge>
@@ -97,20 +172,28 @@ export function ProductDetailPage() {
           <p className="text-muted-foreground leading-relaxed">{product.description}</p>
 
           <div className="flex items-center gap-2 text-sm">
-            <span
-              className={soldOut ? 'text-destructive font-semibold' : 'text-success font-semibold'}
-            >
-              {soldOut ? 'Out of stock' : 'In stock'}
-            </span>
-            {!soldOut && product.stock <= 5 && (
-              <span className="text-muted-foreground">— only {product.stock} left</span>
+            {prelaunch ? (
+              <span className="font-semibold text-amber-400">{PRELAUNCH.description}</span>
+            ) : (
+              <>
+                <span
+                  className={
+                    soldOut ? 'text-destructive font-semibold' : 'text-success font-semibold'
+                  }
+                >
+                  {soldOut ? 'Out of stock' : 'In stock'}
+                </span>
+                {!soldOut && product.stock <= 5 && (
+                  <span className="text-muted-foreground">— only {product.stock} left</span>
+                )}
+              </>
             )}
           </div>
 
           <Separator />
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            {!soldOut && (
+            {!soldOut && !prelaunch && (
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium">Qty</span>
                 <QuantityStepper

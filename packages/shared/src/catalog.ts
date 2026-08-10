@@ -1,13 +1,13 @@
 import { slugify } from './format.js';
-import type { CardCondition, CardRarity, Product, ProductCategory } from './types.js';
+import type { CardCondition, CardRarity, Product, ProductCategory, ProductSeries, ProductSet } from './types.js';
 
 interface ProductSeed {
   id: string;
   name: string;
   description: string;
   category: ProductCategory;
-  set: string;
-  series: string;
+  set: ProductSet;
+  series: ProductSeries;
   price: number;
   compareAtPrice?: number;
   accent: string;
@@ -19,6 +19,7 @@ interface ProductSeed {
   tags?: string[];
   rarity?: CardRarity;
   condition?: CardCondition;
+  cardNumber?: string;
   releaseDate: string;
 }
 
@@ -31,6 +32,8 @@ function defineProduct(seed: ProductSeed): Product {
     rating: 4.6,
     reviewCount: 42,
     tags: [],
+    images: [],
+    language: 'english',
     ...seed,
     slug: slugify(`${seed.name}-${seed.id}`),
   };
@@ -251,6 +254,7 @@ export const PRODUCTS: Product[] = [
     reviewCount: 33,
     rarity: 'illustration-rare',
     condition: 'near-mint',
+    cardNumber: '199/165',
     tags: ['charizard', 'chase', 'graded'],
     releaseDate: '2023-09-22',
   }),
@@ -269,6 +273,7 @@ export const PRODUCTS: Product[] = [
     reviewCount: 27,
     rarity: 'ultra-rare',
     condition: 'near-mint',
+    cardNumber: '183/165',
     tags: ['mewtwo', 'psychic'],
     releaseDate: '2023-09-22',
   }),
@@ -288,6 +293,7 @@ export const PRODUCTS: Product[] = [
     reviewCount: 64,
     rarity: 'illustration-rare',
     condition: 'mint',
+    cardNumber: '173/165',
     tags: ['pikachu', 'chase'],
     releaseDate: '2023-09-22',
   }),
@@ -306,6 +312,7 @@ export const PRODUCTS: Product[] = [
     reviewCount: 41,
     rarity: 'ultra-rare',
     condition: 'near-mint',
+    cardNumber: '086/198',
     tags: ['competitive', 'meta'],
     releaseDate: '2023-03-31',
   }),
@@ -324,6 +331,7 @@ export const PRODUCTS: Product[] = [
     reviewCount: 19,
     rarity: 'secret-rare',
     condition: 'mint',
+    cardNumber: '201/196',
     tags: ['giratina', 'gold', 'chase'],
     releaseDate: '2022-09-09',
   }),
@@ -336,7 +344,7 @@ export const PRODUCTS: Product[] = [
       'New to the hobby? This bundle pairs a 151 Elite Trainer Box with 5 assorted booster packs, premium sleeves and a deck box. Everything to start collecting and playing.',
     category: 'bundle',
     set: 'Mixed',
-    series: 'akkNERDS Exclusive',
+    series: 'One More Rip Exclusive',
     price: 7999,
     compareAtPrice: 9499,
     accent: '#8b5cf6',
@@ -355,7 +363,7 @@ export const PRODUCTS: Product[] = [
       'For the serious collector: two booster boxes (151 + Obsidian Flames), a premium binder, and 100 ultra-clear sleeves. Save big versus buying separately.',
     category: 'bundle',
     set: 'Mixed',
-    series: 'akkNERDS Exclusive',
+    series: 'One More Rip Exclusive',
     price: 28999,
     compareAtPrice: 32999,
     accent: '#6366f1',
@@ -385,9 +393,9 @@ export const PRODUCTS: Product[] = [
   }),
   defineProduct({
     id: 'acc-binder-pro',
-    name: 'akkNERDS Pro Collector Binder (480 ct)',
+    name: 'One More Rip Pro Collector Binder (480 ct)',
     description:
-      'A 9-pocket zip binder holding up to 480 cards. Side-loading pockets, acid-free pages and a rugged purple shell with the akkNERDS crest.',
+      'A 9-pocket zip binder holding up to 480 cards. Side-loading pockets, acid-free pages and a rugged purple shell with the One More Rip crest.',
     category: 'accessory',
     set: 'Accessories',
     series: 'Protection',
@@ -429,13 +437,4 @@ export function getProductBySlug(slug: string): Product | undefined {
   return BY_SLUG.get(slug);
 }
 
-export const PRODUCT_CATEGORIES: ProductCategory[] = [
-  'booster-box',
-  'elite-trainer-box',
-  'booster-pack',
-  'single-card',
-  'bundle',
-  'accessory',
-];
-
-export const PRODUCT_SERIES: string[] = [...new Set(PRODUCTS.map((p) => p.series))];
+export { PRODUCT_CATEGORIES, PRODUCT_SERIES, PRODUCT_SETS } from './enums.js';

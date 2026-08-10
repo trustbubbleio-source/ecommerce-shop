@@ -5,6 +5,7 @@ import {
   PRODUCTS,
   PRODUCT_CATEGORIES,
   PRODUCT_SERIES,
+  PRODUCT_SETS,
 } from './catalog.js';
 
 describe('catalog', () => {
@@ -50,10 +51,12 @@ describe('catalog', () => {
     expect(getProductBySlug('does-not-exist')).toBeUndefined();
   });
 
-  it('derives categories and series lists', () => {
+  it('uses only known enum values for category, series and set', () => {
     expect(PRODUCT_CATEGORIES).toContain('booster-box');
     expect(PRODUCT_SERIES.length).toBeGreaterThan(1);
-    // every product category is part of the known categories
+    expect(PRODUCT_SETS.length).toBeGreaterThan(1);
     expect(PRODUCTS.every((p) => PRODUCT_CATEGORIES.includes(p.category))).toBe(true);
+    expect(PRODUCTS.every((p) => PRODUCT_SERIES.includes(p.series))).toBe(true);
+    expect(PRODUCTS.every((p) => PRODUCT_SETS.includes(p.set))).toBe(true);
   });
 });

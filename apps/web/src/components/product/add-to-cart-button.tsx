@@ -1,6 +1,7 @@
 import type { Product } from '@akknerds/shared';
 import { Button, type ButtonProps, useToast } from '@akknerds/ui';
-import { Check, ShoppingCart } from 'lucide-react';
+import { Check, Clock, ShoppingCart } from 'lucide-react';
+import { PRELAUNCH, isPrelaunchActive } from '../../config/launch';
 import { toCartProduct, useCartStore } from '../../store/cart';
 
 interface AddToCartButtonProps extends Omit<ButtonProps, 'onClick' | 'children'> {
@@ -18,18 +19,31 @@ export function AddToCartButton({
   const add = useCartStore((s) => s.add);
   const { toast } = useToast();
   const soldOut = product.stock <= 0;
+  const prelaunch = isPrelaunchActive();
+  const disabled = soldOut || prelaunch;
 
   return (
     <Button
-      disabled={soldOut}
+      disabled={disabled}
       onClick={() => {
+        if (disabled) return;
         add(toCartProduct(product), quantity);
         toast({ title: 'Added to cart', description: product.name, variant: 'success' });
       }}
-      aria-label={soldOut ? `${product.name} is sold out` : `Add ${product.name} to cart`}
+      aria-label={
+        prelaunch
+          ? `${product.name} — ${PRELAUNCH.description}`
+          : soldOut
+            ? `${product.name} is sold out`
+            : `Add ${product.name} to cart`
+      }
       {...buttonProps}
     >
-      {soldOut ? (
+      {prelaunch ? (
+        <>
+          <Clock /> {PRELAUNCH.buttonLabel}
+        </>
+      ) : soldOut ? (
         <>
           <Check /> Sold out
         </>

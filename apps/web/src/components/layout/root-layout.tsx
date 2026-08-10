@@ -1,5 +1,6 @@
 import { Outlet, ScrollRestoration } from 'react-router-dom';
 import { useInitAuth } from '../../hooks/use-auth';
+import { ChatWidget } from '../chat/chat-widget';
 import { Footer } from './footer';
 import { Header } from './header';
 
@@ -13,6 +14,7 @@ export function RootLayout() {
         <Outlet />
       </main>
       <Footer />
+      <ChatWidget />
       <ScrollRestoration />
     </div>
   );

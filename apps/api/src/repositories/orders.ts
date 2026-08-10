@@ -1,23 +1,13 @@
-import type { Address, Order, OrderLine, OrderStatus } from '@akknerds/shared';
+import type { Order, OrderStatus } from '@akknerds/shared';
 import { nanoid } from 'nanoid';
-
-export interface CreateOrderInput {
-  email: string;
-  userId?: string;
-  lines: OrderLine[];
-  subtotal: number;
-  shipping: number;
-  total: number;
-  currency: string;
-  shippingAddress?: Address;
-}
+import type { CreateOrderInput, OrderRepository as IOrderRepository } from './interfaces.js';
 
 /** In-memory order store, isolated per app instance. */
-export class OrderRepository {
+export class OrderRepository implements IOrderRepository {
   private readonly byId = new Map<string, Order>();
   private readonly bySession = new Map<string, string>();
 
-  create(input: CreateOrderInput): Order {
+  async create(input: CreateOrderInput): Promise<Order> {
     const order: Order = {
       id: `ord_${nanoid(20)}`,
       status: 'pending',
@@ -28,31 +18,31 @@ export class OrderRepository {
     return order;
   }
 
-  get(id: string): Order | undefined {
+  async get(id: string): Promise<Order | undefined> {
     return this.byId.get(id);
   }
 
-  attachSession(orderId: string, sessionId: string): void {
+  async attachSession(orderId: string, sessionId: string): Promise<void> {
     const order = this.byId.get(orderId);
     if (!order) return;
     order.stripeSessionId = sessionId;
     this.bySession.set(sessionId, orderId);
   }
 
-  markStatusBySession(sessionId: string, status: OrderStatus): Order | undefined {
+  async markStatusBySession(sessionId: string, status: OrderStatus): Promise<Order | undefined> {
     const orderId = this.bySession.get(sessionId);
     if (!orderId) return undefined;
     return this.setStatus(orderId, status);
   }
 
-  setStatus(orderId: string, status: OrderStatus): Order | undefined {
+  async setStatus(orderId: string, status: OrderStatus): Promise<Order | undefined> {
     const order = this.byId.get(orderId);
     if (!order) return undefined;
     order.status = status;
     return order;
   }
 
-  listByUser(userId: string): Order[] {
+  async listByUser(userId: string): Promise<Order[]> {
     return [...this.byId.values()]
       .filter((o) => o.userId === userId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));

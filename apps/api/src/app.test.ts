@@ -29,12 +29,12 @@ describe('app', () => {
 describe('repositories edge cases', () => {
   it('attachSession is a no-op for a missing order', async () => {
     const { deps } = makeApp();
-    expect(() => deps.orders.attachSession('ord_missing', 'cs_x')).not.toThrow();
-    expect(deps.orders.markStatusBySession('cs_x', 'paid')).toBeUndefined();
+    await expect(deps.orders.attachSession('ord_missing', 'cs_x')).resolves.toBeUndefined();
+    await expect(deps.orders.markStatusBySession('cs_x', 'paid')).resolves.toBeUndefined();
   });
 
-  it('setStatus returns undefined for a missing order', () => {
+  it('setStatus returns undefined for a missing order', async () => {
     const { deps } = makeApp();
-    expect(deps.orders.setStatus('ord_missing', 'paid')).toBeUndefined();
+    await expect(deps.orders.setStatus('ord_missing', 'paid')).resolves.toBeUndefined();
   });
 });

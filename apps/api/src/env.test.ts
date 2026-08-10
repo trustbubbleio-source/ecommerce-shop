@@ -30,4 +30,11 @@ describe('loadEnv', () => {
   it('reads the configured port', () => {
     expect(loadEnv({ PORT: '5000' }).port).toBe(5000);
   });
+
+  it('enables the database when DATABASE_URL is a postgres URL', () => {
+    expect(
+      loadEnv({ DATABASE_URL: 'postgresql://user:pass@localhost:5432/akknerds' }).databaseEnabled,
+    ).toBe(true);
+    expect(loadEnv({}).databaseEnabled).toBe(false);
+  });
 });

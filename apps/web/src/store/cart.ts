@@ -1,4 +1,4 @@
-import { type Product, calcShipping, calcSubtotal } from '@akknerds/shared';
+import { type Product, calcShipping, calcSubtotal, primaryProductImage } from '@akknerds/shared';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -67,13 +67,14 @@ export const useCartStore = create<CartState>()(
         })),
       clear: () => set({ items: [] }),
     }),
-    { name: 'akknerds-cart' },
+    { name: 'onemorerip-cart' },
   ),
 );
 
 // ── Pure selectors (testable without React) ───────────────────────────
 export function toCartProduct(product: Product): CartProduct {
-  const { id, slug, name, price, accent, category, set, series, image, currency, stock } = product;
+  const { id, slug, name, price, accent, category, set, series, currency, stock } = product;
+  const image = primaryProductImage(product);
   return { id, slug, name, price, accent, category, set, series, image, currency, stock };
 }
 

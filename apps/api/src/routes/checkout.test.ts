@@ -12,7 +12,7 @@ describe('POST /api/checkout', () => {
     expect(data.url).toContain('order_id=');
     expect(data.orderId).toMatch(/^ord_/);
 
-    const order = deps.orders.get(data.orderId);
+    const order = await deps.orders.get(data.orderId);
     expect(order?.status).toBe('paid'); // settled synchronously in mock mode
     expect(order?.total).toBeGreaterThan(0);
   });
@@ -24,7 +24,7 @@ describe('POST /api/checkout', () => {
       // a malicious client could try to send price: 1 — there is no price field, by design
       items: [{ productId: 'bp-151', quantity: 2 }],
     });
-    const order = deps.orders.get(data.orderId)!;
+    const order = (await deps.orders.get(data.orderId))!;
     expect(order.lines[0]!.unitPrice).toBe(599); // authoritative catalog price
     expect(order.subtotal).toBe(1198);
   });
@@ -39,7 +39,7 @@ describe('POST /api/checkout', () => {
       { email: 'trainer@pallet.town', items: [{ productId: 'bb-151', quantity: 1 }] },
       { authorization: `Bearer ${token}` },
     );
-    const order = deps.orders.get(data.orderId)!;
+    const order = (await deps.orders.get(data.orderId))!;
     expect(order.userId).toBeDefined();
   });
 

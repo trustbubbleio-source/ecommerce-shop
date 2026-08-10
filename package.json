@@ -2,7 +2,7 @@
   "name": "akknerds",
   "version": "1.0.0",
   "private": true,
-  "description": "akkNERDS — Pokémon TCG e-commerce storefront",
+  "description": "One More Rip — Pokémon TCG e-commerce storefront",
   "type": "module",
   "packageManager": "pnpm@10.8.0",
   "engines": {
@@ -16,7 +16,16 @@
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
     "clean": "turbo run clean && rimraf node_modules",
-    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,css}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,css}\"",
+    "db:generate": "pnpm --filter @akknerds/db db:generate",
+    "db:migrate": "pnpm --filter @akknerds/db db:migrate",
+    "db:seed": "pnpm --filter @akknerds/db db:seed",
+    "db:seed-admin": "pnpm --filter @akknerds/db db:seed-admin",
+    "db:studio": "pnpm --filter @akknerds/db db:studio",
+    "dev:card-fetcher": "pnpm --filter @akknerds/card-fetcher-service dev",
+    "dev:price-fetcher": "pnpm --filter @akknerds/price-fetcher-service dev",
+    "price-sync": "pnpm --filter @akknerds/price-fetcher sync:prices",
+    "price-sync:dry": "pnpm --filter @akknerds/price-fetcher sync:prices -- --dry-run"
   },
   "devDependencies": {
     "prettier": "^3.4.2",

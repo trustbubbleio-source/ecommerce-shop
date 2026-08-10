@@ -1,10 +1,10 @@
-import { Button, cn } from '@akknerds/ui';
-import { Search } from 'lucide-react';
-import { Link, NavLink } from 'react-router-dom';
+import { cn } from '@akknerds/ui';
+import { NavLink } from 'react-router-dom';
 import { MAIN_NAV } from '../../config/site';
 import { Brand } from '../common/brand';
 import { CartDrawer } from './cart-drawer';
 import { MobileNav } from './mobile-nav';
+import { SearchDialog } from './search-dialog';
 import { UserMenu } from './user-menu';
 
 export function Header() {
@@ -33,11 +33,7 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-0.5">
-          <Button asChild variant="ghost" size="icon" aria-label="Search">
-            <Link to="/shop">
-              <Search />
-            </Link>
-          </Button>
+          <SearchDialog />
           <UserMenu />
           <CartDrawer />
         </div>

@@ -52,3 +52,30 @@ export function priceCart(
   const shipping = calcShipping(subtotal);
   return { lines, subtotal, shipping, total: subtotal + shipping, currency };
 }
+
+/** Async variant for database-backed product lookups. */
+export async function priceCartAsync(
+  items: CartLine[],
+  lookup: (productId: string) => Promise<Product | undefined>,
+): Promise<PricedCart> {
+  const lines: OrderLine[] = [];
+  let currency = 'usd';
+
+  for (const item of items) {
+    const product = await lookup(item.productId);
+    if (!product || product.stock <= 0) continue;
+    const quantity = Math.min(Math.max(1, Math.floor(item.quantity)), product.stock);
+    if (quantity <= 0) continue;
+    currency = product.currency;
+    lines.push({
+      productId: product.id,
+      name: product.name,
+      unitPrice: product.price,
+      quantity,
+    });
+  }
+
+  const subtotal = calcSubtotal(lines);
+  const shipping = calcShipping(subtotal);
+  return { lines, subtotal, shipping, total: subtotal + shipping, currency };
+}

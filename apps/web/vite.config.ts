@@ -1,8 +1,14 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
 export default defineConfig({
+  // Load VITE_* variables from the monorepo root `.env`.
+  envDir: repoRoot,
   plugins: [react()],
   server: {
     port: 5173,
@@ -25,7 +31,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ['@akknerds/ui', '@akknerds/shared'],
+    exclude: ['@akknerds/ui', '@akknerds/shared', '@akknerds/chat'],
   },
   test: {
     globals: true,
@@ -38,7 +44,7 @@ export default defineConfig({
     },
     server: {
       deps: {
-        inline: ['@akknerds/ui', '@akknerds/shared'],
+        inline: ['@akknerds/ui', '@akknerds/shared', '@akknerds/chat'],
       },
     },
     coverage: {

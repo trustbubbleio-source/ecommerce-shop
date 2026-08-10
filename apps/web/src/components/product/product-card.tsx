@@ -1,44 +1,40 @@
-import type { Product } from '@akknerds/shared';
-import { Badge, Card, Rating } from '@akknerds/ui';
+import { type Product, isCardStyleCategory } from '@akknerds/shared';
+import { Card, Rating } from '@akknerds/ui';
 import { Link } from 'react-router-dom';
 import { AddToCartButton } from './add-to-cart-button';
+import { LaunchBadge } from './launch-badge';
 import { PriceTag } from './price-tag';
 import { ProductArt } from './product-art';
+import { ProductPreviewBadge } from './product-preview-badge';
 
 export function ProductCard({ product }: { product: Product }) {
-  const lowStock = product.stock > 0 && product.stock <= 5;
+  const soldOut = product.stock <= 0;
 
   return (
     <Card className="hover:border-primary/50 hover:shadow-glow group flex flex-col overflow-hidden transition-all hover:-translate-y-1">
       <Link
         to={`/product/${product.slug}`}
-        className="relative block aspect-[4/5] overflow-hidden"
+        className="bg-muted/20 relative block aspect-[5/7] overflow-hidden"
         aria-label={product.name}
       >
-        <div className="h-full w-full transition-transform duration-500 group-hover:scale-105">
-          <ProductArt product={product} />
+        <div className="h-full w-full transition-transform duration-500 group-hover:scale-[1.02]">
+          <ProductArt product={product} variant="card" />
         </div>
-        <div className="absolute right-2 top-2 flex flex-col items-end gap-1">
-          {product.isNew && <Badge>New</Badge>}
-          {product.stock <= 0 && <Badge variant="destructive">Sold out</Badge>}
-          {lowStock && <Badge variant="secondary">Only {product.stock} left</Badge>}
-        </div>
+        <LaunchBadge />
+        {isCardStyleCategory(product.category) && <ProductPreviewBadge product={product} />}
+        {soldOut && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/45">
+            <span className="rounded-full bg-destructive px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+              Sold out
+            </span>
+          </div>
+        )}
       </Link>
 
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        <div className="flex flex-col gap-1">
-          <Link
-            to={`/product/${product.slug}`}
-            className="text-foreground hover:text-primary line-clamp-2 font-semibold leading-snug transition-colors"
-          >
-            {product.name}
-          </Link>
-          <Rating value={product.rating} reviewCount={product.reviewCount} />
-        </div>
-        <div className="mt-auto flex flex-col gap-3">
-          <PriceTag product={product} />
-          <AddToCartButton product={product} block size="sm" label="Add" />
-        </div>
+      <div className="flex flex-col gap-2 p-3">
+        <PriceTag product={product} />
+        <Rating value={product.rating} reviewCount={product.reviewCount} size={13} />
+        <AddToCartButton product={product} block size="sm" label="Add to cart" />
       </div>
     </Card>
   );

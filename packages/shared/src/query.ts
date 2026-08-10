@@ -1,4 +1,4 @@
-import type { Product, ProductCategory } from './types.js';
+import type { CardCondition, Product, ProductCategory, ProductLanguage } from './types.js';
 
 export type SortKey = 'featured' | 'newest' | 'price-asc' | 'price-desc' | 'name-asc' | 'rating';
 
@@ -18,6 +18,8 @@ export interface ProductFilter {
   minPrice?: number;
   maxPrice?: number;
   inStockOnly?: boolean;
+  language?: ProductLanguage;
+  condition?: CardCondition;
 }
 
 export interface ProductQuery {
@@ -31,6 +33,8 @@ function matches(product: Product, filter: ProductFilter): boolean {
   }
   if (filter.series && product.series !== filter.series) return false;
   if (filter.inStockOnly && product.stock <= 0) return false;
+  if (filter.language && product.language !== filter.language) return false;
+  if (filter.condition && product.condition !== filter.condition) return false;
   if (typeof filter.minPrice === 'number' && product.price < filter.minPrice) return false;
   if (typeof filter.maxPrice === 'number' && product.price > filter.maxPrice) return false;
   if (filter.search) {

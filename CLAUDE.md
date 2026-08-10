@@ -4,7 +4,7 @@ Guidance for working in this repository.
 
 ## What this is
 
-`akkNERDS` — a mobile-first Pokémon TCG e-commerce app. pnpm monorepo with a Vite
+`One More Rip` — a mobile-first Pokémon TCG e-commerce app. pnpm monorepo with a Vite
 
 - React storefront (`apps/web`), a Hono API (`apps/api`), a shared domain package
   (`packages/shared`) and a shared design system (`packages/ui`).

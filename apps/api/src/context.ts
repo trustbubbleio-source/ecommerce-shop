@@ -1,9 +1,8 @@
 import type { Env } from './env.js';
 import type { TokenPayload } from './lib/jwt.js';
 import type { PaymentService } from './lib/payments.js';
-import type { OrderRepository } from './repositories/orders.js';
-import type { ProductRepository } from './repositories/products.js';
-import type { UserRepository } from './repositories/users.js';
+import type { StorageService } from './lib/storage.js';
+import type { OrderRepository, ProductRepository, UserRepository } from './repositories/interfaces.js';
 
 /** Dependencies wired into each app instance (injectable for tests). */
 export interface AppDeps {
@@ -12,6 +11,7 @@ export interface AppDeps {
   orders: OrderRepository;
   products: ProductRepository;
   payments: PaymentService;
+  storage: StorageService;
 }
 
 /** Hono context variables available to handlers and middleware. */

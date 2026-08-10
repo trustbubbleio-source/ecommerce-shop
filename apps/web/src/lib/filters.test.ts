@@ -21,6 +21,8 @@ describe('parseFilters', () => {
       series: '151',
       search: 'x',
       inStock: true,
+      language: '',
+      condition: '',
       sort: 'price-asc',
     });
   });
@@ -44,21 +46,27 @@ describe('filtersToParams', () => {
       series: '151',
       search: 'pikachu',
       inStock: true,
+      language: 'japanese',
+      condition: 'near-mint',
       sort: 'rating',
     });
     expect(params.get('category')).toBe('single-card');
     expect(params.get('series')).toBe('151');
     expect(params.get('search')).toBe('pikachu');
     expect(params.get('inStock')).toBe('true');
+    expect(params.get('language')).toBe('japanese');
+    expect(params.get('condition')).toBe('near-mint');
     expect(params.get('sort')).toBe('rating');
   });
 
   it('round-trips through parse', () => {
     const filters = {
       category: 'bundle' as const,
-      series: 'akkNERDS Exclusive',
+      series: 'One More Rip Exclusive',
       search: '',
       inStock: true,
+      language: 'english' as const,
+      condition: '' as const,
       sort: 'newest' as const,
     };
     expect(parseFilters(filtersToParams(filters))).toEqual(filters);
@@ -72,6 +80,8 @@ describe('toProductsQuery', () => {
       series: undefined,
       search: undefined,
       inStock: undefined,
+      language: undefined,
+      condition: undefined,
       sort: 'featured',
     });
   });

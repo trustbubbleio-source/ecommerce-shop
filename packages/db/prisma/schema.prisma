@@ -1,0 +1,330 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// Fixed product categories. Add values via migration + `packages/shared/src/enums.ts`.
+enum ProductCategory {
+  booster_box       @map("booster-box")
+  elite_trainer_box @map("elite-trainer-box")
+  booster_pack      @map("booster-pack")
+  single_card       @map("single-card")
+  graded_slab       @map("graded-slab")
+  bundle
+  accessory
+}
+
+enum ProductSeries {
+  mega_evolution @map("Mega Evolution")
+  scarlet_and_violet @map("Scarlet & Violet")
+  sword_and_shield @map("Sword & Shield")
+  sun_and_moon @map("Sun & Moon")
+  xy @map("XY")
+  black_and_white @map("Black & White")
+  black_and_white_promos @map("Black & White Promos")
+  call_of_legends @map("Call of Legends")
+  heartgold_soulsilver @map("HeartGold SoulSilver")
+  platinum @map("Platinum")
+  nintendo_promos @map("Nintendo Promos")
+  diamond_and_pearl @map("Diamond & Pearl")
+  ex_ruby_and_sapphire @map("EX Ruby & Sapphire")
+  e_card @map("e-Card")
+  legendary_collection @map("Legendary Collection")
+  neo_genesis @map("Neo Genesis")
+  topps_chrome @map("Topps Chrome")
+  gym_heroes @map("Gym Heroes")
+  base_set @map("Base Set")
+  one_more_rip_exclusive @map("One More Rip Exclusive")
+  illustration_collection @map("Illustration Collection")
+  protection @map("Protection")
+}
+
+
+
+enum ProductSet {
+  n_30th_celebration_english @map("30th Celebration (English)")
+  pitch_black @map("Pitch Black")
+  chaos_rising @map("Chaos Rising")
+  perfect_order @map("Perfect Order")
+  ascended_heroes @map("Ascended Heroes")
+  phantasmal_flames @map("Phantasmal Flames")
+  mega_evolution @map("Mega Evolution")
+  mega_evolution_energies @map("Mega Evolution Energies")
+  mega_evolution_black_star_promos @map("Mega Evolution Black Star Promos")
+  white_flare @map("White Flare")
+  black_bolt @map("Black Bolt")
+  destined_rivals @map("Destined Rivals")
+  journey_together @map("Journey Together")
+  mcdonalds_dragon_discovery @map("McDonald's Dragon Discovery")
+  prismatic_evolutions @map("Prismatic Evolutions")
+  surging_sparks @map("Surging Sparks")
+  stellar_crown @map("Stellar Crown")
+  holiday_calendar_2024 @map("Holiday Calendar 2024")
+  trick_or_trade_2024 @map("Trick or Trade 2024")
+  shrouded_fable @map("Shrouded Fable")
+  twilight_masquerade @map("Twilight Masquerade")
+  temporal_forces @map("Temporal Forces")
+  paldean_fates @map("Paldean Fates")
+  paradox_rift @map("Paradox Rift")
+  scarlet_and_violet_151 @map("Scarlet & Violet - 151")
+  set_151 @map("151")
+  holiday_calendar_2023 @map("Holiday Calendar 2023")
+  trick_or_trade_2023 @map("Trick or Trade 2023")
+  mcdonalds_match_battle_2023 @map("McDonald's Match Battle 2023")
+  obsidian_flames @map("Obsidian Flames")
+  paldea_evolved @map("Paldea Evolved")
+  scarlet_and_violet_energies @map("Scarlet & Violet Energies")
+  scarlet_and_violet @map("Scarlet & Violet")
+  scarlet_and_violet_base @map("Scarlet & Violet Base")
+  scarlet_and_violet_promos @map("Scarlet & Violet Promos")
+  crown_zenith @map("Crown Zenith")
+  crown_zenith_galarian_gallery @map("Crown Zenith - Galarian Gallery")
+  silver_tempest @map("Silver Tempest")
+  silver_tempest_trainer_gallery @map("Silver Tempest - Trainer Gallery")
+  lost_origin @map("Lost Origin")
+  lost_origin_trainer_gallery @map("Lost Origin - Trainer Gallery")
+  holiday_calendar_2022 @map("Holiday Calendar 2022")
+  trick_or_trade @map("Trick or Trade")
+  mcdonalds_match_battle @map("McDonald's Match Battle")
+  pokemon_go @map("Pokemon Go")
+  astral_radiance @map("Astral Radiance")
+  astral_radiance_trainer_gallery @map("Astral Radiance - Trainer Gallery")
+  brilliant_stars @map("Brilliant Stars")
+  brilliant_stars_trainer_gallery @map("Brilliant Stars - Trainer Gallery")
+  fusion_strike @map("Fusion Strike")
+  celebrations @map("Celebrations")
+  evolving_skies @map("Evolving Skies")
+  chilling_reign @map("Chilling Reign")
+  battle_styles @map("Battle Styles")
+  shining_fates @map("Shining Fates")
+  mcdonalds_25th_anniversary @map("McDonald's 25th Anniversary")
+  vivid_voltage @map("Vivid Voltage")
+  champions_path @map("Champion's Path")
+  pokemon_futsal_promos @map("Pokemon Futsal Promos")
+  darkness_ablaze @map("Darkness Ablaze")
+  rebel_clash @map("Rebel Clash")
+  sword_and_shield @map("Sword & Shield")
+  sword_and_shield_promos @map("Sword & Shield Promos")
+  cosmic_eclipse @map("Cosmic Eclipse")
+  mcdonalds_collection_2019_fr @map("McDonald's Collection (2019 FR)")
+  mcdonalds_collection_2019 @map("McDonald's Collection (2019)")
+  hidden_fates @map("Hidden Fates")
+  unified_minds @map("Unified Minds")
+  unbroken_bonds @map("Unbroken Bonds")
+  detective_pikachu @map("Detective Pikachu")
+  team_up @map("Team Up")
+  lost_thunder @map("Lost Thunder")
+  mcdonalds_collection_2018 @map("McDonald's Collection (2018)")
+  dragon_majesty @map("Dragon Majesty")
+  celestial_storm @map("Celestial Storm")
+  forbidden_light @map("Forbidden Light")
+  ultra_prism @map("Ultra Prism")
+  crimson_invasion @map("Crimson Invasion")
+  shining_legends @map("Shining Legends")
+  burning_shadows @map("Burning Shadows")
+  mcdonalds_collection_2017 @map("McDonald's Collection (2017)")
+  guardians_rising @map("Guardians Rising")
+  sun_and_moon_promos @map("Sun & Moon Promos")
+  sun_and_moon @map("Sun & Moon")
+  evolutions @map("Evolutions")
+  mcdonalds_collection_2016 @map("McDonald's Collection (2016)")
+  steam_siege @map("Steam Siege")
+  fates_collide @map("Fates Collide")
+  generations @map("Generations")
+  breakpoint @map("BREAKPoint")
+  mcdonalds_collection_2015 @map("McDonald's Collection (2015)")
+  xy_breakthrough @map("XY BREAKthrough")
+  ancient_origins @map("Ancient Origins")
+  roaring_skies @map("Roaring Skies")
+  double_crisis @map("Double Crisis")
+  primal_clash @map("Primal Clash")
+  phantom_forces @map("Phantom Forces")
+  furious_fists @map("Furious Fists")
+  mcdonalds_collection_2014 @map("McDonald's Collection (2014)")
+  xy_flashfire @map("XY Flashfire")
+  kalos_starter_set @map("Kalos Starter Set")
+  xy_promos @map("XY Promos")
+  xy @map("XY")
+  radiant_collection @map("Radiant Collection")
+  legendary_treasures @map("Legendary Treasures")
+  plasma_blast @map("Plasma Blast")
+  plasma_freeze @map("Plasma Freeze")
+  plasma_storm @map("Plasma Storm")
+  boundaries_crossed @map("Boundaries Crossed")
+  dragon_vault @map("Dragon Vault")
+  dragons_exalted @map("Dragons Exalted")
+  dark_explorers @map("Dark Explorers")
+  next_destinies @map("Next Destinies")
+  noble_victories @map("Noble Victories")
+  emerging_powers @map("Emerging Powers")
+  black_and_white @map("Black & White")
+  mcdonalds_collection_2013 @map("McDonald's Collection (2013)")
+  mcdonalds_collection_2012 @map("McDonald's Collection (2012)")
+  mcdonalds_collection_2011 @map("McDonald's Collection (2011)")
+  black_and_white_promos @map("Black & White Promos")
+  call_of_legends @map("Call of Legends")
+  hs_triumphant @map("HS Triumphant")
+  hs_undaunted @map("HS Undaunted")
+  hs_unleashed @map("HS Unleashed")
+  heartgold_soulsilver_promos @map("HeartGold SoulSilver Promos")
+  heartgold_soulsilver @map("HeartGold SoulSilver")
+  pokemon_rumble @map("Pokemon Rumble")
+  platinum_arceus @map("Platinum - Arceus")
+  platinum_supreme_victors @map("Platinum - Supreme Victors")
+  platinum_rising_rivals @map("Platinum - Rising Rivals")
+  platinum @map("Platinum")
+  pop_series_9 @map("POP Series 9")
+  pop_series_8 @map("POP Series 8")
+  pop_series_7 @map("POP Series 7")
+  pop_series_6 @map("POP Series 6")
+  pop_series_5 @map("POP Series 5")
+  pop_series_4 @map("POP Series 4")
+  pop_series_3 @map("POP Series 3")
+  pop_series_2 @map("POP Series 2")
+  pop_series_1 @map("POP Series 1")
+  nintendo_promos @map("Nintendo Promos")
+  stormfront @map("Stormfront")
+  legends_awakened @map("Legends Awakened")
+  majestic_dawn @map("Majestic Dawn")
+  great_encounters @map("Great Encounters")
+  secret_wonders @map("Secret Wonders")
+  mysterious_treasures @map("Mysterious Treasures")
+  dp_black_star_promos @map("DP Black Star Promos")
+  diamond_and_pearl @map("Diamond & Pearl")
+  ex_power_keepers @map("EX Power Keepers")
+  ex_dragon_frontiers @map("EX Dragon Frontiers")
+  ex_crystal_guardians @map("EX Crystal Guardians")
+  ex_holon_phantoms @map("EX Holon Phantoms")
+  ex_legend_maker @map("EX Legend Maker")
+  ex_delta_species @map("EX Delta Species")
+  ex_unseen_forces_unown_collection @map("EX Unseen Forces Unown Collection")
+  ex_unseen_forces @map("EX Unseen Forces")
+  ex_emerald @map("EX Emerald")
+  ex_deoxys @map("EX Deoxys")
+  ex_team_rocket_returns @map("EX Team Rocket Returns")
+  ex_firered_and_leafgreen @map("EX FireRed & LeafGreen")
+  ex_hidden_legends @map("EX Hidden Legends")
+  ex_team_magma_vs_team_aqua @map("EX Team Magma vs Team Aqua")
+  ex_dragon @map("EX Dragon")
+  ex_sandstorm @map("EX Sandstorm")
+  ex_ruby_and_sapphire @map("EX Ruby & Sapphire")
+  skyridge @map("Skyridge")
+  aquapolis @map("Aquapolis")
+  best_of_game @map("Best of Game")
+  expedition @map("Expedition")
+  legendary_collection @map("Legendary Collection")
+  neo_destiny @map("Neo Destiny")
+  neo_revelation @map("Neo Revelation")
+  southern_islands @map("Southern Islands")
+  neo_discovery @map("Neo Discovery")
+  neo_genesis @map("Neo Genesis")
+  topps_series_3 @map("Topps Series 3")
+  topps_series_2 @map("Topps Series 2")
+  topps_series_1 @map("Topps Series 1")
+  gym_challenge @map("Gym Challenge")
+  gym_heroes @map("Gym Heroes")
+  team_rocket @map("Team Rocket")
+  base_set_2 @map("Base Set 2")
+  fossil @map("Fossil")
+  wizards_of_the_coast_promos @map("Wizards of the Coast Promos")
+  jungle @map("Jungle")
+  base_set @map("Base Set")
+  mixed @map("Mixed")
+  first_partner_s2 @map("First Partner s2")
+  first_partner_s1 @map("First Partner s1")
+  accessories @map("Accessories")
+}
+
+
+
+enum CardRarity {
+  common
+  uncommon
+  rare
+  holo_rare          @map("holo-rare")
+  ultra_rare         @map("ultra-rare")
+  secret_rare        @map("secret-rare")
+  illustration_rare  @map("illustration-rare")
+}
+
+enum CardCondition {
+  mint
+  near_mint          @map("near-mint")
+  lightly_played     @map("lightly-played")
+  moderately_played  @map("moderately-played")
+}
+
+enum ProductLanguage {
+  english
+  japanese
+  chinese
+}
+
+model User {
+  id           String   @id
+  email        String   @unique
+  name         String
+  passwordHash String   @map("password_hash")
+  role         String   @default("customer")
+  createdAt    DateTime @default(now()) @map("created_at")
+  orders       Order[]
+
+  @@map("users")
+}
+
+model Product {
+  id             String           @id
+  slug           String           @unique
+  name           String
+  description    String
+  category       ProductCategory
+  setName        ProductSet         @map("set_name")
+  series         ProductSeries
+  price          Int
+  compareAtPrice Int?               @map("compare_at_price")
+  currency       String             @default("usd")
+  image          String?
+  images         String[]           @default([])
+  accent         String
+  stock          Int                @default(0)
+  featured       Boolean            @default(false)
+  isNew          Boolean            @default(false) @map("is_new")
+  rating         Float              @default(0)
+  reviewCount    Int                @default(0) @map("review_count")
+  tags           String[]           @default([])
+  rarity         CardRarity?
+  condition      CardCondition?
+  language       ProductLanguage  @default(english)
+  cardNumber     String?            @map("card_number")
+  releaseDate    String             @map("release_date")
+
+  @@index([category])
+  @@index([series])
+  @@index([featured])
+  @@map("products")
+}
+
+model Order {
+  id              String   @id
+  userId          String?  @map("user_id")
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email           String
+  status          String   @default("pending")
+  lines           Json
+  subtotal        Int
+  shipping        Int
+  total           Int
+  currency        String
+  stripeSessionId String?  @unique @map("stripe_session_id")
+  shippingAddress Json?    @map("shipping_address")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("orders")
+}

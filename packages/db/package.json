@@ -1,0 +1,45 @@
+{
+  "name": "@akknerds/db",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:migrate": "dotenv -e ../../.env -- prisma migrate deploy",
+    "db:migrate:dev": "dotenv -e ../../.env -- prisma migrate dev",
+    "db:push": "dotenv -e ../../.env -- prisma db push",
+    "db:seed": "dotenv -e ../../.env -- prisma db seed",
+    "db:seed-admin": "dotenv -e ../../.env -- tsx prisma/seed-admin.ts",
+    "db:studio": "dotenv -e ../../.env -- prisma studio",
+    "sync:enums": "tsx scripts/sync-prisma-enums.ts",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf node_modules/.prisma"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@akknerds/shared": "workspace:*",
+    "@prisma/client": "^6.8.2",
+    "bcryptjs": "^2.4.3",
+    "nanoid": "^5.0.9"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.5",
+    "dotenv-cli": "^8.0.0",
+    "prisma": "^6.8.2",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

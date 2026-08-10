@@ -1,6 +1,11 @@
 export * from './types.js';
+export * from './enums.js';
+export * from './series-sets.js';
+export { toPrismaEnumKey } from './prisma-keys.js';
 export * from './schemas.js';
 export * from './format.js';
 export * from './pricing.js';
 export * from './query.js';
 export * from './catalog.js';
+export * from './catalog-stats.js';
+export * from './assets.js';

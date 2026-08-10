@@ -1,4 +1,13 @@
-import { type ProductCategory, categoryLabel } from '@akknerds/shared';
+import {
+  CARD_CONDITIONS,
+  PRODUCT_LANGUAGES,
+  type CardCondition,
+  type ProductCategory,
+  type ProductLanguage,
+  categoryLabel,
+  conditionLabel,
+  languageLabel,
+} from '@akknerds/shared';
 import { Button, Label, Separator, cn } from '@akknerds/ui';
 import { RotateCcw } from 'lucide-react';
 import type { CatalogMeta } from '../../lib/api';
@@ -11,10 +20,70 @@ interface ProductFiltersPanelProps {
   onReset: () => void;
 }
 
+interface ChipOption<T extends string> {
+  value: T;
+  label: string;
+}
+
+function FilterChips<T extends string>({
+  legend,
+  value,
+  options,
+  onSelect,
+}: {
+  legend: string;
+  value: T;
+  options: ChipOption<T>[];
+  onSelect: (value: T) => void;
+}) {
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="text-foreground mb-1 text-sm font-semibold">{legend}</legend>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((option) => {
+          const active = value === option.value;
+          return (
+            <button
+              key={option.value || 'all'}
+              type="button"
+              onClick={() => onSelect(option.value)}
+              aria-pressed={active}
+              className={cn(
+                'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                active
+                  ? 'bg-primary/15 text-primary'
+                  : 'bg-secondary text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
 export function ProductFiltersPanel({ meta, value, onChange, onReset }: ProductFiltersPanelProps) {
   const categories: { value: ProductCategory | 'all'; label: string }[] = [
     { value: 'all', label: 'All products' },
     ...(meta?.categories ?? []).map((c) => ({ value: c.value, label: categoryLabel(c.value) })),
+  ];
+
+  const languageOptions: ChipOption<ProductLanguage | ''>[] = [
+    { value: '', label: 'All' },
+    ...PRODUCT_LANGUAGES.map((language) => ({
+      value: language,
+      label: languageLabel(language),
+    })),
+  ];
+
+  const conditionOptions: ChipOption<CardCondition | ''>[] = [
+    { value: '', label: 'All' },
+    ...CARD_CONDITIONS.map((condition) => ({
+      value: condition,
+      label: conditionLabel(condition),
+    })),
   ];
 
   return (
@@ -74,6 +143,20 @@ export function ProductFiltersPanel({ meta, value, onChange, onReset }: ProductF
         />
         <span className="text-foreground font-medium">In stock only</span>
       </label>
+
+      <FilterChips
+        legend="Language"
+        value={value.language}
+        options={languageOptions}
+        onSelect={(language) => onChange({ language })}
+      />
+
+      <FilterChips
+        legend="Condition"
+        value={value.condition}
+        options={conditionOptions}
+        onSelect={(condition) => onChange({ condition })}
+      />
 
       {!isDefaultFilters(value) && (
         <Button variant="ghost" size="sm" onClick={onReset} className="self-start">
