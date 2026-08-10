@@ -1,0 +1,8 @@
+[build]
+builder = "RAILPACK"
+buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @akknerds/db exec prisma generate && pnpm --filter @akknerds/api build"
+
+[deploy]
+startCommand = "pnpm --filter @akknerds/api start"
+healthcheckPath = "/api/health"
+preDeployCommand = ["pnpm --filter @akknerds/db exec prisma migrate deploy"]
