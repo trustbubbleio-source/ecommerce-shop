@@ -19,13 +19,14 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
+        // Only split clearly independent libs. Do not split React from its
+        // consumers (radix/lucide/etc) — that created vendor↔react cycles and
+        // a production crash: Cannot read properties of undefined (forwardRef).
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined;
           if (id.includes('react-router')) return 'router';
           if (id.includes('@tanstack')) return 'query';
-          if (id.includes('react-dom') || id.includes('scheduler') || /[\\/]react[\\/]/.test(id))
-            return 'react';
-          return 'vendor';
+          return undefined;
         },
       },
     },
