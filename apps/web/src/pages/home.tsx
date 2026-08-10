@@ -1,13 +1,15 @@
 import { Button } from '@akknerds/ui';
-import { ArrowRight, ShieldCheck, Sparkles, Truck } from 'lucide-react';
+import { resolveAssetUrl } from '@akknerds/shared';
+import { ArrowRight, MapPin, ShieldCheck, Sparkles, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Pokeball } from '../components/common/pokeball';
 import { NewsletterSubscribe } from '../components/common/newsletter-subscribe';
 import { SectionHeader } from '../components/common/section';
 import { ProductGrid } from '../components/product/product-grid';
 import { PRELAUNCH } from '../config/launch';
-import { CATEGORY_TILES } from '../config/site';
+import { CATEGORY_TILES, SITE } from '../config/site';
 import { useProducts } from '../hooks/use-products';
+
 
 const VALUE_PROPS = [
   { icon: ShieldCheck, title: '100% Authentic', text: 'Factory-sealed, never resealed.' },
@@ -74,30 +76,65 @@ function Hero() {
 function LaunchAnnouncement() {
   if (!PRELAUNCH.active) return null;
 
+  const storeImage = resolveAssetUrl(
+    PRELAUNCH.storeImage,
+    import.meta.env.VITE_ASSET_CDN_URL,
+  );
+
   return (
     <section className="container py-12">
-      <div className="border-border relative overflow-hidden rounded-2xl border px-6 py-10 text-center sm:px-10 sm:py-14">
+      <div className="border-border relative overflow-hidden rounded-2xl border">
         <div
           className="from-primary/15 via-accent/10 pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent"
           aria-hidden="true"
         />
         <div
-          className="bg-grid-faint pointer-events-none absolute inset-0 opacity-15 [background-size:28px_28px]"
+          className="bg-grid-faint pointer-events-none absolute inset-0 opacity-10 [background-size:28px_28px]"
           aria-hidden="true"
         />
-        <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-4">
-          <span className="border-primary/30 bg-primary/10 text-primary inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
-            {PRELAUNCH.homeEyebrow}
-          </span>
-          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-            {PRELAUNCH.homeTitle}
-          </h2>
-          <p className="text-muted-foreground text-base leading-relaxed sm:text-lg">
-            {PRELAUNCH.homeBody}
-          </p>
-          <p className="text-primary text-sm font-semibold tracking-wide">
-            Online shop · Physical store · October 15, 2026
-          </p>
+
+        <div className="relative grid lg:grid-cols-2">
+          <div className="flex flex-col justify-center gap-4 px-6 py-10 sm:px-10 sm:py-14">
+            <span className="border-primary/30 bg-primary/10 text-primary inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
+              {PRELAUNCH.homeEyebrow}
+            </span>
+            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+              {PRELAUNCH.homeTitle}
+            </h2>
+            <p className="text-muted-foreground max-w-md text-base leading-relaxed sm:text-lg">
+              {PRELAUNCH.homeBody}
+            </p>
+            <p className="text-primary text-sm font-semibold tracking-wide">
+              Online shop · Physical store · October 15, 2026
+            </p>
+            <p className="text-muted-foreground inline-flex items-start gap-2 text-sm">
+              <MapPin className="text-primary mt-0.5 size-4 shrink-0" aria-hidden />
+              <span>{SITE.store.line}</span>
+            </p>
+          </div>
+
+          {storeImage && (
+            <div className="group relative min-h-[18rem] overflow-hidden sm:min-h-[22rem] lg:min-h-full">
+              <img
+                src={storeImage}
+                alt={`${SITE.name} storefront in ${SITE.store.city}`}
+                className="absolute inset-0 size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                loading="lazy"
+              />
+              <div
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent lg:bg-gradient-to-l lg:from-transparent lg:via-black/20 lg:to-black/40"
+                aria-hidden="true"
+              />
+              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+                  Visit us
+                </p>
+                <p className="text-lg font-bold text-white drop-shadow-sm">
+                  {SITE.store.city}, Sweden
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

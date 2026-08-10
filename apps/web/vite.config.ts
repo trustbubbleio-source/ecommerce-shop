@@ -42,6 +42,7 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
     env: {
       VITE_API_URL: 'http://localhost:4000',
+      VITE_ASSET_CDN_URL: 'https://cdn.test',
     },
     server: {
       deps: {
