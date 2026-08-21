@@ -38,13 +38,15 @@ export function ChatPanel() {
       aria-modal="true"
       aria-labelledby={titleId}
       className={cn(
-        'border-border bg-card text-card-foreground flex flex-col overflow-hidden border shadow-2xl',
-        'fixed inset-x-0 bottom-0 z-40 h-[min(85dvh,32rem)] rounded-t-2xl',
-        'md:inset-auto md:right-6 md:bottom-24 md:h-[min(85dvh,32rem)] md:w-[380px] md:rounded-2xl',
+        'border-border bg-card text-card-foreground flex flex-col overflow-hidden shadow-2xl',
+        // Full-screen on phone & tablet
+        'fixed inset-0 z-40 h-dvh w-full rounded-none border-0',
+        // Floating panel on desktop
+        'lg:inset-auto lg:right-6 lg:bottom-24 lg:h-[min(85dvh,32rem)] lg:w-[380px] lg:rounded-2xl lg:border',
       )}
     >
-      <header className="border-border flex items-center gap-3 border-b px-4 py-3">
-        <div className="bg-primary/15 text-primary flex size-9 items-center justify-center rounded-full">
+      <header className="border-border flex items-center gap-3 border-b px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <div className="bg-secondary text-foreground flex size-9 items-center justify-center rounded-full">
           <MessageCircle className="size-4" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
@@ -80,7 +82,10 @@ export function ChatPanel() {
         ) : null}
       </div>
 
-      <form onSubmit={handleSubmit} className="border-border flex gap-2 border-t p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <form
+        onSubmit={handleSubmit}
+        className="border-border flex items-center gap-2 border-t p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+      >
         <Input
           ref={inputRef}
           value={draft}
@@ -89,8 +94,15 @@ export function ChatPanel() {
           aria-label="Chat message"
           disabled={pending}
           autoComplete="off"
+          className="min-w-0 w-auto flex-1"
         />
-        <Button type="submit" size="icon" aria-label="Send message" disabled={pending || !draft.trim()}>
+        <Button
+          type="submit"
+          size="icon"
+          aria-label="Send message"
+          disabled={pending || !draft.trim()}
+          className="size-11 shrink-0"
+        >
           <Send />
         </Button>
       </form>

@@ -7,9 +7,9 @@ export function BlogPostCard({ post }: { post: BlogPost }) {
   return (
     <Link
       to={`/blog/${post.slug}`}
-      className="group border-border bg-card/50 hover:border-primary/30 flex flex-col gap-4 rounded-2xl border p-6 transition-colors"
+      className="group border-border bg-card/50 hover:border-foreground/25 flex flex-col gap-4 rounded-2xl border p-6 transition-colors"
     >
-      <span className="bg-primary/15 text-primary grid size-11 place-items-center rounded-xl">
+      <span className="bg-secondary text-foreground grid size-11 place-items-center rounded-xl">
         <Icon className="size-5" aria-hidden />
       </span>
       <div className="flex flex-col gap-2">
@@ -21,7 +21,7 @@ export function BlogPostCard({ post }: { post: BlogPost }) {
           <time dateTime={post.date}>{formatBlogDate(post.date)}</time> · {post.readMinutes} min read
         </span>
         <ArrowRight
-          className="text-primary size-4 shrink-0 transition-transform group-hover:translate-x-0.5"
+          className="text-foreground size-4 shrink-0 transition-transform group-hover:translate-x-0.5"
           aria-hidden
         />
       </div>

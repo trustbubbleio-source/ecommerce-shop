@@ -41,7 +41,7 @@ export function BlogPostPage() {
 
       <article className="flex flex-col gap-6">
         <header className="flex flex-col gap-4">
-          <span className="bg-primary/15 text-primary grid size-12 place-items-center rounded-xl">
+          <span className="bg-secondary text-foreground grid size-12 place-items-center rounded-xl">
             <Icon className="size-6" aria-hidden />
           </span>
           <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{post.title}</h1>

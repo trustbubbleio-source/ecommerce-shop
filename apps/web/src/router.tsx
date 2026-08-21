@@ -16,6 +16,8 @@ import { FaqPage } from './pages/faq';
 import { HomePage } from './pages/home';
 import { LoginPage } from './pages/login';
 import { NotFoundPage } from './pages/not-found';
+import { PartnersPage } from './pages/partners';
+import { PrivacyPage } from './pages/privacy';
 import { ProductDetailPage } from './pages/product-detail';
 import { RegisterPage } from './pages/register';
 import { ShopPage } from './pages/shop';
@@ -35,6 +37,8 @@ export const routes: RouteObject[] = [
       { path: 'register', element: <RegisterPage /> },
       { path: 'account', element: <AccountPage /> },
       { path: 'contact', element: <ContactPage /> },
+      { path: 'privacy', element: <PrivacyPage /> },
+      { path: 'partners', element: <PartnersPage /> },
       { path: 'blog', element: <BlogPage /> },
       { path: 'blog/:slug', element: <BlogPostPage /> },
       { path: 'faq', element: <FaqPage /> },

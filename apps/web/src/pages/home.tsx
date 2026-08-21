@@ -1,10 +1,16 @@
 import { Button } from '@akknerds/ui';
-import { resolveAssetUrl } from '@akknerds/shared';
+import {
+  primaryProductImage,
+  resolveAssetUrl,
+  type Product,
+  type ProductCategory,
+} from '@akknerds/shared';
 import { ArrowRight, MapPin, ShieldCheck, Sparkles, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Pokeball } from '../components/common/pokeball';
 import { NewsletterSubscribe } from '../components/common/newsletter-subscribe';
 import { SectionHeader } from '../components/common/section';
+import { HeroPackRip } from '../components/home/hero-pack-rip';
 import { ProductGrid } from '../components/product/product-grid';
 import { PRELAUNCH } from '../config/launch';
 import { CATEGORY_TILES, SITE } from '../config/site';
@@ -27,7 +33,7 @@ function Hero() {
       />
       <div className="container relative grid gap-10 py-16 lg:grid-cols-2 lg:py-24">
         <div className="flex flex-col items-start justify-center gap-6">
-          <span className="border-primary/30 bg-primary/10 text-primary inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold">
+          <span className="border-border bg-secondary text-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold">
             <Pokeball className="size-4" /> New: Temporal Forces in stock
           </span>
           <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
@@ -62,10 +68,10 @@ function Hero() {
           </dl>
         </div>
 
-        <div className="relative hidden items-center justify-center lg:flex">
-          <div className="relative aspect-square w-full max-w-md">
-            <div className="border-border from-primary/30 via-accent/10 shadow-glow absolute inset-0 rounded-3xl border bg-gradient-to-br to-transparent" />
-            <Pokeball className="animate-float text-primary/40 absolute left-1/2 top-1/2 size-72 -translate-x-1/2 -translate-y-1/2" />
+        <div className="relative flex items-center justify-center">
+          <div className="relative aspect-square w-full max-w-[17rem] sm:max-w-xs lg:max-w-md">
+            <div className="border-border from-foreground/10 shadow-glow absolute inset-0 rounded-3xl border bg-gradient-to-br via-transparent to-transparent" />
+            <HeroPackRip className="absolute inset-0" />
           </div>
         </div>
       </div>
@@ -85,7 +91,7 @@ function LaunchAnnouncement() {
     <section className="container py-12">
       <div className="border-border relative overflow-hidden rounded-2xl border">
         <div
-          className="from-primary/15 via-accent/10 pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent"
+          className="from-foreground/8 pointer-events-none absolute inset-0 bg-gradient-to-br via-transparent to-transparent"
           aria-hidden="true"
         />
         <div
@@ -95,7 +101,7 @@ function LaunchAnnouncement() {
 
         <div className="relative grid lg:grid-cols-2">
           <div className="flex flex-col justify-center gap-4 px-6 py-10 sm:px-10 sm:py-14">
-            <span className="border-primary/30 bg-primary/10 text-primary inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
+            <span className="border-border bg-secondary text-foreground inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
               {PRELAUNCH.homeEyebrow}
             </span>
             <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
@@ -104,11 +110,11 @@ function LaunchAnnouncement() {
             <p className="text-muted-foreground max-w-md text-base leading-relaxed sm:text-lg">
               {PRELAUNCH.homeBody}
             </p>
-            <p className="text-primary text-sm font-semibold tracking-wide">
+            <p className="text-foreground text-sm font-semibold tracking-wide">
               Online shop · Physical store · October 15, 2026
             </p>
             <p className="text-muted-foreground inline-flex items-start gap-2 text-sm">
-              <MapPin className="text-primary mt-0.5 size-4 shrink-0" aria-hidden />
+              <MapPin className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />
               <span>{SITE.store.line}</span>
             </p>
           </div>
@@ -141,26 +147,56 @@ function LaunchAnnouncement() {
   );
 }
 
+function pickCategoryImage(
+  products: Product[] | undefined,
+  category: ProductCategory,
+): string | undefined {
+  const cdn = import.meta.env.VITE_ASSET_CDN_URL;
+  const match = products?.find((p) => p.category === category && primaryProductImage(p));
+  return match ? resolveAssetUrl(primaryProductImage(match), cdn) : undefined;
+}
+
 function Categories() {
+  const catalog = useProducts({ limit: 60 });
+
   return (
     <section className="container py-12">
       <SectionHeader title="Shop by category" subtitle="Find exactly what you're hunting for" />
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-        {CATEGORY_TILES.map((tile) => (
-          <Link
-            key={tile.category}
-            to={`/shop?category=${tile.category}`}
-            className="border-border bg-card hover:border-primary/50 hover:shadow-glow group relative overflow-hidden rounded-xl border p-5 transition-all hover:-translate-y-1"
-          >
-            <Pokeball className="text-primary/10 absolute -right-4 -top-4 size-20 transition-transform group-hover:scale-125" />
-            <h3 className="text-foreground font-bold">{tile.label}</h3>
-            <p className="text-muted-foreground mt-1 text-sm">{tile.blurb}</p>
-            <span className="text-primary mt-4 inline-flex items-center gap-1 text-sm font-semibold">
-              Shop now{' '}
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-            </span>
-          </Link>
-        ))}
+        {CATEGORY_TILES.map((tile) => {
+          const imageUrl = pickCategoryImage(catalog.data?.products, tile.category);
+
+          return (
+            <Link
+              key={tile.category}
+              to={`/shop?category=${tile.category}`}
+              className="border-border bg-card hover:border-foreground/25 hover:shadow-glow group relative overflow-hidden rounded-xl border p-5 transition-all hover:-translate-y-1"
+            >
+              {imageUrl ? (
+                <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+                  <img
+                    src={imageUrl}
+                    alt=""
+                    className="absolute -right-14 -bottom-10 w-[78%] max-w-none rotate-[12deg] object-contain opacity-55 sm:-right-12 sm:-bottom-8"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-card via-card/85 to-card/25" />
+                  <div className="absolute inset-0 bg-black/35 mix-blend-multiply" />
+                </div>
+              ) : null}
+
+              <div className="relative z-10 flex h-full min-h-[7.5rem] flex-col">
+                <h3 className="text-foreground font-bold">{tile.label}</h3>
+                <p className="text-muted-foreground mt-1 text-sm">{tile.blurb}</p>
+                <span className="text-primary mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold">
+                  Shop now{' '}
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
@@ -172,7 +208,7 @@ function ValueProps() {
       <div className="container grid gap-6 py-8 sm:grid-cols-3">
         {VALUE_PROPS.map(({ icon: Icon, title, text }) => (
           <div key={title} className="flex items-center gap-3">
-            <span className="bg-primary/15 text-primary grid size-11 shrink-0 place-items-center rounded-lg">
+            <span className="bg-secondary text-foreground grid size-11 shrink-0 place-items-center rounded-lg">
               <Icon className="size-5" />
             </span>
             <div>

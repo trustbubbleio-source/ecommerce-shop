@@ -215,13 +215,13 @@ export function ProductDetailPage() {
 
           <ul className="mt-2 grid gap-3 text-sm sm:grid-cols-2">
             <li className="text-muted-foreground flex items-center gap-2">
-              <ShieldCheck className="text-primary size-4" /> Authentic & sealed
+              <ShieldCheck className="text-foreground size-4" /> Authentic & sealed
             </li>
             <li className="text-muted-foreground flex items-center gap-2">
-              <Truck className="text-primary size-4" /> Free shipping over $75
+              <Truck className="text-foreground size-4" /> Free shipping over $75
             </li>
             <li className="text-muted-foreground flex items-center gap-2">
-              <RotateCcw className="text-primary size-4" /> 30-day returns
+              <RotateCcw className="text-foreground size-4" /> 30-day returns
             </li>
           </ul>
         </div>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import footerLogo from '../../assets/rarity/logo2.png';
+import footerLogo from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
 import { MAIN_NAV, SITE } from '../../config/site';
 
 const SUPPORT_LINKS = [
@@ -7,6 +7,12 @@ const SUPPORT_LINKS = [
   { label: 'Contact', to: '/contact' },
   { label: 'Shop all', to: '/shop' },
   { label: 'Sign in', to: '/login' },
+];
+
+const COMPANY_LINKS = [
+  { label: 'Looking for partners', to: '/partners' },
+  { label: 'Privacy Policy', to: '/privacy' },
+  { label: 'Blog', to: '/blog' },
 ];
 
 export function Footer() {
@@ -17,14 +23,16 @@ export function Footer() {
           <Link to="/" className="shrink-0" aria-label={`${SITE.name} home`}>
             <img src={footerLogo} alt={SITE.name} className="h-28 w-auto object-contain sm:h-32" />
           </Link>
-          <p className="text-muted-foreground min-w-0 text-sm leading-relaxed">
+          <p className="text-muted-foreground/70 min-w-0 text-xs leading-relaxed">
             {SITE.description}
           </p>
         </div>
 
         <nav className="flex flex-col gap-2" aria-label="Shop">
           <h3 className="text-foreground text-sm font-semibold">Shop</h3>
-          {MAIN_NAV.map((link) => (
+          {MAIN_NAV.filter(
+            (link) => link.to !== '/shop' && link.to !== '/blog' && link.to !== '/contact',
+          ).map((link) => (
             <Link
               key={link.to}
               to={link.to}
@@ -49,29 +57,42 @@ export function Footer() {
         </nav>
 
         <div className="flex flex-col gap-2">
-          <h3 className="text-foreground text-sm font-semibold">Visit & contact</h3>
-          <p className="text-muted-foreground text-sm leading-relaxed">{SITE.store.line}</p>
+          <h3 className="text-foreground text-sm font-semibold">Company</h3>
+          <nav className="flex flex-col gap-2" aria-label="Company">
+            {COMPANY_LINKS.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-muted-foreground hover:text-foreground text-sm"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <p className="text-muted-foreground mt-3 text-sm leading-relaxed">{SITE.store.line}</p>
           <a
             href={`mailto:${SITE.emailContact}`}
-            className="text-primary text-sm font-medium hover:underline"
+            className="text-foreground text-sm font-medium hover:underline"
           >
             {SITE.emailContact}
-          </a>
-          <a
-            href={`mailto:${SITE.email}`}
-            className="text-muted-foreground hover:text-foreground text-sm"
-          >
-            {SITE.email}
           </a>
         </div>
       </div>
 
       <div className="border-border border-t">
-        <div className="text-muted-foreground container flex flex-col items-center justify-between gap-2 py-6 text-xs sm:flex-row">
+        <div className="text-muted-foreground container flex flex-col items-center justify-between gap-3 py-6 text-xs sm:flex-row">
           <p>
-            © {2024} {SITE.name}. All rights reserved.
+            © {new Date().getFullYear()} {SITE.name}. All rights reserved.
           </p>
-          <p>Pokémon and all related characters are trademarks of Nintendo.</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <Link to="/privacy" className="hover:text-foreground hover:underline">
+              Privacy
+            </Link>
+            <Link to="/partners" className="hover:text-foreground hover:underline">
+              Looking for partners
+            </Link>
+            <p>Pokémon and all related characters are trademarks of Nintendo.</p>
+          </div>
         </div>
       </div>
     </footer>

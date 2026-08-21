@@ -4,27 +4,28 @@
 
 @layer base {
   :root {
-    /* Dark theme with a purple accent — all values are HSL channels. */
-    --background: 255 30% 6%;
-    --foreground: 255 20% 96%;
+    /* Black / white base — purple (`primary`) reserved for actions. */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
 
-    --card: 255 24% 9%;
-    --card-foreground: 255 20% 96%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 255 28% 8%;
-    --popover-foreground: 255 20% 96%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 264 80% 64%;
+    --primary: 264 72% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 255 18% 16%;
-    --secondary-foreground: 255 20% 92%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 92%;
 
-    --muted: 255 16% 14%;
-    --muted-foreground: 255 12% 66%;
+    --muted: 0 0% 11%;
+    --muted-foreground: 0 0% 62%;
 
-    --accent: 270 85% 70%;
-    --accent-foreground: 0 0% 100%;
+    /* Neutral hover/surface accent — not purple */
+    --accent: 0 0% 14%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
@@ -32,9 +33,9 @@
     --success: 152 62% 46%;
     --success-foreground: 0 0% 100%;
 
-    --border: 255 16% 20%;
-    --input: 255 16% 18%;
-    --ring: 264 80% 64%;
+    --border: 0 0% 16%;
+    --input: 0 0% 14%;
+    --ring: 264 72% 58%;
 
     --radius: 0.85rem;
   }
@@ -62,7 +63,7 @@
   }
 
   ::selection {
-    @apply bg-primary/30 text-foreground;
+    @apply bg-foreground/20 text-foreground;
   }
 
   /* Slim, on-brand scrollbars. */
@@ -80,7 +81,7 @@
 
 @layer utilities {
   .text-gradient {
-    @apply from-primary via-accent to-primary bg-gradient-to-r bg-clip-text text-transparent;
+    @apply from-foreground via-foreground/70 to-foreground/40 bg-gradient-to-r bg-clip-text text-transparent;
   }
 
   /* Hides scrollbars on horizontal scrollers (mobile carousels). */

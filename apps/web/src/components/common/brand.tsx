@@ -1,6 +1,6 @@
 import { cn } from '@akknerds/ui';
 import { Link } from 'react-router-dom';
-import logo from '../../assets/rarity/logo2.png';
+import logo from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
 import { SITE } from '../../config/site';
 
 type BrandSize = 'sm' | 'md' | 'lg';

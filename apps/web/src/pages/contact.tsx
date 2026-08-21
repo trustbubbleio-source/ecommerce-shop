@@ -2,6 +2,7 @@ import { contactInputSchema } from '@akknerds/shared';
 import { Alert, Button, Field, Input, Spinner, Textarea, useToast } from '@akknerds/ui';
 import { Mail, MapPin, MessageSquare, Send } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/common/page-header';
 import { SITE } from '../config/site';
 import { useContact } from '../hooks/use-contact';
@@ -57,21 +58,21 @@ export function ContactPage() {
       <div className="grid gap-10 lg:grid-cols-[1fr_1.5fr]">
         <div className="flex flex-col gap-6">
           <div className="flex items-start gap-3">
-            <span className="bg-primary/15 text-primary grid size-10 shrink-0 place-items-center rounded-lg">
+            <span className="bg-secondary text-foreground grid size-10 shrink-0 place-items-center rounded-lg">
               <Mail className="size-5" />
             </span>
             <div>
               <p className="text-foreground font-semibold">Email us</p>
               <a
                 href={`mailto:${SITE.emailContact}`}
-                className="text-primary text-sm hover:underline"
+                className="text-foreground text-sm hover:underline"
               >
                 {SITE.emailContact}
               </a>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <span className="bg-primary/15 text-primary grid size-10 shrink-0 place-items-center rounded-lg">
+            <span className="bg-secondary text-foreground grid size-10 shrink-0 place-items-center rounded-lg">
               <MapPin className="size-5" />
             </span>
             <div>
@@ -86,7 +87,7 @@ export function ContactPage() {
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <span className="bg-primary/15 text-primary grid size-10 shrink-0 place-items-center rounded-lg">
+            <span className="bg-secondary text-foreground grid size-10 shrink-0 place-items-center rounded-lg">
               <MessageSquare className="size-5" />
             </span>
             <div>
@@ -130,6 +131,18 @@ export function ContactPage() {
             {contact.isPending ? <Spinner className="text-primary-foreground" /> : <Send />}
             Send message
           </Button>
+          <p className="text-muted-foreground text-xs leading-relaxed">
+            By contacting us you agree that we may use your details to respond to your enquiry. Read
+            our{' '}
+            <Link to="/privacy" className="text-foreground font-medium hover:underline">
+              Privacy Policy
+            </Link>
+            . Interested in wholesale, sponsorship, or a collab? See{' '}
+            <Link to="/partners" className="text-foreground font-medium hover:underline">
+              Looking for partners
+            </Link>
+            .
+          </p>
         </form>
       </div>
     </div>

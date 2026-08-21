@@ -7,6 +7,7 @@ export const SITE = {
     'Your trusted shop for sealed Pokémon TCG booster boxes, Elite Trainer Boxes, packs and graded single cards.',
   email: 'newsletter@onemorerip.cards',
   emailContact: 'contact@onemorerip.cards',
+  emailPrivacy: 'privacy@onemorerip.cards',
   store: {
     street: 'Hallandsvägen 21',
     postalCode: '269 36',
@@ -25,7 +26,10 @@ export const SITE = {
 /** Shared copy for newsletter subscribe (home banner + footer). */
 export const NEWSLETTER = {
   title: 'Never miss a drop',
-  subtitle: 'New drops, restocks and exclusive bundles — first in your inbox.',
+  subtitleLines: [
+    'New drops, restocks and exclusive bundles',
+    'first in your inbox.',
+  ] as const,
   cta: 'Subscribe',
   placeholder: 'you@email.com',
   successTitle: "You're on the list",

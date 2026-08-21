@@ -8,12 +8,15 @@ interface AddToCartButtonProps extends Omit<ButtonProps, 'onClick' | 'children'>
   product: Product;
   quantity?: number;
   label?: string;
+  /** Use compact prelaunch copy (e.g. product cards). */
+  compact?: boolean;
 }
 
 export function AddToCartButton({
   product,
   quantity = 1,
   label = 'Add to cart',
+  compact = false,
   ...buttonProps
 }: AddToCartButtonProps) {
   const add = useCartStore((s) => s.add);
@@ -21,6 +24,7 @@ export function AddToCartButton({
   const soldOut = product.stock <= 0;
   const prelaunch = isPrelaunchActive();
   const disabled = soldOut || prelaunch;
+  const prelaunchLabel = compact ? PRELAUNCH.buttonLabelShort : PRELAUNCH.buttonLabel;
 
   return (
     <Button
@@ -41,7 +45,8 @@ export function AddToCartButton({
     >
       {prelaunch ? (
         <>
-          <Clock /> {PRELAUNCH.buttonLabel}
+          <Clock className="size-4 shrink-0" />
+          {prelaunchLabel}
         </>
       ) : soldOut ? (
         <>

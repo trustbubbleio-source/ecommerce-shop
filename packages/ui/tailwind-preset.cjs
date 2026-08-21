@@ -1,7 +1,6 @@
 /**
  * akkNERDS shared Tailwind preset.
- * Dark theme with a purple accent, driven by CSS variables (see styles.css)
- * so colors can be themed without rebuilding the design tokens.
+ * Black/white base with purple primary for actions (see styles.css).
  */
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -62,7 +61,7 @@ module.exports = {
         sans: ['Inter var', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       boxShadow: {
-        glow: '0 0 50px -12px hsl(var(--primary) / 0.55)',
+        glow: '0 0 50px -12px hsl(0 0% 100% / 0.14)',
         card: '0 1px 2px 0 rgb(0 0 0 / 0.4), 0 8px 24px -16px rgb(0 0 0 / 0.6)',
       },
       backgroundImage: {

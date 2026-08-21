@@ -40,6 +40,10 @@ export function ChatWidget() {
           'fixed right-4 z-40 size-14 rounded-full shadow-lg',
           'bottom-[max(1.25rem,env(safe-area-inset-bottom))]',
           'md:right-6 md:bottom-6',
+          'bg-foreground text-background hover:bg-foreground/90',
+          'shadow-[0_0_40px_-12px_hsl(0_0%_100%/0.35)]',
+          // Full-screen chat already has a close control — hide FAB on phone/tablet while open
+          open && 'max-lg:hidden',
         )}
       >
         {open ? <X className="size-5" /> : <MessageCircle className="size-5" />}

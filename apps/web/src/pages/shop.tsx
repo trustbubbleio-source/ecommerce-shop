@@ -86,11 +86,11 @@ export function ShopPage() {
                     <SlidersHorizontal /> Filters
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
-                  <SheetHeader className="px-0">
+                <SheetContent side="bottom" className="max-h-[85vh] gap-0 overflow-y-auto p-0">
+                  <SheetHeader>
                     <SheetTitle>Filters</SheetTitle>
                   </SheetHeader>
-                  <div className="pt-4">
+                  <div className="p-5 pt-4">
                     <ProductFiltersPanel
                       meta={meta.data}
                       value={filters}

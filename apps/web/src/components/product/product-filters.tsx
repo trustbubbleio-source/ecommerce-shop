@@ -36,9 +36,13 @@ function FilterChips<T extends string>({
   options: ChipOption<T>[];
   onSelect: (value: T) => void;
 }) {
+  const legendId = `filter-${legend.toLowerCase().replace(/\s+/g, '-')}`;
+
   return (
-    <fieldset className="flex flex-col gap-2">
-      <legend className="text-foreground mb-1 text-sm font-semibold">{legend}</legend>
+    <div className="flex flex-col gap-2" role="group" aria-labelledby={legendId}>
+      <p id={legendId} className="text-foreground text-sm font-semibold">
+        {legend}
+      </p>
       <div className="flex flex-wrap gap-1.5">
         {options.map((option) => {
           const active = value === option.value;
@@ -51,8 +55,8 @@ function FilterChips<T extends string>({
               className={cn(
                 'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
                 active
-                  ? 'bg-primary/15 text-primary'
-                  : 'bg-secondary text-muted-foreground hover:text-foreground',
+                  ? 'bg-secondary text-foreground'
+                  : 'bg-secondary/60 text-muted-foreground hover:text-foreground',
               )}
             >
               {option.label}
@@ -60,7 +64,7 @@ function FilterChips<T extends string>({
           );
         })}
       </div>
-    </fieldset>
+    </div>
   );
 }
 
@@ -87,9 +91,11 @@ export function ProductFiltersPanel({ meta, value, onChange, onReset }: ProductF
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-foreground mb-2 text-sm font-semibold">Category</legend>
+    <div className="flex w-full min-w-0 flex-col gap-6">
+      <div className="flex flex-col gap-2" role="group" aria-labelledby="filter-category">
+        <p id="filter-category" className="text-foreground text-sm font-semibold">
+          Category
+        </p>
         <div className="flex flex-col gap-1">
           {categories.map((category) => {
             const active = value.category === category.value;
@@ -100,9 +106,9 @@ export function ProductFiltersPanel({ meta, value, onChange, onReset }: ProductF
                 onClick={() => onChange({ category: category.value })}
                 aria-pressed={active}
                 className={cn(
-                  'flex items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors',
+                  'flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors',
                   active
-                    ? 'bg-primary/15 text-primary font-semibold'
+                    ? 'bg-secondary text-foreground font-semibold'
                     : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                 )}
               >
@@ -111,7 +117,7 @@ export function ProductFiltersPanel({ meta, value, onChange, onReset }: ProductF
             );
           })}
         </div>
-      </fieldset>
+      </div>
 
       <Separator />
 
@@ -139,7 +145,7 @@ export function ProductFiltersPanel({ meta, value, onChange, onReset }: ProductF
           type="checkbox"
           checked={value.inStock}
           onChange={(e) => onChange({ inStock: e.target.checked })}
-          className="border-input bg-background text-primary accent-primary size-4 rounded"
+          className="border-input bg-background accent-foreground size-4 rounded"
         />
         <span className="text-foreground font-medium">In stock only</span>
       </label>

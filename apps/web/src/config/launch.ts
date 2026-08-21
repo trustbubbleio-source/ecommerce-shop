@@ -6,6 +6,8 @@ export const PRELAUNCH = {
   active: true,
   badgeLabel: 'Available Oct 15',
   buttonLabel: 'Available Oct 15',
+  /** Compact label for narrow product cards / mobile. */
+  buttonLabelShort: 'Oct 15',
   description: 'Purchases open October 15, 2026.',
   homeEyebrow: 'Opening soon',
   homeTitle: 'We go live October 15',

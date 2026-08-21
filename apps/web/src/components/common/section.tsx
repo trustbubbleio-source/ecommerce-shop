@@ -18,7 +18,7 @@ export function SectionHeader({ title, subtitle, action, className }: SectionHea
       {action && (
         <Link
           to={action.to}
-          className="text-primary shrink-0 text-sm font-semibold hover:underline"
+          className="text-foreground shrink-0 text-sm font-semibold hover:underline"
         >
           {action.label}
         </Link>
