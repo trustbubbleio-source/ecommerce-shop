@@ -1,0 +1,49 @@
+/* Socials page — light motion, respects reduced motion. */
+
+.socials-channel-enter {
+  animation: socials-fade-up 0.45s ease-out both;
+}
+
+.socials-contest-glow {
+  box-shadow: 0 0 0 1px hsl(0 0% 100% / 0.06), 0 24px 60px -28px hsl(0 0% 0% / 0.65);
+}
+
+.socials-pulse {
+  animation: socials-pulse 1.6s ease-in-out infinite;
+}
+
+.socials-progress-fill {
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes socials-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes socials-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .socials-channel-enter,
+  .socials-pulse,
+  .socials-progress-fill {
+    animation: none !important;
+    transition: none !important;
+  }
+}

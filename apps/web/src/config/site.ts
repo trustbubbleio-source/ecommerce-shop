@@ -8,6 +8,7 @@ export const SITE = {
   email: 'newsletter@onemorerip.cards',
   emailContact: 'contact@onemorerip.cards',
   emailPrivacy: 'privacy@onemorerip.cards',
+  emailPartner: 'partner@onemorerip.cards',
   store: {
     street: 'Hallandsvägen 21',
     postalCode: '269 36',
@@ -17,9 +18,16 @@ export const SITE = {
     line: 'Hallandsvägen 21, 269 36 Båstad, Sweden',
   },
   social: {
-    instagram: 'https://instagram.com',
-    twitter: 'https://x.com',
-    discord: 'https://discord.com',
+    instagram: 'https://www.instagram.com/onemorerip.cards',
+    tiktok: 'https://www.tiktok.com/@onemorerip.cards',
+    facebook: 'https://www.facebook.com/onemorerip.cards',
+    discord: 'https://discord.gg/onemorerip',
+  },
+  socialHandles: {
+    instagram: '@onemorerip.cards',
+    tiktok: '@onemorerip.cards',
+    facebook: 'One More Rip',
+    discord: 'One More Rip',
   },
 } as const;
 
@@ -47,6 +55,7 @@ export const MAIN_NAV: NavLink[] = [
   { label: 'Singles', to: '/shop?category=single-card' },
   { label: 'Graded Slabs', to: '/shop?category=graded-slab' },
   { label: 'Blog', to: '/blog' },
+  { label: 'Socials', to: '/socials' },
   { label: 'Contact', to: '/contact' },
 ];
 

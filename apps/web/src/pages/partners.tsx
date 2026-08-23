@@ -46,7 +46,7 @@ const STEPS = [
 ] as const;
 
 export function PartnersPage() {
-  const partnerMail = `mailto:${SITE.emailContact}?subject=${encodeURIComponent(
+  const partnerMail = `mailto:${SITE.emailPartner}?subject=${encodeURIComponent(
     'Collab / wholesale / sponsorship — One More Rip',
   )}`;
 
@@ -66,9 +66,10 @@ export function PartnersPage() {
             We’re building a collector shop — and we want the right partners beside us.
           </h2>
           <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-relaxed sm:text-base">
-            We run an online catalogue and a physical store in Båstad. Right now we’re actively looking
-            for wholesale supply, product sponsorship, and creative collaborations that make sense for
-            the TCG community — not one-off spam, real long-term fits.
+            We run an online catalogue and open our physical store in Båstad on October 15, 2026. Right
+            now we&apos;re actively looking for wholesale supply, product sponsorship, and creative
+            collaborations that make sense for the TCG community — not one-off spam, real long-term
+            fits. Reach us at {SITE.emailPartner}.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
@@ -136,7 +137,7 @@ export function PartnersPage() {
               Send a short note: who you are, wholesale / sponsorship / collab, and what you have in
               mind. We read every serious message.
             </p>
-            <p className="text-foreground mt-3 text-sm font-medium">{SITE.emailContact}</p>
+            <p className="text-foreground mt-3 text-sm font-medium">{SITE.emailPartner}</p>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:items-end">
             <Button asChild size="lg">

@@ -21,6 +21,7 @@ import { PrivacyPage } from './pages/privacy';
 import { ProductDetailPage } from './pages/product-detail';
 import { RegisterPage } from './pages/register';
 import { ShopPage } from './pages/shop';
+import { SocialsPage } from './pages/socials';
 
 export const routes: RouteObject[] = [
   {
@@ -39,6 +40,7 @@ export const routes: RouteObject[] = [
       { path: 'contact', element: <ContactPage /> },
       { path: 'privacy', element: <PrivacyPage /> },
       { path: 'partners', element: <PartnersPage /> },
+      { path: 'socials', element: <SocialsPage /> },
       { path: 'blog', element: <BlogPage /> },
       { path: 'blog/:slug', element: <BlogPostPage /> },
       { path: 'faq', element: <FaqPage /> },

@@ -10,6 +10,7 @@ const SUPPORT_LINKS = [
 ];
 
 const COMPANY_LINKS = [
+  { label: 'Socials', to: '/socials' },
   { label: 'Looking for partners', to: '/partners' },
   { label: 'Privacy Policy', to: '/privacy' },
   { label: 'Blog', to: '/blog' },
@@ -31,7 +32,11 @@ export function Footer() {
         <nav className="flex flex-col gap-2" aria-label="Shop">
           <h3 className="text-foreground text-sm font-semibold">Shop</h3>
           {MAIN_NAV.filter(
-            (link) => link.to !== '/shop' && link.to !== '/blog' && link.to !== '/contact',
+            (link) =>
+              link.to !== '/shop' &&
+              link.to !== '/blog' &&
+              link.to !== '/contact' &&
+              link.to !== '/socials',
           ).map((link) => (
             <Link
               key={link.to}
