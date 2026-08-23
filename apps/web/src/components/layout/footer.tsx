@@ -98,10 +98,10 @@ export function Footer() {
             ))}
           </nav>
           <a
-            href={`mailto:${SITE.emailContact}`}
+            href={`mailto:${SITE.email.support}`}
             className="text-foreground mt-3 text-sm font-medium hover:underline"
           >
-            {SITE.emailContact}
+            {SITE.email.support}
           </a>
         </div>
       </div>

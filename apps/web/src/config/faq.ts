@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import { CreditCard, HelpCircle, Package, RotateCcw, Truck } from 'lucide-react';
+import { SITE } from './site';
 
 export interface FaqItem {
   question: string;
@@ -85,13 +86,11 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         question: 'Can I change or cancel my order?',
-        answer:
-          'Contact us as soon as possible with your order number. Before dispatch we can usually cancel or amend free of charge. After dispatch we cannot change the address in transit — you may still use your 14-day withdrawal right after delivery where it applies. Full details: Returns & Refunds.',
+        answer: `Email ${SITE.email.orders} as soon as possible with your order number. Before dispatch we can usually cancel or amend free of charge. After dispatch we cannot change the address in transit — you may still use your 14-day withdrawal right after delivery where it applies. Full details: Returns & Refunds.`,
       },
       {
         question: 'I did not receive a confirmation email',
-        answer:
-          'Check your spam or promotions folder first. If nothing arrives within 30 minutes, email us with your name and checkout email address and we will resend the confirmation or look up your order manually.',
+        answer: `Check your spam or promotions folder first. If nothing arrives within 30 minutes, email ${SITE.email.orders} with your name and checkout email address and we will resend the confirmation or look up your order manually.`,
       },
       {
         question: 'Do you offer pre-orders?',
@@ -134,18 +133,15 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         question: 'What if my package arrives damaged?',
-        answer:
-          'Photograph the outer packaging and product damage, then contact us within 48 hours of delivery. We will arrange a replacement or refund for valid claims. Keeping the original packaging helps with carrier claims.',
+        answer: `Photograph the outer packaging and product damage, then email ${SITE.email.returns} within 48 hours of delivery. We will arrange a replacement or refund for valid claims. Keeping the original packaging helps with carrier claims.`,
       },
       {
         question: 'What if an item is missing from my order?',
-        answer:
-          'Email us your order number and a photo of everything received. We will ship the missing item or refund it — usually within one business day of verification.',
+        answer: `Email ${SITE.email.orders} your order number and a photo of everything received. We will ship the missing item or refund it — usually within one business day of verification.`,
       },
       {
         question: 'What if my order is delayed, lost or sent to the wrong place?',
-        answer:
-          'Contact us with your order number and tracking ID. If the issue is caused by an incorrect address you provided, you may need to cover reasonable re-delivery costs. If we or the carrier are at fault, we cover putting it right (re-ship or refund). Details are on Returns & Refunds §7.',
+        answer: `Email ${SITE.email.orders} with your order number and tracking ID. If the issue is caused by an incorrect address you provided, you may need to cover reasonable re-delivery costs. If we or the carrier are at fault, we cover putting it right (re-ship or refund). Details are on Returns & Refunds §7.`,
       },
     ],
   },

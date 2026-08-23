@@ -13,7 +13,7 @@ import { useChatStore } from '../store/chat';
 
 const chatContext = createChatContext({
   brandName: SITE.name,
-  supportEmail: SITE.emailContact,
+  supportEmail: SITE.email.support,
 });
 
 function typingDelayMs(): number {

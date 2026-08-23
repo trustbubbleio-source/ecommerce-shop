@@ -68,10 +68,10 @@ export function PolicyDocument({
         </Link>{' '}
         or email{' '}
         <a
-          href={`mailto:${SITE.emailContact}`}
+          href={`mailto:${SITE.email.support}`}
           className="text-foreground font-medium hover:underline"
         >
-          {SITE.emailContact}
+          {SITE.email.support}
         </a>
         .
       </p>

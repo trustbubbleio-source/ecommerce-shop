@@ -83,11 +83,11 @@ function ContactCta() {
             </Link>
           </Button>
           <a
-            href={`mailto:${SITE.emailContact}`}
+            href={`mailto:${SITE.email.support}`}
             className="text-muted-foreground hover:text-primary inline-flex items-center gap-1.5 text-sm transition-colors"
           >
             <Mail className="size-4" aria-hidden />
-            {SITE.emailContact}
+            {SITE.email.support}
           </a>
         </div>
       </div>

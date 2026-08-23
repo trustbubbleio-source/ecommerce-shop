@@ -22,7 +22,7 @@ describe('ChatWidget', () => {
     await user.click(screen.getByRole('button', { name: 'Shipping times' }));
 
     await waitFor(() => {
-      expect(screen.getByText(/dispatched the same business day/i)).toBeInTheDocument();
+      expect(screen.getByText(/dispatched the same day/i)).toBeInTheDocument();
     });
   });
 });

@@ -4,7 +4,7 @@ import { extractProductSearchQuery, matchIntent } from '../src/match.js';
 
 const ctx = createChatContext({
   brandName: 'One More Rip',
-  supportEmail: 'contact@onemorerip.cards',
+  supportEmail: 'support@onemorerip.cards',
 });
 
 describe('matchIntent', () => {

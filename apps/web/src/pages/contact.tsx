@@ -1,9 +1,10 @@
 import { contactInputSchema } from '@akknerds/shared';
 import { Alert, Button, Field, Input, Spinner, Textarea, useToast } from '@akknerds/ui';
-import { Mail, MapPin, MessageSquare, Send } from 'lucide-react';
+import { ChevronDown, Mail, MapPin, MessageSquare, Send } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/common/page-header';
+import { StoreMap } from '../components/common/store-map';
 import { SITE } from '../config/site';
 import { useContact } from '../hooks/use-contact';
 import { ApiError } from '../lib/api';
@@ -55,77 +56,8 @@ export function ContactPage() {
         description="Questions about an order, a product, or a bulk enquiry? We're happy to help."
       />
 
-      <div className="border-border bg-card/50 mb-10 rounded-2xl border p-5 sm:p-6">
-        <h2 className="text-foreground text-sm font-semibold uppercase tracking-wider">
-          Business information
-        </h2>
-        <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div>
-            <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-              Official business name
-            </dt>
-            <dd className="text-foreground mt-1 text-sm font-semibold">{SITE.legalName}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-              Customer service email
-            </dt>
-            <dd className="mt-1 text-sm">
-              <a
-                href={`mailto:${SITE.emailContact}`}
-                className="text-foreground font-semibold hover:underline"
-              >
-                {SITE.emailContact}
-              </a>
-            </dd>
-          </div>
-          <div className="sm:col-span-2">
-            <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-              Business / contact address
-            </dt>
-            <dd className="text-foreground mt-1 text-sm leading-relaxed">
-              {SITE.legalName}
-              <br />
-              {SITE.store.street}
-              <br />
-              {SITE.store.postalCode} {SITE.store.city}
-              <br />
-              {SITE.store.country}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-              Support hours
-            </dt>
-            <dd className="text-foreground mt-1 text-sm">{SITE.supportHours}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-              Policies
-            </dt>
-            <dd className="text-muted-foreground mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
-              <Link to="/shipping" className="text-foreground hover:underline">
-                Shipping
-              </Link>
-              <Link to="/returns" className="text-foreground hover:underline">
-                Returns
-              </Link>
-              <Link to="/terms" className="text-foreground hover:underline">
-                Terms
-              </Link>
-              <Link to="/privacy" className="text-foreground hover:underline">
-                Privacy
-              </Link>
-              <Link to="/cookies" className="text-foreground hover:underline">
-                Cookies
-              </Link>
-            </dd>
-          </div>
-        </dl>
-      </div>
-
-      <div className="grid gap-10 lg:grid-cols-[1fr_1.5fr]">
-        <div className="flex flex-col gap-6">
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,20rem)_1fr] lg:items-start">
+        <aside className="flex flex-col gap-6">
           <div className="flex items-start gap-3">
             <span className="bg-secondary text-foreground grid size-10 shrink-0 place-items-center rounded-lg">
               <Mail className="size-5" />
@@ -133,13 +65,24 @@ export function ContactPage() {
             <div>
               <p className="text-foreground font-semibold">Email us</p>
               <a
-                href={`mailto:${SITE.emailContact}`}
+                href={`mailto:${SITE.email.contact}`}
                 className="text-foreground text-sm hover:underline"
               >
-                {SITE.emailContact}
+                {SITE.email.contact}
               </a>
             </div>
           </div>
+
+          <div className="flex items-start gap-3">
+            <span className="bg-secondary text-foreground grid size-10 shrink-0 place-items-center rounded-lg">
+              <MessageSquare className="size-5" />
+            </span>
+            <div>
+              <p className="text-foreground font-semibold">Response time</p>
+              <p className="text-muted-foreground text-sm">{SITE.supportHours}</p>
+            </div>
+          </div>
+
           <div className="flex items-start gap-3">
             <span className="bg-secondary text-foreground grid size-10 shrink-0 place-items-center rounded-lg">
               <MapPin className="size-5" />
@@ -158,16 +101,9 @@ export function ContactPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-start gap-3">
-            <span className="bg-secondary text-foreground grid size-10 shrink-0 place-items-center rounded-lg">
-              <MessageSquare className="size-5" />
-            </span>
-            <div>
-              <p className="text-foreground font-semibold">Response time</p>
-              <p className="text-muted-foreground text-sm">{SITE.supportHours}</p>
-            </div>
-          </div>
-        </div>
+
+          <StoreMap />
+        </aside>
 
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
           {done && (
@@ -216,6 +152,81 @@ export function ContactPage() {
             .
           </p>
         </form>
+      </div>
+
+      <div className="border-border bg-card/40 mt-14 overflow-hidden rounded-2xl border">
+        <nav
+          aria-label="Policies"
+          className="text-muted-foreground/70 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-b border-border/70 px-5 py-3 text-[11px]"
+        >
+          <Link to="/shipping" className="hover:text-muted-foreground hover:underline">
+            Shipping
+          </Link>
+          <Link to="/returns" className="hover:text-muted-foreground hover:underline">
+            Returns
+          </Link>
+          <Link to="/terms" className="hover:text-muted-foreground hover:underline">
+            Terms
+          </Link>
+          <Link to="/privacy" className="hover:text-muted-foreground hover:underline">
+            Privacy
+          </Link>
+          <Link to="/cookies" className="hover:text-muted-foreground hover:underline">
+            Cookies
+          </Link>
+        </nav>
+
+        <details className="group open:pb-1">
+          <summary className="text-foreground flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-sm font-semibold tracking-wide [&::-webkit-details-marker]:hidden">
+            <span>Business information</span>
+            <ChevronDown className="text-muted-foreground size-4 shrink-0 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="border-border text-muted-foreground border-t px-5 py-5 text-sm leading-relaxed">
+            <p>
+              {SITE.legalName} is a Swedish {SITE.legalForm.toLowerCase()} based at {SITE.store.line}.
+              For invoices and tax purposes we use VAT number {SITE.vatNumber}. Organisation number
+              and the full trader register details appear in our{' '}
+              <Link to="/terms" className="text-muted-foreground underline-offset-2 hover:underline">
+                Terms & Conditions
+              </Link>
+              .
+            </p>
+            <p className="mt-3">
+              Prefer email? Start with{' '}
+              <a
+                href={`mailto:${SITE.email.contact}`}
+                className="underline-offset-2 hover:underline"
+              >
+                {SITE.email.contact}
+              </a>{' '}
+              or use the department addresses below when you already know the topic.
+            </p>
+            <ul className="text-muted-foreground/70 mt-4 grid list-none gap-x-6 gap-y-1 p-0 text-[11px] sm:grid-cols-2">
+              {(
+                [
+                  ['Contact', SITE.email.contact],
+                  ['Support', SITE.email.support],
+                  ['Orders', SITE.email.orders],
+                  ['Returns', SITE.email.returns],
+                  ['Billing', SITE.email.billing],
+                  ['Privacy', SITE.email.privacy],
+                  ['Partners', SITE.email.partner],
+                  ['Trade', SITE.email.trade],
+                ] as const
+              ).map(([label, address]) => (
+                <li key={address} className="flex min-w-0 gap-1.5">
+                  <span className="text-muted-foreground/50 w-14 shrink-0">{label}</span>
+                  <a
+                    href={`mailto:${address}`}
+                    className="hover:text-muted-foreground truncate underline-offset-2 hover:underline"
+                  >
+                    {address}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
       </div>
     </div>
   );

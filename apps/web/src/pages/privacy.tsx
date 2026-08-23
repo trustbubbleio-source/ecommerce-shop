@@ -77,7 +77,7 @@ const SECTIONS: { id: string; title: string; body: string[] }[] = [
     title: '8. Your rights',
     body: [
       'Depending on applicable law, you may have the right to access, rectify, erase, or restrict processing of your personal data; to object to certain processing; to data portability; and to withdraw consent at any time (without affecting prior lawful processing).',
-      `To exercise these rights, contact us at ${SITE.emailPrivacy}. You also have the right to lodge a complaint with the Swedish Authority for Privacy Protection (IMY) or another competent supervisory authority in the EU.`,
+      `To exercise these rights, contact us at ${SITE.email.privacy}. You also have the right to lodge a complaint with the Swedish Authority for Privacy Protection (IMY) or another competent supervisory authority in the EU.`,
     ],
   },
   {
@@ -106,7 +106,8 @@ const SECTIONS: { id: string; title: string; body: string[] }[] = [
     title: '12. Contact',
     body: [
       `Controller: ${SITE.legalName}, ${SITE.store.line}.`,
-      `Privacy and data requests: ${SITE.emailPrivacy}.`,
+      `Privacy and data requests: ${SITE.email.privacy}.`,
+      `General support: ${SITE.email.support}.`,
       'You can also use our Contact page for general enquiries.',
     ],
   },
@@ -168,8 +169,8 @@ export function PrivacyPage() {
           Contact us
         </Link>{' '}
         or email{' '}
-        <a href={`mailto:${SITE.emailPrivacy}`} className="text-foreground font-medium hover:underline">
-          {SITE.emailPrivacy}
+        <a href={`mailto:${SITE.email.privacy}`} className="text-foreground font-medium hover:underline">
+          {SITE.email.privacy}
         </a>
         .
       </p>

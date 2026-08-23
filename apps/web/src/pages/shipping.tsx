@@ -65,7 +65,7 @@ const SECTIONS: PolicySection[] = [
     id: 'contact',
     title: '7. Questions about shipping',
     body: [
-      `Email ${SITE.emailContact} or use the Contact page. We aim to reply ${SITE.supportHours}.`,
+      `Email ${SITE.email.support} or ${SITE.email.orders}, or use the Contact page. We aim to reply ${SITE.supportHours}.`,
       'For cancellation, returns and liability after dispatch, see Returns & Refunds.',
     ],
   },

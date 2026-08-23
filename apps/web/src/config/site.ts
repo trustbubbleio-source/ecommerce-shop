@@ -4,16 +4,30 @@ export const SITE = {
   name: 'One More Rip',
   /** Trading / merchant name shown to customers (Sweden / EU ecommerce). */
   legalName: 'One More Rip',
-  /** Kept for invoices / internal use — not shown on the public Contact page. */
-  organisationNumber: '' as string,
-  vatNumber: '' as string,
+  /** Swedish legal form (enskild firma). */
+  legalForm: 'Sole proprietorship',
+  /** Swedish organisationsnummer (personnummer-based for enskild firma). Shown on Terms, not in the main Contact header. */
+  organisationNumber: '920108-4937',
+  /** Swedish VAT / momsregistreringsnummer. Shown on Terms; Contact only inside collapsed Business information. */
+  vatNumber: 'SE920108493701',
   tagline: 'Premium Pokémon TCG — sealed boxes, packs & singles',
   description:
     'Your trusted shop for sealed Pokémon TCG booster boxes, Elite Trainer Boxes, packs and graded single cards.',
-  email: 'newsletter@onemorerip.cards',
-  emailContact: 'contact@onemorerip.cards',
-  emailPrivacy: 'privacy@onemorerip.cards',
-  emailPartner: 'partner@onemorerip.cards',
+  /**
+   * Purpose-specific mailboxes. Prefer these over a single inbox in customer-facing copy.
+   * Keep newsletter@ for list mail if you use it; create aliases that do not yet exist in DNS/hosting.
+   */
+  email: {
+    newsletter: 'newsletter@onemorerip.cards',
+    contact: 'contact@onemorerip.cards',
+    support: 'support@onemorerip.cards',
+    orders: 'orders@onemorerip.cards',
+    billing: 'billing@onemorerip.cards',
+    returns: 'returns@onemorerip.cards',
+    privacy: 'privacy@onemorerip.cards',
+    partner: 'partner@onemorerip.cards',
+    trade: 'trade@onemorerip.cards',
+  },
   store: {
     street: 'Hallandsvägen 21',
     postalCode: '269 36',
@@ -21,6 +35,9 @@ export const SITE = {
     country: 'Sweden',
     /** Single-line address for display */
     line: 'Hallandsvägen 21, 269 36 Båstad, Sweden',
+    /** Approx. pin for Contact map (Hallandsvägen / Malen, Båstad). */
+    lat: 56.4294,
+    lng: 12.8478,
   },
   /** Public support hours for customer service. */
   supportHours: 'Monday–Friday, typically within one business day',

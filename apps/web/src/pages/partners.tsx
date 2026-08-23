@@ -31,7 +31,7 @@ const STEPS = [
   {
     step: '01',
     title: 'Reach out',
-    text: 'Email us with who you are, what you offer (wholesale, sponsorship, or collab), and how you see us working together.',
+    text: `Wholesale → ${SITE.email.trade}. Sponsorships & collabs → ${SITE.email.partner}. Tell us who you are and what you offer.`,
   },
   {
     step: '02',
@@ -46,8 +46,11 @@ const STEPS = [
 ] as const;
 
 export function PartnersPage() {
-  const partnerMail = `mailto:${SITE.emailPartner}?subject=${encodeURIComponent(
-    'Collab / wholesale / sponsorship — One More Rip',
+  const partnerMail = `mailto:${SITE.email.partner}?subject=${encodeURIComponent(
+    'Sponsorship / collab — One More Rip',
+  )}`;
+  const tradeMail = `mailto:${SITE.email.trade}?subject=${encodeURIComponent(
+    'Wholesale / trade enquiry — One More Rip',
   )}`;
 
   return (
@@ -69,13 +72,16 @@ export function PartnersPage() {
             We run an online catalogue and open our physical store in Båstad on October 15, 2026. Right
             now we&apos;re actively looking for wholesale supply, product sponsorship, and creative
             collaborations that make sense for the TCG community — not one-off spam, real long-term
-            fits. Reach us at {SITE.emailPartner}.
+            fits. Wholesale & trade: {SITE.email.trade}. Sponsorships & collabs: {SITE.email.partner}.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <a href={partnerMail}>
-                Get in touch <ArrowRight />
+              <a href={tradeMail}>
+                Wholesale / trade <ArrowRight />
               </a>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <a href={partnerMail}>Sponsorship / collab</a>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link to="/contact">Contact form</Link>
@@ -134,16 +140,21 @@ export function PartnersPage() {
               Got something to propose?
             </h2>
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed sm:text-base">
-              Send a short note: who you are, wholesale / sponsorship / collab, and what you have in
-              mind. We read every serious message.
+              Wholesale & distributors: {SITE.email.trade}. Sponsorships & creative collabs:{' '}
+              {SITE.email.partner}. Send a short note with who you are and what you have in mind —
+              we read every serious message.
             </p>
-            <p className="text-foreground mt-3 text-sm font-medium">{SITE.emailPartner}</p>
+            <p className="text-foreground mt-3 text-sm font-medium">{SITE.email.trade}</p>
+            <p className="text-foreground text-sm font-medium">{SITE.email.partner}</p>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:items-end">
             <Button asChild size="lg">
-              <a href={partnerMail}>
-                Email us <ArrowRight />
+              <a href={tradeMail}>
+                Email trade <ArrowRight />
               </a>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <a href={partnerMail}>Email partners</a>
             </Button>
             <Link
               to="/privacy"

@@ -10,7 +10,7 @@ const SECTIONS: PolicySection[] = [
     body: [
       `This Cookie Policy explains how ${SITE.legalName} uses cookies and similar technologies on onemorerip.cards.`,
       'It should be read together with our Privacy Policy. For privacy requests email ' +
-        SITE.emailPrivacy +
+        SITE.email.privacy +
         '.',
     ],
   },
@@ -55,6 +55,7 @@ const SECTIONS: PolicySection[] = [
     title: '6. Third-party cookies',
     body: [
       'Payment and infrastructure providers may set their own cookies or similar technologies when you use checkout or embedded services. Those providers are responsible for their own technologies; see Stripe’s and our hosts’ documentation for details.',
+      'The Contact page map loads map tiles from OpenStreetMap / CARTO (and the “Open in Google Maps” link goes to Google when you choose it).',
     ],
   },
   {
@@ -68,8 +69,8 @@ const SECTIONS: PolicySection[] = [
     id: 'contact',
     title: '8. Contact',
     body: [
-      `Privacy: ${SITE.emailPrivacy}`,
-      `General support: ${SITE.emailContact}`,
+      `Privacy: ${SITE.email.privacy}`,
+      `General support: ${SITE.email.support}`,
       `${SITE.legalName}, ${SITE.store.line}`,
     ],
   },
