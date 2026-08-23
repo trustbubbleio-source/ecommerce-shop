@@ -16,7 +16,6 @@ import { PRELAUNCH } from '../config/launch';
 import { CATEGORY_TILES, SITE } from '../config/site';
 import { useProducts } from '../hooks/use-products';
 
-
 const VALUE_PROPS = [
   { icon: ShieldCheck, title: '100% Authentic', text: 'Factory-sealed, never resealed.' },
   { icon: Truck, title: 'Fast, tracked shipping', text: 'Free over $75. Ships in 24h.' },
@@ -41,8 +40,8 @@ function Hero() {
             Sealed Pokémon TCG, delivered.
           </h1>
           <p className="text-muted-foreground max-w-md text-lg">
-            Booster boxes, Elite Trainer Boxes, packs and graded singles — curated by collectors,
-            for collectors.
+            Booster boxes, Elite Trainer Boxes, packs and graded singles, curated by collectors, for
+            collectors.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">
@@ -56,7 +55,7 @@ function Hero() {
           </div>
           <dl className="mt-2 flex gap-8">
             {[
-              { k: '20k+', v: 'Orders shipped' },
+              { k: '10k+', v: 'Orders shipped' },
               { k: '4.9★', v: 'Avg. rating' },
               { k: '24h', v: 'Dispatch time' },
             ].map((stat) => (
@@ -82,10 +81,7 @@ function Hero() {
 function LaunchAnnouncement() {
   if (!PRELAUNCH.active) return null;
 
-  const storeImage = resolveAssetUrl(
-    PRELAUNCH.storeImage,
-    import.meta.env.VITE_ASSET_CDN_URL,
-  );
+  const storeImage = resolveAssetUrl(PRELAUNCH.storeImage, import.meta.env.VITE_ASSET_CDN_URL);
 
   return (
     <section className="container py-12">
@@ -177,11 +173,11 @@ function Categories() {
                   <img
                     src={imageUrl}
                     alt=""
-                    className="absolute -right-14 -bottom-10 w-[78%] max-w-none rotate-[12deg] object-contain opacity-55 sm:-right-12 sm:-bottom-8"
+                    className="absolute -bottom-10 -right-14 w-[78%] max-w-none rotate-[12deg] object-contain opacity-55 sm:-bottom-8 sm:-right-12"
                     loading="lazy"
                     decoding="async"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-br from-card via-card/85 to-card/25" />
+                  <div className="from-card via-card/85 to-card/25 absolute inset-0 bg-gradient-to-br" />
                   <div className="absolute inset-0 bg-black/35 mix-blend-multiply" />
                 </div>
               ) : null}

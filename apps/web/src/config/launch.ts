@@ -12,7 +12,7 @@ export const PRELAUNCH = {
   homeEyebrow: 'Opening soon',
   homeTitle: 'We go live October 15',
   homeBody:
-    'One More Rip opens its online shop and physical store on October 15, 2026. Browse the catalogue now — purchases unlock on launch day.',
+    'One More Rip opens its online shop and physical store on October 15, 2026. Browse the catalogue now, purchases unlock on launch day.',
   /** S3/CloudFront object key for the storefront photo on the home announcement. */
   storeImage: 'storeImageFront.png',
 } as const;
