@@ -22,27 +22,27 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'How long does delivery take?',
         answer:
-          'Orders placed before 2pm (Mon–Fri) are dispatched the same business day. Standard domestic delivery typically arrives in 2–4 business days. Express options reach most addresses in 1–2 business days. International delivery varies by destination — usually 5–12 business days.',
+          'Orders placed before 14:00 (Europe/Stockholm) on business days are usually dispatched the same day when stock allows. Sweden: typically 2–4 business days after dispatch. EU/EEA: typically 3–7 business days. Rest of world: typically 5–12 business days. Full details are on our Shipping & Delivery page.',
       },
       {
         question: 'What delivery options do you offer?',
         answer:
-          'We offer Standard (tracked), Express (priority tracked), and Click & Collect where available. At checkout you can choose the option that fits your timeline. All shipments include tracking once the parcel leaves our warehouse.',
+          'We offer standard tracked parcel delivery at checkout. All paid shipments include tracking once the carrier accepts the parcel. See Shipping & Delivery for carriers, geography and times.',
       },
       {
         question: 'Do you offer free shipping?',
         answer:
-          'Yes — standard shipping is free on domestic orders over $75. Below that threshold, rates are calculated at checkout based on weight and destination. Promotional free-shipping windows are announced on the homepage and via email.',
+          'Yes — standard shipping is free on orders with a subtotal of $75 or more. Below that, a flat shipping fee of $5.99 applies. The amount is shown in your cart and at checkout before you pay.',
       },
       {
         question: 'Do you ship internationally?',
         answer:
-          'We ship to most countries worldwide. International orders may be subject to import duties and taxes, which are the responsibility of the recipient. Delivery times and carriers are shown at checkout before you pay.',
+          'We ship to Sweden, most EU/EEA destinations, and many countries worldwide where carriers allow. International orders may be subject to import duties and taxes paid by the recipient. See Shipping & Delivery for details.',
       },
       {
         question: 'How do I track my order?',
         answer:
-          'Once dispatched, you will receive an email with a tracking link. You can also view tracking details on your order confirmation page and in your account under My orders. Tracking may take a few hours to activate after the label is created.',
+          'Once dispatched, you will receive an email with a tracking link. You can also view tracking on your order confirmation page and in your account under My orders. Tracking may take a few hours to activate after the label is created.',
       },
     ],
   },
@@ -86,7 +86,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'Can I change or cancel my order?',
         answer:
-          'Contact us as soon as possible if you need to change an address or cancel. We can usually amend orders that have not yet been packed. Once dispatched, changes are not possible — but we can help with returns if needed.',
+          'Contact us as soon as possible with your order number. Before dispatch we can usually cancel or amend free of charge. After dispatch we cannot change the address in transit — you may still use your 14-day withdrawal right after delivery where it applies. Full details: Returns & Refunds.',
       },
       {
         question: 'I did not receive a confirmation email',
@@ -130,17 +130,22 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What is your return policy?',
         answer:
-          'Unopened sealed product in original condition can be returned within 14 days of delivery for a refund or store credit. Singles and opened product are final sale unless they arrive not as described. Contact us to start a return — we will provide a prepaid label for eligible domestic returns.',
+          'EU/Swedish consumers generally have a 14-day right of withdrawal for distance purchases. Unopened sealed product in original condition can be returned within 14 days of delivery. Singles and opened sealed product are typically final sale unless faulty or not as described. See Returns & Refunds for cancel-before-dispatch, after-dispatch, and lost/delayed parcel rules.',
       },
       {
         question: 'What if my package arrives damaged?',
         answer:
-          'Photograph the outer packaging and product damage, then contact us within 48 hours of delivery. We will arrange a replacement or refund. Keeping the original packaging helps us file a claim with the carrier.',
+          'Photograph the outer packaging and product damage, then contact us within 48 hours of delivery. We will arrange a replacement or refund for valid claims. Keeping the original packaging helps with carrier claims.',
       },
       {
         question: 'What if an item is missing from my order?',
         answer:
-          'Rare packing errors can happen. Email us your order number and a photo of everything received. We will ship the missing item or refund it — usually within one business day of verification.',
+          'Email us your order number and a photo of everything received. We will ship the missing item or refund it — usually within one business day of verification.',
+      },
+      {
+        question: 'What if my order is delayed, lost or sent to the wrong place?',
+        answer:
+          'Contact us with your order number and tracking ID. If the issue is caused by an incorrect address you provided, you may need to cover reasonable re-delivery costs. If we or the carrier are at fault, we cover putting it right (re-ship or refund). Details are on Returns & Refunds §7.',
       },
     ],
   },

@@ -162,10 +162,30 @@ export function CheckoutForm() {
             autoComplete="country-name"
             value={values.country}
             onChange={set('country')}
-            placeholder="Switzerland"
+            placeholder="Sweden"
           />
         )}
       </Field>
+
+      <p className="text-muted-foreground text-xs leading-relaxed">
+        By continuing you agree to our{' '}
+        <Link to="/terms" className="text-foreground underline-offset-2 hover:underline">
+          Terms & Conditions
+        </Link>
+        ,{' '}
+        <Link to="/privacy" className="text-foreground underline-offset-2 hover:underline">
+          Privacy Policy
+        </Link>
+        , and acknowledge{' '}
+        <Link to="/shipping" className="text-foreground underline-offset-2 hover:underline">
+          Shipping & Delivery
+        </Link>{' '}
+        and{' '}
+        <Link to="/returns" className="text-foreground underline-offset-2 hover:underline">
+          Returns & Refunds
+        </Link>
+        . EU/EEA consumers generally have a 14-day right of withdrawal where applicable.
+      </p>
 
       <Button type="submit" size="lg" block disabled={checkout.isPending}>
         {checkout.isPending ? <Spinner className="text-primary-foreground" /> : <Lock />}

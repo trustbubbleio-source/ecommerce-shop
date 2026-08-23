@@ -2,6 +2,14 @@ import type { ProductCategory } from '@akknerds/shared';
 
 export const SITE = {
   name: 'One More Rip',
+  /** Trading / merchant name shown to customers (Sweden / EU ecommerce). */
+  legalName: 'One More Rip',
+  /**
+   * TODO (business): Swedish organisation number (org.nr) and VAT number (momsregistreringsnummer)
+   * once confirmed — required for full invoice/legal disclosure. Leave empty until provided.
+   */
+  organisationNumber: '' as string,
+  vatNumber: '' as string,
   tagline: 'Premium Pokémon TCG — sealed boxes, packs & singles',
   description:
     'Your trusted shop for sealed Pokémon TCG booster boxes, Elite Trainer Boxes, packs and graded single cards.',
@@ -17,6 +25,8 @@ export const SITE = {
     /** Single-line address for display */
     line: 'Hallandsvägen 21, 269 36 Båstad, Sweden',
   },
+  /** Public support hours for customer service. */
+  supportHours: 'Monday–Friday, typically within one business day',
   social: {
     instagram: 'https://www.instagram.com/onemorerip.cards',
     tiktok: 'https://www.tiktok.com/@onemorerip.cards',

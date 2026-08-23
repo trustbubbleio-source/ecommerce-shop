@@ -1,6 +1,7 @@
 import { Outlet, ScrollRestoration } from 'react-router-dom';
 import { useInitAuth } from '../../hooks/use-auth';
 import { ChatWidget } from '../chat/chat-widget';
+import { CookieNotice } from '../common/cookie-notice';
 import { Footer } from './footer';
 import { Header } from './header';
 
@@ -15,6 +16,7 @@ export function RootLayout() {
       </main>
       <Footer />
       <ChatWidget />
+      <CookieNotice />
       <ScrollRestoration />
     </div>
   );

@@ -89,10 +89,10 @@ export const CHAT_INTENTS: ChatIntent[] = [
     ],
     weight: 1.4,
     reply: (ctx) =>
-      `Yes — standard domestic shipping is free on orders over ${ctx.freeShippingLabel}. Below that, a flat rate is calculated at checkout. Promotional free-shipping windows are announced on the homepage and via email.`,
+      `Yes — standard tracked shipping is free on orders over ${ctx.freeShippingLabel}. Below that, a flat shipping fee is shown in your cart and at checkout before you pay.`,
     suggestions: ['Shipping times', 'Track order', 'Shop'],
     links: [
-      { label: 'Shop', href: '/shop' },
+      { label: 'Shipping', href: '/shipping' },
       { label: 'FAQ', href: '/faq' },
     ],
   },
@@ -113,9 +113,12 @@ export const CHAT_INTENTS: ChatIntent[] = [
     keywords: ['international', 'worldwide', 'ship abroad', 'overseas', 'customs', 'duties'],
     weight: 1.3,
     reply:
-      'We ship to most countries worldwide. International orders may have import duties and taxes paid by the recipient. Delivery times and carriers are shown at checkout before you pay — usually 5–12 business days.',
+      'We ship to Sweden, most EU/EEA destinations, and many countries worldwide where carriers allow. International orders may have import duties and taxes paid by the recipient. Sweden typically 2–4 business days after dispatch; EU/EEA 3–7; rest of world usually 5–12. Full details are on Shipping & Delivery.',
     suggestions: ['Shipping times', 'Free shipping?', 'Payments'],
-    links: [{ label: 'FAQ', href: '/faq' }],
+    links: [
+      { label: 'Shipping', href: '/shipping' },
+      { label: 'FAQ', href: '/faq' },
+    ],
   },
   {
     id: 'shipping',
@@ -130,11 +133,11 @@ export const CHAT_INTENTS: ChatIntent[] = [
     ],
     weight: 1.1,
     reply:
-      'Orders placed before 2pm (Mon–Fri) are usually dispatched the same business day. Standard domestic delivery is typically 2–4 business days; Express is 1–2. We offer Standard (tracked), Express, and Click & Collect where available — all with tracking once the parcel leaves our warehouse.',
+      'Orders placed before 14:00 (Europe/Stockholm) on business days are usually dispatched the same day when stock allows. We offer standard tracked parcel delivery. Sweden: typically 2–4 business days after dispatch; EU/EEA: 3–7; rest of world: typically 5–12. See Shipping & Delivery for costs and geography.',
     suggestions: ['Free shipping?', 'Track order', 'International'],
     links: [
+      { label: 'Shipping', href: '/shipping' },
       { label: 'FAQ', href: '/faq' },
-      { label: 'Shop', href: '/shop' },
     ],
   },
   {
@@ -164,11 +167,11 @@ export const CHAT_INTENTS: ChatIntent[] = [
     keywords: ['cancel', 'change order', 'amend', 'edit address', 'change address'],
     weight: 1.3,
     reply:
-      'Contact us ASAP if you need to change an address or cancel. We can usually amend orders that have not been packed yet. Once dispatched, changes are not possible — but we can help with returns if needed.',
+      'Contact us ASAP with your order number. Before dispatch we can usually cancel or amend free of charge. After dispatch we cannot change the address in transit — you may still use your 14-day withdrawal right after delivery where it applies. Details: Returns & Refunds.',
     suggestions: ['Returns', 'Track order', 'Contact'],
     links: [
+      { label: 'Returns', href: '/returns' },
       { label: 'Contact', href: '/contact' },
-      { label: 'FAQ', href: '/faq' },
     ],
   },
   {
@@ -195,11 +198,11 @@ export const CHAT_INTENTS: ChatIntent[] = [
     keywords: ['return', 'refund', 'damaged', 'missing item', 'wrong item', 'not as described'],
     weight: 1.3,
     reply: (ctx) =>
-      `Unopened sealed product can be returned within 14 days for a refund or store credit. Singles and opened product are final sale unless not as described. Damaged packages: photo the box and product within 48 hours and email ${ctx.supportEmail}. Missing items: send your order number and a photo of what arrived — we usually resolve within one business day.`,
+      `EU/Swedish consumers generally have a 14-day right of withdrawal for distance purchases. Unopened sealed product in original condition can be returned within 14 days of delivery. Singles and opened sealed product are typically final sale unless faulty or not as described. Damaged packages: photo the box and product within 48 hours and email ${ctx.supportEmail}. Delayed, lost or misrouted parcels: see Returns & Refunds §7 for who covers supplementary costs.`,
     suggestions: ['Contact', 'Orders', 'Shipping times'],
     links: [
+      { label: 'Returns', href: '/returns' },
       { label: 'Contact', href: '/contact' },
-      { label: 'FAQ', href: '/faq' },
     ],
   },
   {

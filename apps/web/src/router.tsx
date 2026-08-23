@@ -12,6 +12,7 @@ import { CartPage } from './pages/cart';
 import { CheckoutPage } from './pages/checkout';
 import { CheckoutSuccessPage } from './pages/checkout-success';
 import { ContactPage } from './pages/contact';
+import { CookiesPage } from './pages/cookies';
 import { FaqPage } from './pages/faq';
 import { HomePage } from './pages/home';
 import { LoginPage } from './pages/login';
@@ -20,8 +21,11 @@ import { PartnersPage } from './pages/partners';
 import { PrivacyPage } from './pages/privacy';
 import { ProductDetailPage } from './pages/product-detail';
 import { RegisterPage } from './pages/register';
+import { ReturnsPage } from './pages/returns';
+import { ShippingPage } from './pages/shipping';
 import { ShopPage } from './pages/shop';
 import { SocialsPage } from './pages/socials';
+import { TermsPage } from './pages/terms';
 
 export const routes: RouteObject[] = [
   {
@@ -38,7 +42,11 @@ export const routes: RouteObject[] = [
       { path: 'register', element: <RegisterPage /> },
       { path: 'account', element: <AccountPage /> },
       { path: 'contact', element: <ContactPage /> },
+      { path: 'shipping', element: <ShippingPage /> },
+      { path: 'returns', element: <ReturnsPage /> },
+      { path: 'terms', element: <TermsPage /> },
       { path: 'privacy', element: <PrivacyPage /> },
+      { path: 'cookies', element: <CookiesPage /> },
       { path: 'partners', element: <PartnersPage /> },
       { path: 'socials', element: <SocialsPage /> },
       { path: 'blog', element: <BlogPage /> },

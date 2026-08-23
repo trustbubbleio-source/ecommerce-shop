@@ -221,7 +221,7 @@ export function ProductDetailPage() {
               <Truck className="text-foreground size-4" /> Free shipping over $75
             </li>
             <li className="text-muted-foreground flex items-center gap-2">
-              <RotateCcw className="text-foreground size-4" /> 30-day returns
+              <RotateCcw className="text-foreground size-4" /> 14-day returns
             </li>
           </ul>
         </div>

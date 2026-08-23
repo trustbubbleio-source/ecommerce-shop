@@ -55,6 +55,85 @@ export function ContactPage() {
         description="Questions about an order, a product, or a bulk enquiry? We're happy to help."
       />
 
+      <div className="border-border bg-card/50 mb-10 rounded-2xl border p-5 sm:p-6">
+        <h2 className="text-foreground text-sm font-semibold uppercase tracking-wider">
+          Business information
+        </h2>
+        <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+              Official business name
+            </dt>
+            <dd className="text-foreground mt-1 text-sm font-semibold">{SITE.legalName}</dd>
+            {!SITE.organisationNumber ? (
+              <p className="text-muted-foreground mt-1 text-xs">
+                TODO (business): Swedish organisation number (org.nr) to be added when confirmed.
+              </p>
+            ) : (
+              <p className="text-muted-foreground mt-1 text-xs">
+                Org.nr: {SITE.organisationNumber}
+                {SITE.vatNumber ? ` · VAT: ${SITE.vatNumber}` : ''}
+              </p>
+            )}
+          </div>
+          <div>
+            <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+              Customer service email
+            </dt>
+            <dd className="mt-1 text-sm">
+              <a
+                href={`mailto:${SITE.emailContact}`}
+                className="text-foreground font-semibold hover:underline"
+              >
+                {SITE.emailContact}
+              </a>
+            </dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+              Business / contact address
+            </dt>
+            <dd className="text-foreground mt-1 text-sm leading-relaxed">
+              {SITE.legalName}
+              <br />
+              {SITE.store.street}
+              <br />
+              {SITE.store.postalCode} {SITE.store.city}
+              <br />
+              {SITE.store.country}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+              Support hours
+            </dt>
+            <dd className="text-foreground mt-1 text-sm">{SITE.supportHours}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+              Policies
+            </dt>
+            <dd className="text-muted-foreground mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+              <Link to="/shipping" className="text-foreground hover:underline">
+                Shipping
+              </Link>
+              <Link to="/returns" className="text-foreground hover:underline">
+                Returns
+              </Link>
+              <Link to="/terms" className="text-foreground hover:underline">
+                Terms
+              </Link>
+              <Link to="/privacy" className="text-foreground hover:underline">
+                Privacy
+              </Link>
+              <Link to="/cookies" className="text-foreground hover:underline">
+                Cookies
+              </Link>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
       <div className="grid gap-10 lg:grid-cols-[1fr_1.5fr]">
         <div className="flex flex-col gap-6">
           <div className="flex items-start gap-3">
@@ -76,13 +155,16 @@ export function ContactPage() {
               <MapPin className="size-5" />
             </span>
             <div>
-              <p className="text-foreground font-semibold">Physical store</p>
+              <p className="text-foreground font-semibold">Business address</p>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 {SITE.store.street}
                 <br />
                 {SITE.store.postalCode} {SITE.store.city}
                 <br />
                 {SITE.store.country}
+              </p>
+              <p className="text-muted-foreground mt-2 text-xs">
+                Physical store opens October 15, 2026.
               </p>
             </div>
           </div>
@@ -92,7 +174,7 @@ export function ContactPage() {
             </span>
             <div>
               <p className="text-foreground font-semibold">Response time</p>
-              <p className="text-muted-foreground text-sm">Within one business day, Mon-Fri.</p>
+              <p className="text-muted-foreground text-sm">{SITE.supportHours}</p>
             </div>
           </div>
         </div>

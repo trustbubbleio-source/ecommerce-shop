@@ -2,14 +2,14 @@ import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/common/page-header';
 import { SITE } from '../config/site';
 
-const UPDATED = '22 August 2026';
+const UPDATED = '23 August 2026';
 
 const SECTIONS: { id: string; title: string; body: string[] }[] = [
   {
     id: 'overview',
     title: '1. Overview',
     body: [
-      `${SITE.name} (“we”, “us”, “our”) operates the online store at onemorerip.cards and the physical store at ${SITE.store.line}. This Privacy Policy explains how we collect, use, store, and share personal data when you browse our website, create an account, place an order, subscribe to updates, or contact us.`,
+      `${SITE.legalName} (“we”, “us”, “our”) operates the online store at onemorerip.cards and the physical store at ${SITE.store.line}. This Privacy Policy explains how we collect, use, store, and share personal data when you browse our website, create an account, place an order, subscribe to updates, or contact us.`,
       'We process personal data in accordance with the EU General Data Protection Regulation (GDPR) and applicable Swedish data protection law.',
     ],
   },
@@ -54,7 +54,7 @@ const SECTIONS: { id: string; title: string; body: string[] }[] = [
       'Hosting, infrastructure, and email delivery providers that process data on our instructions.',
       'Shipping and logistics partners needed to deliver your order.',
       'Professional advisers (legal, accounting) when strictly necessary.',
-      'We may disclose data if required by law, regulation, or valid legal process, or to protect the rights, property, or safety of One More Rip, our customers, or the public.',
+      `We may disclose data if required by law, regulation, or valid legal process, or to protect the rights, property, or safety of ${SITE.legalName}, our customers, or the public.`,
     ],
   },
   {
@@ -62,7 +62,7 @@ const SECTIONS: { id: string; title: string; body: string[] }[] = [
     title: '6. Cookies and local storage',
     body: [
       'We use essential cookies and local storage for core shop functions such as keeping you signed in, remembering your cart, and securing checkout.',
-      'Where we use analytics or similar tools that are not strictly necessary, we will request consent where required by law. You can control cookies through your browser settings; disabling essential storage may limit shop functionality.',
+      'Where we use analytics or similar tools that are not strictly necessary, we will request consent where required by law. You can control cookies through your browser settings; disabling essential storage may limit shop functionality. Full details are in our Cookie Policy.',
     ],
   },
   {
@@ -105,7 +105,7 @@ const SECTIONS: { id: string; title: string; body: string[] }[] = [
     id: 'contact',
     title: '12. Contact',
     body: [
-      `Controller: ${SITE.name}, ${SITE.store.line}.`,
+      `Controller: ${SITE.legalName}, ${SITE.store.line}.`,
       `Privacy and data requests: ${SITE.emailPrivacy}.`,
       'You can also use our Contact page for general enquiries.',
     ],
@@ -117,9 +117,16 @@ export function PrivacyPage() {
     <div className="container max-w-3xl py-8">
       <PageHeader
         title="Privacy Policy"
-        description="How One More Rip collects, uses, and protects your personal data when you shop with us online or in store."
+        description={`How ${SITE.legalName} collects, uses, and protects your personal data when you shop with us online or in store.`}
       />
-      <p className="text-muted-foreground mb-10 text-sm">Last updated: {UPDATED}</p>
+      <p className="text-muted-foreground mb-4 text-sm">Last updated: {UPDATED}</p>
+      <p className="text-muted-foreground mb-10 text-sm">
+        See also our{' '}
+        <Link to="/cookies" className="text-foreground font-medium hover:underline">
+          Cookie Policy
+        </Link>
+        .
+      </p>
 
       <nav
         aria-label="Privacy sections"
