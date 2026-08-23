@@ -4,10 +4,7 @@ export const SITE = {
   name: 'One More Rip',
   /** Trading / merchant name shown to customers (Sweden / EU ecommerce). */
   legalName: 'One More Rip',
-  /**
-   * TODO (business): Swedish organisation number (org.nr) and VAT number (momsregistreringsnummer)
-   * once confirmed — required for full invoice/legal disclosure. Leave empty until provided.
-   */
+  /** Kept for invoices / internal use — not shown on the public Contact page. */
   organisationNumber: '' as string,
   vatNumber: '' as string,
   tagline: 'Premium Pokémon TCG — sealed boxes, packs & singles',
@@ -44,10 +41,7 @@ export const SITE = {
 /** Shared copy for newsletter subscribe (home banner + footer). */
 export const NEWSLETTER = {
   title: 'Never miss a drop',
-  subtitleLines: [
-    'New drops, restocks and exclusive bundles',
-    'first in your inbox.',
-  ] as const,
+  subtitleLines: ['New drops, restocks and exclusive bundles', 'first in your inbox.'] as const,
   cta: 'Subscribe',
   placeholder: 'you@email.com',
   successTitle: "You're on the list",

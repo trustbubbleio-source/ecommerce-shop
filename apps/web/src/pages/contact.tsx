@@ -65,16 +65,6 @@ export function ContactPage() {
               Official business name
             </dt>
             <dd className="text-foreground mt-1 text-sm font-semibold">{SITE.legalName}</dd>
-            {!SITE.organisationNumber ? (
-              <p className="text-muted-foreground mt-1 text-xs">
-                TODO (business): Swedish organisation number (org.nr) to be added when confirmed.
-              </p>
-            ) : (
-              <p className="text-muted-foreground mt-1 text-xs">
-                Org.nr: {SITE.organisationNumber}
-                {SITE.vatNumber ? ` · VAT: ${SITE.vatNumber}` : ''}
-              </p>
-            )}
           </div>
           <div>
             <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">

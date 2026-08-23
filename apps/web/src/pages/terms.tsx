@@ -13,7 +13,6 @@ const SECTIONS: PolicySection[] = [
     body: [
       `These Terms & Conditions (“Terms”) govern purchases from ${SITE.legalName} (“we”, “us”) via onemorerip.cards and related customer services.`,
       `Merchant: ${SITE.legalName}. Place of business: ${SITE.store.line}. Customer service: ${SITE.emailContact}.`,
-      'TODO (business): Add Swedish organisation number (org.nr) and VAT number here once confirmed.',
       'By placing an order you confirm that you are at least 18 years old (or have parental/guardian consent where required) and that you accept these Terms. If you shop as a consumer in the EU/EEA, mandatory consumer protection rules apply in addition to these Terms and prevail if there is a conflict.',
     ],
   },
