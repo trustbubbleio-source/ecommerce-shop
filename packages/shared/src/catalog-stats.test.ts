@@ -12,7 +12,7 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
     set: '151',
     series: 'Scarlet & Violet',
     price: 1000,
-    currency: 'usd',
+    currency: 'eur',
     images: [],
     image: undefined,
     accent: '#a855f7',

@@ -25,7 +25,7 @@ interface ProductSeed {
 
 function defineProduct(seed: ProductSeed): Product {
   return {
-    currency: 'usd',
+    currency: 'eur',
     stock: 25,
     featured: false,
     isNew: false,

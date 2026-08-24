@@ -5,7 +5,7 @@ import type {
   OrderStatus,
   Product,
 } from '@akknerds/shared';
-import { primaryProductImage } from '@akknerds/shared';
+import { BASE_CURRENCY, primaryProductImage } from '@akknerds/shared';
 import type { Order as DbOrder, Product as DbProduct } from '@prisma/client';
 import {
   fromPrismaCategory,
@@ -22,6 +22,11 @@ import {
   toPrismaSet,
 } from './enum-mappers.js';
 
+function catalogCurrency(value: string): string {
+  // Legacy rows may still say "usd"; catalog amounts are treated as EUR.
+  return value.toLowerCase() === 'usd' ? BASE_CURRENCY : value.toLowerCase();
+}
+
 export function toProduct(row: DbProduct): Product {
   const images =
     row.images.length > 0 ? row.images : row.image ? [row.image] : [];
@@ -35,7 +40,7 @@ export function toProduct(row: DbProduct): Product {
     series: fromPrismaSeries(row.series),
     price: row.price,
     compareAtPrice: row.compareAtPrice ?? undefined,
-    currency: row.currency,
+    currency: catalogCurrency(row.currency),
     images,
     image: primaryProductImage({ images, image: row.image ?? undefined }),
     accent: row.accent,
@@ -69,7 +74,7 @@ export function fromProduct(product: Product) {
     series: toPrismaSeries(product.series),
     price: product.price,
     compareAtPrice: product.compareAtPrice ?? null,
-    currency: product.currency,
+    currency: product.currency === 'usd' ? BASE_CURRENCY : product.currency,
     image: images[0] ?? null,
     images,
     accent: product.accent,

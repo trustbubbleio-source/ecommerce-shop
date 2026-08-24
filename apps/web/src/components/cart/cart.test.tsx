@@ -17,7 +17,7 @@ function cartProduct(overrides: Partial<CartProduct> = {}): CartProduct {
     category: 'booster-box',
     set: '151',
     series: 'Scarlet & Violet',
-    currency: 'usd',
+    currency: 'eur',
     stock: 5,
     ...overrides,
   };
@@ -39,7 +39,7 @@ describe('CartLineItem', () => {
 
   it('shows the line total', () => {
     renderWithProviders(<CartLineItem item={{ product: cartProduct(), quantity: 2 }} />);
-    expect(screen.getByText('$40.00')).toBeInTheDocument();
+    expect(screen.getByText(/40[,.]00/)).toBeInTheDocument();
   });
 });
 
@@ -48,8 +48,8 @@ describe('CartSummary', () => {
     renderWithProviders(
       <CartSummary items={[{ product: cartProduct({ price: 2000 }), quantity: 1 }]} />,
     );
-    expect(screen.getByText('$20.00')).toBeInTheDocument();
-    expect(screen.getByText('$5.99')).toBeInTheDocument(); // shipping
+    expect(screen.getByText(/20[,.]00/)).toBeInTheDocument();
+    expect(screen.getByText(/^5[,.]99/)).toBeInTheDocument(); // shipping
     expect(screen.getByText(/free shipping/i)).toBeInTheDocument();
   });
 

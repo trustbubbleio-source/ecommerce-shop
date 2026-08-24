@@ -3,6 +3,7 @@ export * from './enums.js';
 export * from './series-sets.js';
 export { toPrismaEnumKey } from './prisma-keys.js';
 export * from './schemas.js';
+export * from './currency.js';
 export * from './format.js';
 export * from './pricing.js';
 export * from './query.js';

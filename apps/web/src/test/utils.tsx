@@ -72,7 +72,7 @@ export function makeProduct(overrides: Partial<Product> = {}): Product {
     series: 'Scarlet & Violet',
     price: 16999,
     compareAtPrice: 18999,
-    currency: 'usd',
+    currency: 'eur',
     accent: '#ef4444',
     stock: 10,
     featured: true,

@@ -1,10 +1,12 @@
-import { FREE_SHIPPING_THRESHOLD, FLAT_SHIPPING_FEE, formatPrice } from '@akknerds/shared';
+import { FREE_SHIPPING_THRESHOLD, FLAT_SHIPPING_FEE, formatMoney } from '@akknerds/shared';
 import { PolicyDocument, type PolicySection } from '../components/common/policy-document';
 import { SITE } from '../config/site';
 
-const UPDATED = '23 August 2026';
-const fee = formatPrice(FLAT_SHIPPING_FEE);
-const freeAt = formatPrice(FREE_SHIPPING_THRESHOLD);
+const UPDATED = '24 August 2026';
+const fee = formatMoney(FLAT_SHIPPING_FEE, 'eur');
+const freeAt = formatMoney(FREE_SHIPPING_THRESHOLD, 'eur');
+const feeSek = formatMoney(FLAT_SHIPPING_FEE, 'sek');
+const freeAtSek = formatMoney(FREE_SHIPPING_THRESHOLD, 'sek');
 
 const SECTIONS: PolicySection[] = [
   {
@@ -28,9 +30,9 @@ const SECTIONS: PolicySection[] = [
     id: 'costs',
     title: '3. Delivery costs',
     body: [
-      `Flat rate: ${fee} on orders with a subtotal below ${freeAt}.`,
-      `Free shipping: standard tracked shipping is free when your order subtotal is ${freeAt} or more.`,
-      'The exact shipping amount is shown in your cart and again at checkout before you pay.',
+      `Flat rate: ${fee} (about ${feeSek}) on orders with a subtotal below ${freeAt}.`,
+      `Free shipping: standard tracked shipping is free when your order subtotal is ${freeAt} or more (about ${freeAtSek}).`,
+      'Prices are shown in EUR by default; you can switch to SEK in the header. The exact shipping amount is shown in your cart and again at checkout before you pay.',
     ],
   },
   {

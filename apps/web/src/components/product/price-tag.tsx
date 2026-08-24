@@ -1,5 +1,6 @@
-import { type Product, discountPercent, formatPrice } from '@akknerds/shared';
+import { type Product, discountPercent } from '@akknerds/shared';
 import { Badge, cn } from '@akknerds/ui';
+import { useFormatMoney } from '../../hooks/use-format-money';
 
 interface PriceTagProps {
   product: Pick<Product, 'price' | 'compareAtPrice' | 'currency'>;
@@ -8,13 +9,14 @@ interface PriceTagProps {
 }
 
 export function PriceTag({ product, className, size = 'sm' }: PriceTagProps) {
+  const formatMoney = useFormatMoney();
   const off = discountPercent(product.price, product.compareAtPrice);
   return (
     <div className={cn('flex flex-wrap items-baseline gap-2', className)}>
       <span
         className={cn('text-foreground font-extrabold', size === 'lg' ? 'text-3xl' : 'text-base')}
       >
-        {formatPrice(product.price, product.currency)}
+        {formatMoney(product.price)}
       </span>
       {off > 0 && (
         <>
@@ -24,7 +26,7 @@ export function PriceTag({ product, className, size = 'sm' }: PriceTagProps) {
               size === 'lg' ? 'text-lg' : 'text-sm',
             )}
           >
-            {formatPrice(product.compareAtPrice!, product.currency)}
+            {formatMoney(product.compareAtPrice!)}
           </span>
           <Badge variant="success">-{off}%</Badge>
         </>

@@ -9,7 +9,7 @@ export const PRELAUNCH = {
   /** Compact label for narrow product cards / mobile. */
   buttonLabelShort: 'Oct 15',
   description: 'Purchases open October 15, 2026.',
-  homeEyebrow: 'Webshop & physical store',
+  homeEyebrow: 'Physical store',
   homeTitle: 'We go live October 15',
   homeBody:
     'One More Rip opens its online shop and physical store on October 15, 2026. Browse the catalogue now, purchases unlock on launch day.',

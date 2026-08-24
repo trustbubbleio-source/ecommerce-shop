@@ -11,7 +11,7 @@ function makeOrder(overrides: Partial<Order> = {}): Order {
     subtotal: 5000,
     shipping: 599,
     total: 5599,
-    currency: 'usd',
+    currency: 'eur',
     status: 'pending',
     createdAt: '2024-01-01T00:00:00.000Z',
     ...overrides,

@@ -1,7 +1,7 @@
-import { formatPrice } from '@akknerds/shared';
 import { QuantityStepper } from '@akknerds/ui';
 import { Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useFormatMoney } from '../../hooks/use-format-money';
 import { type CartItem, useCartStore } from '../../store/cart';
 import { ProductArt } from '../product/product-art';
 
@@ -11,6 +11,7 @@ interface CartLineItemProps {
 }
 
 export function CartLineItem({ item, onNavigate }: CartLineItemProps) {
+  const formatMoney = useFormatMoney();
   const setQuantity = useCartStore((s) => s.setQuantity);
   const remove = useCartStore((s) => s.remove);
   const { product, quantity } = item;
@@ -52,7 +53,7 @@ export function CartLineItem({ item, onNavigate }: CartLineItemProps) {
             onChange={(q) => setQuantity(product.id, q)}
           />
           <span className="text-foreground font-semibold">
-            {formatPrice(product.price * quantity, product.currency)}
+            {formatMoney(product.price * quantity)}
           </span>
         </div>
       </div>

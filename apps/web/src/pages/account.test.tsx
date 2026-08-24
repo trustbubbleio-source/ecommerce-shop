@@ -21,7 +21,7 @@ const order: Order = {
   subtotal: 16999,
   shipping: 0,
   total: 16999,
-  currency: 'usd',
+  currency: 'eur',
   status: 'paid',
   createdAt: '2024-02-01T00:00:00.000Z',
 };

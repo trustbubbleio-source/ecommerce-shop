@@ -1,13 +1,22 @@
 /** Formatting helpers shared across the app. */
 
+import { BASE_CURRENCY, currencyLocale } from './currency.js';
+
 /**
- * Format an integer amount of cents into a localized currency string.
- * @example formatPrice(1299) // "$12.99"
+ * Format an integer amount of minor units into a localized currency string.
+ * Amounts are already in the given currency (no FX). Prefer `formatMoney` when
+ * converting from the EUR catalog base for display.
+ * @example formatPrice(1299, 'EUR') // "12,99 €" (sv-SE)
  */
-export function formatPrice(cents: number, currency = 'USD', locale = 'en-US'): string {
-  return new Intl.NumberFormat(locale, {
+export function formatPrice(
+  cents: number,
+  currency: string = BASE_CURRENCY,
+  locale?: string,
+): string {
+  const code = currency.toUpperCase();
+  return new Intl.NumberFormat(locale ?? currencyLocale(code), {
     style: 'currency',
-    currency: currency.toUpperCase(),
+    currency: code,
   }).format(cents / 100);
 }
 

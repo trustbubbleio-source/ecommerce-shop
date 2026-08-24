@@ -1,6 +1,5 @@
 import {
   categoryLabel,
-  formatPrice,
   primaryProductImage,
   type Product,
 } from '@akknerds/shared';
@@ -10,6 +9,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { CATEGORY_TILES } from '../../config/site';
+import { useFormatMoney } from '../../hooks/use-format-money';
 import { useProducts } from '../../hooks/use-products';
 
 const QUICK_LINKS = CATEGORY_TILES.slice(0, 5).map((tile) => ({
@@ -38,6 +38,7 @@ function ResultRow({
   product: Product;
   onNavigate: () => void;
 }) {
+  const formatMoney = useFormatMoney();
   const image = primaryProductImage(product);
   return (
     <Link
@@ -58,7 +59,7 @@ function ResultRow({
         </p>
       </div>
       <span className="text-foreground shrink-0 text-sm font-semibold">
-        {formatPrice(product.price, product.currency)}
+        {formatMoney(product.price)}
       </span>
     </Link>
   );

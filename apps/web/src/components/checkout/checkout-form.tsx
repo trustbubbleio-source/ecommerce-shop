@@ -8,6 +8,7 @@ import { ApiError } from '../../lib/api';
 import { useCheckout } from '../../hooks/use-checkout';
 import { useAuthStore } from '../../store/auth';
 import { useCartStore } from '../../store/cart';
+import { useCurrencyStore } from '../../store/currency';
 
 const checkoutFormSchema = addressSchema.extend({
   email: z.string().trim().email('A valid email is required'),
@@ -29,6 +30,7 @@ const EMPTY: FormValues = {
 export function CheckoutForm() {
   const user = useAuthStore((s) => s.user);
   const items = useCartStore((s) => s.items);
+  const currency = useCurrencyStore((s) => s.currency);
   const checkout = useCheckout();
   const { toast } = useToast();
   const [values, setValues] = useState<FormValues>({ ...EMPTY, email: user?.email ?? '' });
@@ -55,6 +57,7 @@ export function CheckoutForm() {
     const { email, ...address } = parsed.data;
     const input: CheckoutInput = {
       email,
+      currency,
       items: items.map((item) => ({ productId: item.product.id, quantity: item.quantity })),
       shippingAddress: address,
     };

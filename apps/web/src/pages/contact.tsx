@@ -157,7 +157,7 @@ export function ContactPage() {
       <div className="border-border bg-card/40 mt-14 overflow-hidden rounded-2xl border">
         <nav
           aria-label="Policies"
-          className="text-muted-foreground/70 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-b border-border/70 px-5 py-3 text-[11px]"
+          className="text-muted-foreground/70 border-border/70 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-b px-5 py-3 text-[11px]"
         >
           <Link to="/shipping" className="hover:text-muted-foreground hover:underline">
             Shipping
@@ -183,10 +183,13 @@ export function ContactPage() {
           </summary>
           <div className="border-border text-muted-foreground border-t px-5 py-5 text-sm leading-relaxed">
             <p>
-              {SITE.legalName} is a Swedish {SITE.legalForm.toLowerCase()} based at {SITE.store.line}.
-              For invoices and tax purposes we use VAT number {SITE.vatNumber}. Organisation number
-              and the full trader register details appear in our{' '}
-              <Link to="/terms" className="text-muted-foreground underline-offset-2 hover:underline">
+              {SITE.legalName} is a Swedish {SITE.legalForm.toLowerCase()} based at{' '}
+              {SITE.store.line}. For invoices and tax purposes we use VAT number {SITE.vatNumber}.
+              Organisation number and the full trader register details appear in our{' '}
+              <Link
+                to="/terms"
+                className="text-muted-foreground underline-offset-2 hover:underline"
+              >
                 Terms & Conditions
               </Link>
               .

@@ -20,7 +20,7 @@ function product(overrides: Partial<CartProduct> = {}): CartProduct {
     category: 'booster-pack',
     set: '151',
     series: 'Scarlet & Violet',
-    currency: 'usd',
+    currency: 'eur',
     stock: 5,
     ...overrides,
   };

@@ -13,6 +13,7 @@ import { NavLink } from 'react-router-dom';
 import { MAIN_NAV } from '../../config/site';
 import { useAuthStore } from '../../store/auth';
 import { Brand } from '../common/brand';
+import { CurrencySwitcher } from './currency-switcher';
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
@@ -37,6 +38,12 @@ export function MobileNav() {
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <Brand />
         </SheetHeader>
+        <div className="border-border flex items-center justify-between border-b px-4 py-3 sm:hidden">
+          <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+            Currency
+          </span>
+          <CurrencySwitcher />
+        </div>
         <nav className="flex flex-col gap-1 p-3">
           {[...MAIN_NAV, ...accountLinks].map((link) => (
             <NavLink

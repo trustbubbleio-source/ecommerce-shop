@@ -1,14 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@akknerds/ui';
-import { formatPrice } from '@akknerds/shared';
 import { Navigate } from 'react-router-dom';
 import { CartSummary } from '../components/cart/cart-summary';
 import { CheckoutForm } from '../components/checkout/checkout-form';
 import { PageHeader } from '../components/common/page-header';
 import { ProductArt } from '../components/product/product-art';
 import { isPrelaunchActive } from '../config/launch';
+import { useFormatMoney } from '../hooks/use-format-money';
 import { useCartStore } from '../store/cart';
 
 export function CheckoutPage() {
+  const formatMoney = useFormatMoney();
   const items = useCartStore((s) => s.items);
 
   if (isPrelaunchActive() || items.length === 0) {
@@ -46,7 +47,7 @@ export function CheckoutPage() {
                     <p className="truncate text-sm font-medium">{item.product.name}</p>
                   </div>
                   <span className="text-sm font-semibold">
-                    {formatPrice(item.product.price * item.quantity, item.product.currency)}
+                    {formatMoney(item.product.price * item.quantity)}
                   </span>
                 </li>
               ))}

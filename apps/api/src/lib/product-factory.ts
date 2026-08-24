@@ -15,7 +15,7 @@ export function newProductFromInput(input: CreateProductInput): Product {
     series: input.series,
     price: input.price,
     compareAtPrice: input.compareAtPrice,
-    currency: 'usd',
+    currency: 'eur',
     images: input.images,
     image: input.images[0],
     accent: input.accent,

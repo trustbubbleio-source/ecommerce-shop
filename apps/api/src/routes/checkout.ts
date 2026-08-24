@@ -8,7 +8,11 @@ export function checkoutRoutes(deps: AppDeps) {
 
   app.post('/', validate('json', checkoutInputSchema), async (c) => {
     const input = c.req.valid('json');
-    const priced = await priceCartAsync(input.items, (id) => deps.products.getByIdOrSlug(id));
+    const priced = await priceCartAsync(
+      input.items,
+      (id) => deps.products.getByIdOrSlug(id),
+      input.currency ?? 'eur',
+    );
 
     if (priced.lines.length === 0) {
       return c.json({ error: 'None of the items in your cart are currently available' }, 400);

@@ -1,9 +1,10 @@
-import { FREE_SHIPPING_THRESHOLD, formatPrice } from '@akknerds/shared';
+import { FREE_SHIPPING_THRESHOLD } from '@akknerds/shared';
 import { cn } from '@akknerds/ui';
+import { useFormatMoney } from '../../hooks/use-format-money';
 import { type CartItem, cartShipping, cartSubtotal, cartTotal } from '../../store/cart';
 
 export function CartSummary({ items, className }: { items: CartItem[]; className?: string }) {
-  const currency = items[0]?.product.currency ?? 'usd';
+  const formatMoney = useFormatMoney();
   const subtotal = cartSubtotal(items);
   const shipping = cartShipping(items);
   const total = cartTotal(items);
@@ -17,10 +18,8 @@ export function CartSummary({ items, className }: { items: CartItem[]; className
           {remaining > 0 ? (
             <p className="text-muted-foreground">
               Add{' '}
-              <span className="text-foreground font-semibold">
-                {formatPrice(remaining, currency)}
-              </span>{' '}
-              for free shipping
+              <span className="text-foreground font-semibold">{formatMoney(remaining)}</span> for
+              free shipping
             </p>
           ) : (
             <p className="text-success font-semibold">You've unlocked free shipping! 🎉</p>
@@ -38,17 +37,17 @@ export function CartSummary({ items, className }: { items: CartItem[]; className
       <dl className="flex flex-col gap-2 text-sm">
         <div className="flex justify-between">
           <dt className="text-muted-foreground">Subtotal</dt>
-          <dd className="text-foreground font-medium">{formatPrice(subtotal, currency)}</dd>
+          <dd className="text-foreground font-medium">{formatMoney(subtotal)}</dd>
         </div>
         <div className="flex justify-between">
           <dt className="text-muted-foreground">Shipping</dt>
           <dd className="text-foreground font-medium">
-            {shipping === 0 ? 'Free' : formatPrice(shipping, currency)}
+            {shipping === 0 ? 'Free' : formatMoney(shipping)}
           </dd>
         </div>
         <div className="border-border mt-2 flex justify-between border-t pt-3 text-base">
           <dt className="text-foreground font-bold">Total</dt>
-          <dd className="text-foreground font-extrabold">{formatPrice(total, currency)}</dd>
+          <dd className="text-foreground font-extrabold">{formatMoney(total)}</dd>
         </div>
       </dl>
     </div>

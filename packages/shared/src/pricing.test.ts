@@ -18,7 +18,7 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
     set: 'Test',
     series: 'Test',
     price: 1000,
-    currency: 'usd',
+    currency: 'eur',
     accent: '#fff',
     stock: 10,
     featured: false,
@@ -76,7 +76,13 @@ describe('priceCart', () => {
     expect(result.lines).toHaveLength(1);
     expect(result.lines[0]).toMatchObject({ productId: 'a', unitPrice: 2000, quantity: 2 });
     expect(result.subtotal).toBe(4000);
-    expect(result.currency).toBe('usd');
+    expect(result.currency).toBe('eur');
+  });
+
+  it('converts the priced cart to SEK when requested', () => {
+    const result = priceCart([{ productId: 'a', quantity: 1 }], lookup, 'sek');
+    expect(result.currency).toBe('sek');
+    expect(result.lines[0]?.unitPrice).toBe(Math.round(2000 * 11.3));
   });
 
   it('clamps quantity to available stock', () => {

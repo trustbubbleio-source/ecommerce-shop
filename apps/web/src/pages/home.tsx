@@ -18,7 +18,7 @@ import { useProducts } from '../hooks/use-products';
 
 const VALUE_PROPS = [
   { icon: ShieldCheck, title: '100% Authentic', text: 'Factory-sealed, never resealed.' },
-  { icon: Truck, title: 'Fast, tracked shipping', text: 'Free over $75. Ships in 24h.' },
+  { icon: Truck, title: 'Fast, tracked shipping', text: 'Free over €75. Ships in 24h.' },
   { icon: Sparkles, title: 'Graded singles', text: 'Hand-checked, Near Mint or better.' },
 ];
 

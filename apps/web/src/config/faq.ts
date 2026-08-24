@@ -1,6 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
 import { CreditCard, HelpCircle, Package, RotateCcw, Truck } from 'lucide-react';
+import { FLAT_SHIPPING_FEE, FREE_SHIPPING_THRESHOLD, formatMoney } from '@akknerds/shared';
 import { SITE } from './site';
+
+const freeAt = formatMoney(FREE_SHIPPING_THRESHOLD, 'eur');
+const shipFee = formatMoney(FLAT_SHIPPING_FEE, 'eur');
 
 export interface FaqItem {
   question: string;
@@ -33,7 +37,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'Do you offer free shipping?',
         answer:
-          'Yes — standard shipping is free on orders with a subtotal of $75 or more. Below that, a flat shipping fee of $5.99 applies. The amount is shown in your cart and at checkout before you pay.',
+          `Yes — standard shipping is free on orders with a subtotal of ${freeAt} or more. Below that, a flat shipping fee of ${shipFee} applies. Switch between EUR and SEK in the header; the amount is shown in your cart and at checkout before you pay.`,
       },
       {
         question: 'Do you ship internationally?',
