@@ -47,6 +47,8 @@
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    /* Keep layout width stable when navigating between short/long pages. */
+    scrollbar-gutter: stable;
   }
 
   body {

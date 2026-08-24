@@ -7,7 +7,7 @@ export function BlogPage() {
     <div className="container py-8">
       <PageHeader
         title="Blog"
-        description="Stories from behind the counter — how we pack, how we protect your cards, and why we do it."
+        description="Stories from behind the counter — who we are, how we pack, and why we do it."
       />
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {BLOG_POSTS.map((post) => (

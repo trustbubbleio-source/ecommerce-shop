@@ -7,6 +7,7 @@ describe('BlogPage', () => {
   it('lists the blog articles', async () => {
     renderApp('/blog');
     expect(await screen.findByRole('heading', { name: 'Blog', level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Who are we?' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'How we are packing' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Controls of quality' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Why we love Pokémon' })).toBeInTheDocument();

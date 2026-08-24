@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Heart, Package, ShieldCheck } from 'lucide-react';
+import { Heart, Package, ShieldCheck, Users } from 'lucide-react';
 
 export interface BlogSection {
   heading: string;
@@ -32,6 +32,45 @@ export function formatBlogDate(iso: string): string {
  * simpler and faster than a CMS round-trip.
  */
 export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: 'who-are-we',
+    title: 'Who are we?',
+    excerpt:
+      'Meet the small crew behind One More Rip — a couple, a handful of friends, and a shared obsession that started long before booster boxes had fancy ETBs.',
+    date: '2026-08-20',
+    readMinutes: 4,
+    icon: Users,
+    sections: [
+      {
+        heading: 'A couple, some friends, and a lot of cardboard',
+        paragraphs: [
+          'One More Rip is not a faceless warehouse with a logo slapped on the side. We are a couple who grew up chasing holos after school, plus a small circle of friends who somehow never grew out of it either. Between us we have binders from the Base Set era, modern chase cards we still get excited about, and more packing tape than anyone reasonably needs.',
+          'We live and work out of Båstad, Sweden — and in October 2026 we open both the online shop and a physical store where collectors can hang out, rip packs, and talk way too long about pull rates.',
+        ],
+      },
+      {
+        heading: 'Hooked since we were kids',
+        paragraphs: [
+          'Pokémon found us early. Recess trades, lunchtime battles, the ritual of peeling open a pack and hoping for something shiny. One of us still remembers the exact Charizard that ruined every other card forever. Another still has the crumpled checklist from a set that never quite got finished — and somehow that unfinished binder is part of the charm.',
+          'Growing up did not kill the hobby. It just changed the stakes: nicer sleeves, better storage, and the quiet understanding that “just one more rip” is never actually just one more rip.',
+        ],
+      },
+      {
+        heading: 'Why we started the shop',
+        paragraphs: [
+          'We got tired of ordering sealed product that arrived crushed, singles that looked nothing like the photos, and shops that treated collectors like a transaction instead of a community. So we built the shop we always wished existed — honest condition grades, careful packing, and people on the other end who actually know what a white border means.',
+          'Our friends pitch in where it counts: sorting inventory, hunting good wholesale, testing packing methods until the cardboard stops complaining, and reminding us that the vibe matters as much as the stock list.',
+        ],
+      },
+      {
+        heading: 'What you can expect from us',
+        paragraphs: [
+          'When you order from One More Rip, you are buying from collectors who still get that little jolt when a box lands on the doorstep. We source sealed product the right way, inspect singles under proper light, and pack every order like it is headed to someone we will see at the shop next week — because often, we will.',
+          'If you are ever in Båstad after we open, come say hi. Bring your binder stories. We will almost certainly have one that matches.',
+        ],
+      },
+    ],
+  },
   {
     slug: 'how-we-pack',
     title: 'How we are packing',
