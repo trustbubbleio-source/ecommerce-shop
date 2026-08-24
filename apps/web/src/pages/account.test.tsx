@@ -1,5 +1,6 @@
 import type { Order, PublicUser } from '@akknerds/shared';
 import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
@@ -10,6 +11,8 @@ const user: PublicUser = {
   email: 'ash@pallet.town',
   name: 'Ash Ketchum',
   role: 'customer',
+  emailVerifiedAt: '2024-01-01T00:00:00.000Z',
+  hasPassword: true,
   createdAt: '2024-01-01T00:00:00.000Z',
 };
 
@@ -27,25 +30,67 @@ const order: Order = {
 };
 
 beforeEach(() => {
-  useAuthStore.setState({ token: null, user: null });
+  useAuthStore.setState({ token: null, user: null, mustSetPassword: false });
   vi.restoreAllMocks();
 });
 
-describe('AccountPage', () => {
+describe('Account pages', () => {
   it('redirects to login when signed out', async () => {
     renderApp('/account');
     expect(await screen.findByText('Welcome back')).toBeInTheDocument();
   });
 
-  it('shows the user and their orders when signed in', async () => {
+  it('shows profile details when signed in', async () => {
     useAuthStore.setState({ token: 'tok_1', user });
     vi.spyOn(api, 'me').mockResolvedValue({ user });
-    vi.spyOn(api, 'myOrders').mockResolvedValue({ orders: [order] });
 
     renderApp('/account');
 
     expect(await screen.findByText(/Hi, Ash/)).toBeInTheDocument();
+    expect(screen.getByText(user.email)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Orders' })).toHaveAttribute('href', '/account/orders');
+  });
+
+  it('lists orders on the orders page', async () => {
+    useAuthStore.setState({ token: 'tok_1', user });
+    vi.spyOn(api, 'me').mockResolvedValue({ user });
+    vi.spyOn(api, 'myOrders').mockResolvedValue({ orders: [order] });
+
+    renderApp('/account/orders');
+
+    expect(await screen.findByText(/Hi, Ash/)).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText('ord_123')).toBeInTheDocument());
     expect(screen.getByText('paid')).toBeInTheDocument();
+  });
+
+  it('opens the account dropdown from the header', async () => {
+    const click = userEvent.setup();
+    useAuthStore.setState({ token: 'tok_1', user });
+    vi.spyOn(api, 'me').mockResolvedValue({ user });
+    vi.spyOn(api, 'listProducts').mockResolvedValue({
+      products: [],
+      total: 0,
+      page: 1,
+      pageSize: 12,
+      meta: {
+        categories: [],
+        series: [],
+        sets: [],
+        priceRange: { min: 0, max: 0 },
+      },
+    } as never);
+
+    renderApp('/');
+
+    await click.click(await screen.findByRole('button', { name: 'Account menu' }));
+    expect(screen.getByRole('menuitem', { name: 'Profile' })).toHaveAttribute('href', '/account');
+    expect(screen.getByRole('menuitem', { name: 'Orders' })).toHaveAttribute(
+      'href',
+      '/account/orders',
+    );
+    expect(screen.getByRole('menuitem', { name: 'Settings' })).toHaveAttribute(
+      'href',
+      '/account/settings',
+    );
   });
 });

@@ -25,12 +25,21 @@ export interface CreateOrderInput {
 
 export interface UserRepository {
   findByEmail(email: string): Promise<StoredUser | undefined>;
+  findById(id: string): Promise<StoredUser | undefined>;
+  findByGoogleSub(googleSub: string): Promise<StoredUser | undefined>;
   create(input: {
     email: string;
     name: string;
-    passwordHash: string;
+    passwordHash?: string | null;
+    googleSub?: string | null;
     role?: UserRole;
+    /** ISO timestamp; omit/null = pending email verification. */
+    emailVerifiedAt?: string | null;
   }): Promise<StoredUser>;
+  updatePassword(userId: string, passwordHash: string): Promise<StoredUser | undefined>;
+  updateProfile(userId: string, input: { name: string }): Promise<StoredUser | undefined>;
+  linkGoogle(userId: string, googleSub: string): Promise<StoredUser | undefined>;
+  markEmailVerified(userId: string): Promise<StoredUser | undefined>;
 }
 
 export interface OrderRepository {

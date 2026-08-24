@@ -72,7 +72,7 @@ describe('api client', () => {
 
   it('covers the remaining endpoints', async () => {
     const fetchMock = mockFetch({ ok: true });
-    await api.register({ name: 'A', email: 'a@b.com', password: 'password1' });
+    await api.register({ email: 'a@b.com' });
     await api.checkout({ email: 'a@b.com', items: [{ productId: 'x', quantity: 1 }] });
     await api.getOrder('ord_1');
     await api.myOrders();

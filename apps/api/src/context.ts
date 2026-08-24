@@ -1,4 +1,5 @@
 import type { Env } from './env.js';
+import type { EmailService } from './lib/email.js';
 import type { TokenPayload } from './lib/jwt.js';
 import type { PaymentService } from './lib/payments.js';
 import type { StorageService } from './lib/storage.js';
@@ -12,6 +13,7 @@ export interface AppDeps {
   products: ProductRepository;
   payments: PaymentService;
   storage: StorageService;
+  email: EmailService;
 }
 
 /** Hono context variables available to handlers and middleware. */

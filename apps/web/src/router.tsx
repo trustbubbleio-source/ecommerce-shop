@@ -2,7 +2,10 @@ import type { RouteObject } from 'react-router-dom';
 import { AdminGuard } from './components/admin/admin-guard';
 import { AdminLayout } from './components/layout/admin-layout';
 import { RootLayout } from './components/layout/root-layout';
-import { AccountPage } from './pages/account';
+import { AccountLayout } from './pages/account/layout';
+import { AccountOrdersPage } from './pages/account/orders';
+import { AccountProfilePage } from './pages/account/profile';
+import { AccountSettingsPage } from './pages/account/settings';
 import { BlogPage } from './pages/blog';
 import { BlogPostPage } from './pages/blog-post';
 import { AdminEditProductPage } from './pages/admin/edit-product';
@@ -21,6 +24,9 @@ import { PartnersPage } from './pages/partners';
 import { PrivacyPage } from './pages/privacy';
 import { ProductDetailPage } from './pages/product-detail';
 import { RegisterPage } from './pages/register';
+import { ForgotPasswordPage } from './pages/forgot-password';
+import { ResetPasswordPage } from './pages/reset-password';
+import { VerifyEmailPage } from './pages/verify-email';
 import { ReturnsPage } from './pages/returns';
 import { ShippingPage } from './pages/shipping';
 import { ShopPage } from './pages/shop';
@@ -40,7 +46,18 @@ export const routes: RouteObject[] = [
       { path: 'checkout/success', element: <CheckoutSuccessPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
-      { path: 'account', element: <AccountPage /> },
+      { path: 'forgot-password', element: <ForgotPasswordPage /> },
+      { path: 'reset-password', element: <ResetPasswordPage /> },
+      { path: 'verify-email', element: <VerifyEmailPage /> },
+      {
+        path: 'account',
+        element: <AccountLayout />,
+        children: [
+          { index: true, element: <AccountProfilePage /> },
+          { path: 'orders', element: <AccountOrdersPage /> },
+          { path: 'settings', element: <AccountSettingsPage /> },
+        ],
+      },
       { path: 'contact', element: <ContactPage /> },
       { path: 'shipping', element: <ShippingPage /> },
       { path: 'returns', element: <ReturnsPage /> },

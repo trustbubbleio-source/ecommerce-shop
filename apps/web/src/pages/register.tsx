@@ -9,7 +9,7 @@ export function RegisterPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Create your account</CardTitle>
           <p className="text-muted-foreground text-sm">
-            Join One More Rip for faster checkout and order tracking.
+            Just your email — confirm it, then choose a password. Or continue with Google.
           </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">

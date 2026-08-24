@@ -4,8 +4,10 @@ import {
   checkoutInputSchema,
   contactInputSchema,
   createProductInputSchema,
+  forgotPasswordInputSchema,
   loginInputSchema,
   registerInputSchema,
+  resetPasswordInputSchema,
 } from './schemas.js';
 
 const validProduct = {
@@ -25,28 +27,15 @@ const validProduct = {
 };
 
 describe('registerInputSchema', () => {
-  it('accepts a valid registration and lowercases the email', () => {
+  it('accepts a valid email and lowercases it', () => {
     const parsed = registerInputSchema.parse({
-      name: 'Ash Ketchum',
       email: 'Ash@Pallet.Town',
-      password: 'pikachu123',
     });
     expect(parsed.email).toBe('ash@pallet.town');
   });
 
-  it('rejects short passwords', () => {
-    const result = registerInputSchema.safeParse({
-      name: 'Ash',
-      email: 'ash@pallet.town',
-      password: 'short',
-    });
-    expect(result.success).toBe(false);
-  });
-
   it('rejects invalid emails', () => {
-    expect(
-      registerInputSchema.safeParse({ name: 'A', email: 'nope', password: 'longenough' }).success,
-    ).toBe(false);
+    expect(registerInputSchema.safeParse({ email: 'nope' }).success).toBe(false);
   });
 });
 
@@ -57,6 +46,27 @@ describe('loginInputSchema', () => {
 
   it('requires a password', () => {
     expect(loginInputSchema.safeParse({ email: 'a@b.com', password: '' }).success).toBe(false);
+  });
+});
+
+describe('forgotPasswordInputSchema', () => {
+  it('accepts a valid email', () => {
+    expect(forgotPasswordInputSchema.safeParse({ email: 'a@b.com' }).success).toBe(true);
+  });
+
+  it('rejects an invalid email', () => {
+    expect(forgotPasswordInputSchema.safeParse({ email: 'nope' }).success).toBe(false);
+  });
+});
+
+describe('resetPasswordInputSchema', () => {
+  it('requires token and a long enough password', () => {
+    expect(
+      resetPasswordInputSchema.safeParse({ token: 'abc', password: 'short' }).success,
+    ).toBe(false);
+    expect(
+      resetPasswordInputSchema.safeParse({ token: 'abc', password: 'longenough' }).success,
+    ).toBe(true);
   });
 });
 

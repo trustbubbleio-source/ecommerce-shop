@@ -13,6 +13,10 @@ export interface Env {
   databaseEnabled: boolean;
   /** AWS S3 + CloudFront for asset storage (server-side uploads). */
   storage: StorageEnv;
+  /** Resend transactional email. */
+  email: EmailEnv;
+  /** Google Identity Services (Sign in with Google). */
+  google: GoogleAuthEnv;
 }
 
 export interface StorageEnv {
@@ -24,7 +28,28 @@ export interface StorageEnv {
   cloudfrontUrl: string;
 }
 
-const PLACEHOLDERS = new Set(['', 'sk_test_xxx', 'sk_live_xxx', 'whsec_xxx']);
+export interface EmailEnv {
+  enabled: boolean;
+  apiKey: string;
+  /** Default From header, e.g. `One More Rip <noreply@onemorerip.cards>`. */
+  from: string;
+  /** Inbox that receives contact-form submissions. */
+  contactInbox: string;
+}
+
+export interface GoogleAuthEnv {
+  enabled: boolean;
+  clientId: string;
+}
+
+const PLACEHOLDERS = new Set([
+  '',
+  'sk_test_xxx',
+  'sk_live_xxx',
+  'whsec_xxx',
+  're_xxx',
+  'google_client_id_xxx',
+]);
 
 function isReal(value: string | undefined): value is string {
   return typeof value === 'string' && !PLACEHOLDERS.has(value);
@@ -42,6 +67,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const secretAccessKey = source.AWS_SECRET_ACCESS_KEY ?? '';
   const region = source.AWS_REGION ?? '';
   const bucket = source.AWS_BUCKET ?? '';
+  const resendApiKey = source.RESEND_API_KEY ?? '';
+  const googleClientId = source.GOOGLE_CLIENT_ID ?? '';
   return {
     port: Number.parseInt(source.PORT ?? '4000', 10),
     webOrigins: (source.WEB_ORIGIN ?? 'http://localhost:5173')
@@ -62,6 +89,16 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
       region,
       bucket,
       cloudfrontUrl,
+    },
+    email: {
+      enabled: isReal(resendApiKey) && resendApiKey.startsWith('re_'),
+      apiKey: resendApiKey,
+      from: source.EMAIL_FROM ?? 'One More Rip <onboarding@resend.dev>',
+      contactInbox: source.EMAIL_CONTACT_INBOX ?? 'contact@onemorerip.cards',
+    },
+    google: {
+      enabled: isReal(googleClientId),
+      clientId: googleClientId,
     },
   };
 }

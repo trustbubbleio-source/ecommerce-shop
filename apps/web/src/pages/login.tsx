@@ -13,6 +13,11 @@ export function LoginPage() {
         <CardContent className="flex flex-col gap-5">
           <AuthForm mode="login" />
           <p className="text-muted-foreground text-center text-sm">
+            <Link to="/forgot-password" className="text-primary font-semibold hover:underline">
+              Forgot password?
+            </Link>
+          </p>
+          <p className="text-muted-foreground text-center text-sm">
             New here?{' '}
             <Link to="/register" className="text-primary font-semibold hover:underline">
               Create an account

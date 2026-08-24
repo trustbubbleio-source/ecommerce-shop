@@ -16,11 +16,13 @@ async function main() {
       name,
       passwordHash,
       role: 'admin',
+      emailVerifiedAt: new Date(),
     },
     update: {
       name,
       passwordHash,
       role: 'admin',
+      emailVerifiedAt: new Date(),
     },
   });
 

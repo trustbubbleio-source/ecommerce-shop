@@ -30,16 +30,16 @@ describe('POST /api/checkout', () => {
   });
 
   it('associates the order with an authenticated user', async () => {
-    const { app, deps } = makeApp();
-    const token = await registerAndLogin(app);
+    const created = makeApp();
+    const token = await registerAndLogin(created);
     const { data } = await jsonRequest(
-      app,
+      created.app,
       'POST',
       '/api/checkout',
       { email: 'trainer@pallet.town', items: [{ productId: 'bb-151', quantity: 1 }] },
       { authorization: `Bearer ${token}` },
     );
-    const order = (await deps.orders.get(data.orderId))!;
+    const order = (await created.deps.orders.get(data.orderId))!;
     expect(order.userId).toBeDefined();
   });
 

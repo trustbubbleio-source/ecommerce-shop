@@ -17,5 +17,14 @@ describe('auth pages', () => {
       'href',
       '/register',
     );
+    expect(screen.getByRole('link', { name: /Forgot password/i })).toHaveAttribute(
+      'href',
+      '/forgot-password',
+    );
+  });
+
+  it('renders the forgot-password page', async () => {
+    renderApp('/forgot-password');
+    expect(await screen.findByText('Forgot password')).toBeInTheDocument();
   });
 });

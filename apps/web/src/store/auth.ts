@@ -6,8 +6,11 @@ import { setAuthToken } from '../lib/api';
 interface AuthState {
   token: string | null;
   user: PublicUser | null;
-  setAuth: (token: string, user: PublicUser) => void;
+  /** Prompt the set-password modal after email verification (or Google without password). */
+  mustSetPassword: boolean;
+  setAuth: (token: string, user: PublicUser, opts?: { mustSetPassword?: boolean }) => void;
   setUser: (user: PublicUser) => void;
+  clearMustSetPassword: () => void;
   logout: () => void;
 }
 
@@ -16,19 +19,33 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
-      setAuth: (token, user) => {
+      mustSetPassword: false,
+      setAuth: (token, user, opts) => {
         setAuthToken(token);
-        set({ token, user });
+        set({
+          token,
+          user,
+          mustSetPassword: opts?.mustSetPassword ?? false,
+        });
       },
-      setUser: (user) => set({ user }),
+      setUser: (user) =>
+        set((state) => ({
+          user,
+          mustSetPassword: user.hasPassword ? false : state.mustSetPassword,
+        })),
+      clearMustSetPassword: () => set({ mustSetPassword: false }),
       logout: () => {
         setAuthToken(null);
-        set({ token: null, user: null });
+        set({ token: null, user: null, mustSetPassword: false });
       },
     }),
     {
       name: 'onemorerip-auth',
-      // Re-attach the persisted token to the API client after rehydration.
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user,
+        mustSetPassword: state.mustSetPassword,
+      }),
       onRehydrateStorage: () => (state) => {
         if (state?.token) setAuthToken(state.token);
       },

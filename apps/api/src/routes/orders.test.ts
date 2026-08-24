@@ -28,11 +28,11 @@ describe('GET /api/orders/:id', () => {
   });
 
   it('forbids another user from reading an owned order', async () => {
-    const { app } = makeApp();
-    const ownerToken = await registerAndLogin(app, 'owner@a.com');
-    const orderId = await placeOrder(app, ownerToken);
-    const otherToken = await registerAndLogin(app, 'other@a.com');
-    const { res } = await jsonRequest(app, 'GET', `/api/orders/${orderId}`, undefined, {
+    const created = makeApp();
+    const ownerToken = await registerAndLogin(created, 'owner@a.com');
+    const orderId = await placeOrder(created.app, ownerToken);
+    const otherToken = await registerAndLogin(created, 'other@a.com');
+    const { res } = await jsonRequest(created.app, 'GET', `/api/orders/${orderId}`, undefined, {
       authorization: `Bearer ${otherToken}`,
     });
     expect(res.status).toBe(403);
@@ -47,11 +47,11 @@ describe('GET /api/orders', () => {
   });
 
   it('lists the orders for the authenticated user', async () => {
-    const { app } = makeApp();
-    const token = await registerAndLogin(app);
-    await placeOrder(app, token);
-    await placeOrder(app, token);
-    const { res, data } = await jsonRequest(app, 'GET', '/api/orders', undefined, {
+    const created = makeApp();
+    const token = await registerAndLogin(created);
+    await placeOrder(created.app, token);
+    await placeOrder(created.app, token);
+    const { res, data } = await jsonRequest(created.app, 'GET', '/api/orders', undefined, {
       authorization: `Bearer ${token}`,
     });
     expect(res.status).toBe(200);

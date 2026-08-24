@@ -9,7 +9,8 @@ import {
 } from '@akknerds/ui';
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { ACCOUNT_NAV } from '../../config/account';
 import { MAIN_NAV } from '../../config/site';
 import { useAuthStore } from '../../store/auth';
 import { Brand } from '../common/brand';
@@ -18,9 +19,14 @@ import { CurrencySwitcher } from './currency-switcher';
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
 
   const accountLinks = user
-    ? [{ label: 'My account', to: '/account' }]
+    ? [
+        ...ACCOUNT_NAV.map((link) => ({ ...link })),
+        ...(user.role === 'admin' ? [{ label: 'Admin', to: '/admin' }] : []),
+      ]
     : [
         { label: 'Sign in', to: '/login' },
         { label: 'Create account', to: '/register' },
@@ -49,6 +55,7 @@ export function MobileNav() {
             <NavLink
               key={link.to}
               to={link.to}
+              end={link.to === '/account'}
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
                 cn(
@@ -60,6 +67,19 @@ export function MobileNav() {
               {link.label}
             </NavLink>
           ))}
+          {user && (
+            <button
+              type="button"
+              className="text-foreground hover:bg-secondary rounded-lg px-3 py-3 text-left text-base font-medium"
+              onClick={() => {
+                setOpen(false);
+                logout();
+                navigate('/');
+              }}
+            >
+              Sign out
+            </button>
+          )}
         </nav>
       </SheetContent>
     </Sheet>

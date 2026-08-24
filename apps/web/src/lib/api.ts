@@ -7,6 +7,8 @@ import type {
   ContactInput,
   CreateProductInput,
   FetchCardImageInput,
+  ForgotPasswordInput,
+  GoogleAuthInput,
   LoginInput,
   Order,
   Product,
@@ -14,8 +16,13 @@ import type {
   ProductLanguage,
   PublicUser,
   RegisterInput,
+  RegisterPendingResponse,
+  ResetPasswordInput,
+  SetPasswordInput,
   SortKey,
   UpdateProductInput,
+  UpdateProfileInput,
+  VerifyEmailInput,
 } from '@akknerds/shared';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
@@ -125,11 +132,29 @@ export const api = {
   catalogMeta(): Promise<CatalogMeta> {
     return request('/products/meta');
   },
-  register(input: RegisterInput): Promise<AuthResponse> {
+  register(input: RegisterInput): Promise<RegisterPendingResponse> {
     return request('/auth/register', { method: 'POST', body: JSON.stringify(input) });
+  },
+  verifyEmail(input: VerifyEmailInput): Promise<AuthResponse> {
+    return request('/auth/verify-email', { method: 'POST', body: JSON.stringify(input) });
   },
   login(input: LoginInput): Promise<AuthResponse> {
     return request('/auth/login', { method: 'POST', body: JSON.stringify(input) });
+  },
+  googleAuth(input: GoogleAuthInput): Promise<AuthResponse> {
+    return request('/auth/google', { method: 'POST', body: JSON.stringify(input) });
+  },
+  setPassword(input: SetPasswordInput): Promise<{ ok: boolean; user: PublicUser; message: string }> {
+    return request('/auth/set-password', { method: 'POST', body: JSON.stringify(input) });
+  },
+  updateProfile(input: UpdateProfileInput): Promise<{ user: PublicUser }> {
+    return request('/auth/me', { method: 'PATCH', body: JSON.stringify(input) });
+  },
+  forgotPassword(input: ForgotPasswordInput): Promise<{ ok: boolean; message: string }> {
+    return request('/auth/forgot-password', { method: 'POST', body: JSON.stringify(input) });
+  },
+  resetPassword(input: ResetPasswordInput): Promise<{ ok: boolean; message: string }> {
+    return request('/auth/reset-password', { method: 'POST', body: JSON.stringify(input) });
   },
   me(): Promise<{ user: PublicUser }> {
     return request('/auth/me');

@@ -10,11 +10,13 @@ const user: PublicUser = {
   email: 'ash@pallet.town',
   name: 'Ash',
   role: 'customer',
+  emailVerifiedAt: '2024-01-01T00:00:00.000Z',
+  hasPassword: true,
   createdAt: '2024-01-01T00:00:00.000Z',
 };
 
 beforeEach(() => {
-  useAuthStore.setState({ token: null, user: null });
+  useAuthStore.setState({ token: null, user: null, mustSetPassword: false });
   vi.restoreAllMocks();
 });
 

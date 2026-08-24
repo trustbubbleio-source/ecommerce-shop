@@ -99,7 +99,7 @@ export function CheckoutSuccessPage() {
           <Link to="/shop">Continue shopping</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to="/account">View my orders</Link>
+          <Link to="/account/orders">View my orders</Link>
         </Button>
       </div>
     </div>

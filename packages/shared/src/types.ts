@@ -93,12 +93,24 @@ export interface PublicUser {
   email: string;
   name: string;
   role: UserRole;
+  /** ISO timestamp when the email was confirmed; null if pending. */
+  emailVerifiedAt: string | null;
+  /** False until the user chooses a password (email signup or Google-only). */
+  hasPassword: boolean;
   createdAt: string;
 }
 
 export interface AuthResponse {
   token: string;
   user: PublicUser;
+  /** True when the client should prompt for a password (first-time email signup). */
+  mustSetPassword: boolean;
+}
+
+/** Returned after signup — account is pending email confirmation. */
+export interface RegisterPendingResponse {
+  ok: true;
+  message: string;
 }
 
 export interface CheckoutSession {

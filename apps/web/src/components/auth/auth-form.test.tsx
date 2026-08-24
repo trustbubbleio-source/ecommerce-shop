@@ -12,11 +12,13 @@ const user: PublicUser = {
   email: 'ash@pallet.town',
   name: 'Ash',
   role: 'customer',
+  emailVerifiedAt: '2024-01-01T00:00:00.000Z',
+  hasPassword: true,
   createdAt: '2024-01-01T00:00:00.000Z',
 };
 
 beforeEach(() => {
-  useAuthStore.setState({ token: null, user: null });
+  useAuthStore.setState({ token: null, user: null, mustSetPassword: false });
   vi.restoreAllMocks();
 });
 
@@ -30,7 +32,7 @@ describe('AuthForm (login)', () => {
   });
 
   it('signs in and redirects on success', async () => {
-    vi.spyOn(api, 'login').mockResolvedValue({ token: 'tok_1', user });
+    vi.spyOn(api, 'login').mockResolvedValue({ token: 'tok_1', user, mustSetPassword: false });
     renderWithProviders(
       <>
         <AuthForm mode="login" />
@@ -57,19 +59,21 @@ describe('AuthForm (login)', () => {
 });
 
 describe('AuthForm (register)', () => {
-  it('requires a name and creates an account', async () => {
-    const registerSpy = vi.spyOn(api, 'register').mockResolvedValue({ token: 'tok_2', user });
+  it('requires an email and asks the user to check their inbox', async () => {
+    const registerSpy = vi.spyOn(api, 'register').mockResolvedValue({
+      ok: true,
+      message: 'Check your inbox',
+    });
     renderWithProviders(<AuthForm mode="register" />, { route: '/register' });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
-    expect(await screen.findByText(/Name is required/i)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Continue with email' }));
+    expect(await screen.findByText(/valid email/i)).toBeInTheDocument();
 
-    await userEvent.type(screen.getByLabelText('Name'), 'Ash');
     await userEvent.type(screen.getByLabelText('Email'), 'ash@pallet.town');
-    await userEvent.type(screen.getByLabelText('Password'), 'pikachu123');
-    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Continue with email' }));
 
-    await waitFor(() => expect(registerSpy).toHaveBeenCalled());
-    expect(useAuthStore.getState().user).toEqual(user);
+    await waitFor(() => expect(registerSpy).toHaveBeenCalledWith({ email: 'ash@pallet.town' }));
+    expect(useAuthStore.getState().user).toBeNull();
+    expect(await screen.findByText(/We sent a confirmation link/i)).toBeInTheDocument();
   });
 });

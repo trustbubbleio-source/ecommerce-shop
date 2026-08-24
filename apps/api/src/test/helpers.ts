@@ -1,6 +1,7 @@
 import { type CreatedApp, createApp } from '../app.js';
 import { type Env, loadEnv } from '../env.js';
 import type { AppDeps } from '../context.js';
+import { hashPassword } from '../lib/password.js';
 
 /** A deterministic test env (mock payments, fixed JWT secret). */
 export function testEnv(overrides: Partial<NodeJS.ProcessEnv> = {}): Env {
@@ -34,14 +35,20 @@ export async function jsonRequest(
   return { res, data };
 }
 
-/** Register a user and return the auth token. */
+/** Create a verified user and return a session token. */
 export async function registerAndLogin(
-  app: CreatedApp['app'],
+  created: CreatedApp,
   email = 'trainer@pallet.town',
   password = 'pikachu123',
 ) {
-  const { data } = await jsonRequest(app, 'POST', '/api/auth/register', {
+  const passwordHash = await hashPassword(password);
+  await created.deps.users.create({
     name: 'Ash Ketchum',
+    email,
+    passwordHash,
+    emailVerifiedAt: new Date().toISOString(),
+  });
+  const { data } = await jsonRequest(created.app, 'POST', '/api/auth/login', {
     email,
     password,
   });

@@ -266,13 +266,17 @@ enum ProductLanguage {
 }
 
 model User {
-  id           String   @id
-  email        String   @unique
-  name         String
-  passwordHash String   @map("password_hash")
-  role         String   @default("customer")
-  createdAt    DateTime @default(now()) @map("created_at")
-  orders       Order[]
+  id              String    @id
+  email           String    @unique
+  name            String
+  passwordHash    String?   @map("password_hash")
+  /** Google subject (`sub`) when the user signed in with Google. */
+  googleSub       String?   @unique @map("google_sub")
+  role            String    @default("customer")
+  /** Null until the user confirms via the registration email link (Google users are verified). */
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  orders          Order[]
 
   @@map("users")
 }

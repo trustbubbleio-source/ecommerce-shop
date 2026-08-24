@@ -7,7 +7,12 @@ const adminCreds = { name: 'Admin', email: 'admin@test.local', password: 'adminp
 
 async function seedAdmin(deps: Awaited<ReturnType<typeof makeApp>>['deps']) {
   const passwordHash = await hashPassword(adminCreds.password);
-  return deps.users.create({ ...adminCreds, passwordHash, role: 'admin' });
+  return deps.users.create({
+    ...adminCreds,
+    passwordHash,
+    role: 'admin',
+    emailVerifiedAt: new Date().toISOString(),
+  });
 }
 
 describe('GET /api/admin/products', () => {
@@ -18,9 +23,15 @@ describe('GET /api/admin/products', () => {
   });
 
   it('rejects non-admin users', async () => {
-    const { app } = makeApp();
-    const { data } = await jsonRequest(app, 'POST', '/api/auth/register', {
+    const { app, deps } = makeApp();
+    const passwordHash = await hashPassword('pikachu123');
+    await deps.users.create({
       name: 'Ash',
+      email: 'ash@pallet.town',
+      passwordHash,
+      emailVerifiedAt: new Date().toISOString(),
+    });
+    const { data } = await jsonRequest(app, 'POST', '/api/auth/login', {
       email: 'ash@pallet.town',
       password: 'pikachu123',
     });
@@ -61,13 +72,12 @@ describe('GET /api/admin/products', () => {
 
 describe('POST /api/auth/register', () => {
   it('always creates a customer account', async () => {
-    const { app } = makeApp();
-    const { data } = await jsonRequest(app, 'POST', '/api/auth/register', {
-      name: 'Misty',
+    const { app, deps } = makeApp();
+    await jsonRequest(app, 'POST', '/api/auth/register', {
       email: 'misty@cerulean.city',
-      password: 'starmie123',
     });
-    expect(data.user.role).toBe('customer');
+    const user = await deps.users.findByEmail('misty@cerulean.city');
+    expect(user?.role).toBe('customer');
   });
 });
 

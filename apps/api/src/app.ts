@@ -4,6 +4,7 @@ import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 import type { AppDeps, AppEnv } from './context.js';
 import { loadEnv } from './env.js';
+import { EmailService } from './lib/email.js';
 import { PaymentService } from './lib/payments.js';
 import { StorageService } from './lib/storage.js';
 import { authOptional } from './middleware/auth.js';
@@ -32,6 +33,7 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
     products: overrides.products ?? memory.products,
     payments: overrides.payments ?? new PaymentService(env),
     storage: overrides.storage ?? new StorageService(env.storage),
+    email: overrides.email ?? new EmailService(env),
   };
 
   const app = new Hono<AppEnv>();
@@ -49,6 +51,8 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
       stripe: deps.payments.enabled ? 'live' : 'mock',
       database: env.databaseEnabled ? 'postgres' : 'memory',
       storage: env.storage.enabled ? 's3' : 'none',
+      email: deps.email.enabled ? 'resend' : 'mock',
+      google: env.google.enabled ? 'enabled' : 'disabled',
     }),
   );
   api.route('/products', productRoutes(deps));
