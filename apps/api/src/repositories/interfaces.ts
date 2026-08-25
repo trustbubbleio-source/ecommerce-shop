@@ -7,7 +7,9 @@ import type {
   OrderStatus,
   Product,
   ProductFilter,
+  ProductReview,
   SortKey,
+  UpdateProfileInput,
   UserRole,
 } from '@akknerds/shared';
 import type { StoredUser } from './users.js';
@@ -37,7 +39,7 @@ export interface UserRepository {
     emailVerifiedAt?: string | null;
   }): Promise<StoredUser>;
   updatePassword(userId: string, passwordHash: string): Promise<StoredUser | undefined>;
-  updateProfile(userId: string, input: { name: string }): Promise<StoredUser | undefined>;
+  updateProfile(userId: string, input: UpdateProfileInput): Promise<StoredUser | undefined>;
   linkGoogle(userId: string, googleSub: string): Promise<StoredUser | undefined>;
   markEmailVerified(userId: string): Promise<StoredUser | undefined>;
 }
@@ -49,6 +51,8 @@ export interface OrderRepository {
   markStatusBySession(sessionId: string, status: OrderStatus): Promise<Order | undefined>;
   setStatus(orderId: string, status: OrderStatus): Promise<Order | undefined>;
   listByUser(userId: string): Promise<Order[]>;
+  /** True if the user has a paid/fulfilled order containing the product. */
+  hasPurchasedProduct(userId: string, productId: string): Promise<boolean>;
 }
 
 export interface ListOptions {
@@ -80,4 +84,32 @@ export interface ProductRepository {
   catalogStats(): Promise<CatalogStats>;
   create(input: CreateProductInput): Promise<Product>;
   update(id: string, input: CreateProductInput): Promise<Product | undefined>;
+  /** Sync catalogue aggregate stars after a new review. */
+  setRatingStats(
+    productId: string,
+    stats: { rating: number; reviewCount: number },
+  ): Promise<Product | undefined>;
+}
+
+export interface FavoriteRepository {
+  listProductIds(userId: string): Promise<string[]>;
+  listProducts(userId: string): Promise<Product[]>;
+  has(userId: string, productId: string): Promise<boolean>;
+  add(userId: string, productId: string): Promise<boolean>;
+  remove(userId: string, productId: string): Promise<boolean>;
+}
+
+export interface CreateReviewInput {
+  userId: string;
+  productId: string;
+  rating: number;
+  body: string;
+}
+
+export interface ProductReviewRepository {
+  listByProduct(productId: string): Promise<ProductReview[]>;
+  findByUserAndProduct(userId: string, productId: string): Promise<ProductReview | undefined>;
+  create(input: CreateReviewInput): Promise<ProductReview>;
+  /** All star ratings for a product (for aggregate recalculation). */
+  listRatings(productId: string): Promise<number[]>;
 }

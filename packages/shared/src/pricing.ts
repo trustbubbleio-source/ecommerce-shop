@@ -5,6 +5,7 @@ import {
   normalizeCurrency,
   type SupportedCurrency,
 } from './currency.js';
+import { applyDiscountCode } from './discounts.js';
 
 /** Free shipping kicks in at or above this subtotal (EUR cents). */
 export const FREE_SHIPPING_THRESHOLD = 7500;
@@ -24,8 +25,36 @@ export interface PricedCart {
   lines: OrderLine[];
   subtotal: number;
   shipping: number;
+  /** Cents removed by a promo code (merchandise only). */
+  discount: number;
+  discountCode?: string;
   total: number;
   currency: string;
+}
+
+function finalizeCart(
+  lines: OrderLine[],
+  currency: SupportedCurrency,
+  discountCode?: string | null,
+  hasCompletedOrder = false,
+): PricedCart {
+  const subtotal = calcSubtotal(lines);
+  const baseShipping = calcShipping(subtotal);
+  const applied = applyDiscountCode(subtotal, baseShipping, discountCode, { hasCompletedOrder });
+  const shipping = applied?.shipping ?? baseShipping;
+  const discount = applied?.amount ?? 0;
+  return toDisplayCurrency(
+    {
+      lines,
+      subtotal,
+      shipping,
+      discount,
+      discountCode: applied?.code,
+      total: Math.max(0, subtotal + shipping - discount),
+      currency: BASE_CURRENCY,
+    },
+    currency,
+  );
 }
 
 function toDisplayCurrency(priced: PricedCart, currency: SupportedCurrency): PricedCart {
@@ -39,11 +68,14 @@ function toDisplayCurrency(priced: PricedCart, currency: SupportedCurrency): Pri
   }));
   const subtotal = calcSubtotal(lines);
   const shipping = convertFromEur(priced.shipping, currency);
+  const discount = convertFromEur(priced.discount, currency);
   return {
     lines,
     subtotal,
     shipping,
-    total: subtotal + shipping,
+    discount,
+    discountCode: priced.discountCode,
+    total: Math.max(0, subtotal + shipping - discount),
     currency,
   };
 }
@@ -60,6 +92,8 @@ export function priceCart(
   items: CartLine[],
   lookup: (productId: string) => Product | undefined,
   currency: string = BASE_CURRENCY,
+  discountCode?: string | null,
+  hasCompletedOrder = false,
 ): PricedCart {
   const lines: OrderLine[] = [];
 
@@ -76,12 +110,7 @@ export function priceCart(
     });
   }
 
-  const subtotal = calcSubtotal(lines);
-  const shipping = calcShipping(subtotal);
-  return toDisplayCurrency(
-    { lines, subtotal, shipping, total: subtotal + shipping, currency: BASE_CURRENCY },
-    normalizeCurrency(currency),
-  );
+  return finalizeCart(lines, normalizeCurrency(currency), discountCode, hasCompletedOrder);
 }
 
 /** Async variant for database-backed product lookups. */
@@ -89,6 +118,8 @@ export async function priceCartAsync(
   items: CartLine[],
   lookup: (productId: string) => Promise<Product | undefined>,
   currency: string = BASE_CURRENCY,
+  discountCode?: string | null,
+  hasCompletedOrder = false,
 ): Promise<PricedCart> {
   const lines: OrderLine[] = [];
 
@@ -105,10 +136,5 @@ export async function priceCartAsync(
     });
   }
 
-  const subtotal = calcSubtotal(lines);
-  const shipping = calcShipping(subtotal);
-  return toDisplayCurrency(
-    { lines, subtotal, shipping, total: subtotal + shipping, currency: BASE_CURRENCY },
-    normalizeCurrency(currency),
-  );
+  return finalizeCart(lines, normalizeCurrency(currency), discountCode, hasCompletedOrder);
 }

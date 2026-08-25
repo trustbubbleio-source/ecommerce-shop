@@ -69,4 +69,15 @@ export class PrismaProductRepository implements ProductRepository {
     const row = await prisma.product.update({ where: { id: existing.id }, data: fromProduct(product) });
     return toProduct(row);
   }
+
+  async setRatingStats(
+    productId: string,
+    stats: { rating: number; reviewCount: number },
+  ): Promise<Product | undefined> {
+    const row = await prisma.product.update({
+      where: { id: productId },
+      data: { rating: stats.rating, reviewCount: stats.reviewCount },
+    });
+    return toProduct(row);
+  }
 }

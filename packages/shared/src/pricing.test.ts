@@ -112,7 +112,8 @@ describe('priceCart', () => {
   it('adds shipping below the free threshold and totals correctly', () => {
     const result = priceCart([{ productId: 'a', quantity: 1 }], lookup);
     expect(result.shipping).toBe(FLAT_SHIPPING_FEE);
-    expect(result.total).toBe(result.subtotal + result.shipping);
+    expect(result.discount).toBe(0);
+    expect(result.total).toBe(result.subtotal + result.shipping - result.discount);
   });
 
   it('gives free shipping for a large order', () => {
@@ -120,6 +121,13 @@ describe('priceCart', () => {
     expect(result.subtotal).toBe(10000);
     expect(result.shipping).toBe(0);
     expect(result.total).toBe(10000);
+  });
+
+  it('applies a percent discount code', () => {
+    const result = priceCart([{ productId: 'a', quantity: 5 }], lookup, 'eur', 'ONEMORERIP10');
+    expect(result.discount).toBe(1000);
+    expect(result.discountCode).toBe('ONEMORERIP10');
+    expect(result.total).toBe(9000);
   });
 
   it('returns an empty priced cart for no valid items', () => {

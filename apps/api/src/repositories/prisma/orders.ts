@@ -64,4 +64,18 @@ export class PrismaOrderRepository implements OrderRepository {
     });
     return rows.map(toOrder);
   }
+
+  async hasPurchasedProduct(userId: string, productId: string): Promise<boolean> {
+    const rows = await prisma.order.findMany({
+      where: {
+        userId,
+        status: { in: ['paid', 'fulfilled'] },
+      },
+      select: { lines: true },
+    });
+    return rows.some((row) => {
+      const lines = row.lines as Array<{ productId?: string }>;
+      return Array.isArray(lines) && lines.some((line) => line.productId === productId);
+    });
+  }
 }

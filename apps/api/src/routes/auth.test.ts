@@ -128,7 +128,7 @@ describe('POST /api/auth/login', () => {
 });
 
 describe('PATCH /api/auth/me', () => {
-  it('updates the display name', async () => {
+  it('updates the display name and profile fields', async () => {
     const { app, deps } = makeApp({ email: mockEmail() });
     const passwordHash = await hashPassword(credentials.password);
     await deps.users.create({
@@ -142,11 +142,82 @@ describe('PATCH /api/auth/me', () => {
       app,
       'PATCH',
       '/api/auth/me',
-      { name: 'Ash Ketchum' },
+      {
+        name: 'Ash Ketchum',
+        city: 'Pallet Town',
+        country: 'Kanto',
+        bio: 'Gotta catch em all',
+        preferredCurrency: 'sek',
+        marketingOptIn: true,
+      },
       { authorization: `Bearer ${login.token}` },
     );
     expect(res.status).toBe(200);
     expect(data.user.name).toBe('Ash Ketchum');
+    expect(data.user.profile.city).toBe('Pallet Town');
+    expect(data.user.profile.preferredCurrency).toBe('sek');
+    expect(data.user.profile.marketingOptIn).toBe(true);
+
+    const withAddress = await jsonRequest(
+      app,
+      'PATCH',
+      '/api/auth/me',
+      {
+        shippingAddress: {
+          fullName: 'Ash Ketchum',
+          line1: '1 Pallet Lane',
+          city: 'Pallet Town',
+          postalCode: '00001',
+          country: 'Kanto',
+        },
+      },
+      { authorization: `Bearer ${login.token}` },
+    );
+    expect(withAddress.res.status).toBe(200);
+    expect(withAddress.data.user.profile.shippingAddress).toMatchObject({
+      line1: '1 Pallet Lane',
+      city: 'Pallet Town',
+    });
+  });
+
+  it('saves a valid discount code and rejects unknown ones', async () => {
+    const { app, deps } = makeApp({ email: mockEmail() });
+    const passwordHash = await hashPassword(credentials.password);
+    await deps.users.create({
+      email: credentials.email,
+      name: 'ash',
+      passwordHash,
+      emailVerifiedAt: new Date().toISOString(),
+    });
+    const { data: login } = await jsonRequest(app, 'POST', '/api/auth/login', credentials);
+
+    const ok = await jsonRequest(
+      app,
+      'PATCH',
+      '/api/auth/me',
+      { discountCode: 'rip5' },
+      { authorization: `Bearer ${login.token}` },
+    );
+    expect(ok.res.status).toBe(200);
+    expect(ok.data.user.profile.discountCode).toBe('RIP5');
+
+    const bad = await jsonRequest(
+      app,
+      'PATCH',
+      '/api/auth/me',
+      { discountCode: 'NOTAREALCODE' },
+      { authorization: `Bearer ${login.token}` },
+    );
+    expect(bad.res.status).toBe(400);
+
+    const welcome = await jsonRequest(
+      app,
+      'PATCH',
+      '/api/auth/me',
+      { discountCode: 'ONEMORERIP10' },
+      { authorization: `Bearer ${login.token}` },
+    );
+    expect(welcome.res.status).toBe(400);
   });
 });
 

@@ -5,6 +5,7 @@ import { MAIN_NAV, SITE } from '../../config/site';
 const SHOP_LINKS = MAIN_NAV.filter(
   (link) =>
     link.to !== '/shop' &&
+    link.to !== '/sell' &&
     link.to !== '/blog' &&
     link.to !== '/contact' &&
     link.to !== '/socials',
@@ -24,6 +25,7 @@ const LEGAL_LINKS = [
 ];
 
 const COMPANY_LINKS = [
+  { label: 'Sell to us', to: '/sell' },
   { label: 'Socials', to: '/socials' },
   { label: 'Looking for partners', to: '/partners' },
   { label: 'Blog', to: '/blog' },

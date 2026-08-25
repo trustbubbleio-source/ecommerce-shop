@@ -7,13 +7,25 @@ import {
 } from '@akknerds/chat';
 import { formatPrice } from '@akknerds/shared';
 import { useCallback, useRef } from 'react';
+import { PRELAUNCH } from '../config/launch';
 import { SITE } from '../config/site';
 import { api } from '../lib/api';
 import { useChatStore } from '../store/chat';
 
+const launchDateLabel = PRELAUNCH.description.replace(/^Purchases open\s+/i, '').replace(/\.$/, '');
+
 const chatContext = createChatContext({
   brandName: SITE.name,
   supportEmail: SITE.email.support,
+  contactEmail: SITE.email.contact,
+  ordersEmail: SITE.email.orders,
+  returnsEmail: SITE.email.returns,
+  privacyEmail: SITE.email.privacy,
+  partnerEmail: SITE.email.partner,
+  tradeEmail: SITE.email.trade,
+  storeLine: SITE.store.line,
+  launchDateLabel,
+  supportHours: SITE.supportHours,
 });
 
 function typingDelayMs(): number {

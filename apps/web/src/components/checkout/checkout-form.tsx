@@ -1,7 +1,7 @@
 import { type CheckoutInput, addressSchema } from '@akknerds/shared';
 import { Alert, Button, Field, Input, Spinner, useToast } from '@akknerds/ui';
 import { Lock } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
 import { ApiError } from '../../lib/api';
@@ -35,6 +35,23 @@ export function CheckoutForm() {
   const { toast } = useToast();
   const [values, setValues] = useState<FormValues>({ ...EMPTY, email: user?.email ?? '' });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [prefilled, setPrefilled] = useState(false);
+
+  useEffect(() => {
+    if (!user || prefilled) return;
+    const ship = user.profile.shippingAddress;
+    setValues((current) => ({
+      ...current,
+      email: user.email || current.email,
+      fullName: ship?.fullName || user.name || current.fullName,
+      line1: ship?.line1 || current.line1,
+      line2: ship?.line2 || current.line2,
+      city: ship?.city || current.city,
+      postalCode: ship?.postalCode || current.postalCode,
+      country: ship?.country || current.country,
+    }));
+    setPrefilled(true);
+  }, [user, prefilled]);
 
   const set = (key: keyof FormValues) => (e: { target: { value: string } }) => {
     setValues((v) => ({ ...v, [key]: e.target.value }));
@@ -64,7 +81,6 @@ export function CheckoutForm() {
 
     try {
       const session = await checkout.mutateAsync(input);
-      // Redirect to Stripe Checkout (or the local success page in mock mode).
       window.location.assign(session.url);
     } catch (error) {
       toast({
@@ -84,6 +100,12 @@ export function CheckoutForm() {
             Sign in
           </Link>{' '}
           for faster checkout and order history.
+        </Alert>
+      )}
+      {user?.profile.shippingAddress && (
+        <Alert variant="info">
+          We prefilled your default shipping address from your profile. You can edit it for this
+          order.
         </Alert>
       )}
 
@@ -170,33 +192,10 @@ export function CheckoutForm() {
         )}
       </Field>
 
-      <p className="text-muted-foreground text-xs leading-relaxed">
-        By continuing you agree to our{' '}
-        <Link to="/terms" className="text-foreground underline-offset-2 hover:underline">
-          Terms & Conditions
-        </Link>
-        ,{' '}
-        <Link to="/privacy" className="text-foreground underline-offset-2 hover:underline">
-          Privacy Policy
-        </Link>
-        , and acknowledge{' '}
-        <Link to="/shipping" className="text-foreground underline-offset-2 hover:underline">
-          Shipping & Delivery
-        </Link>{' '}
-        and{' '}
-        <Link to="/returns" className="text-foreground underline-offset-2 hover:underline">
-          Returns & Refunds
-        </Link>
-        . EU/EEA consumers generally have a 14-day right of withdrawal where applicable.
-      </p>
-
-      <Button type="submit" size="lg" block disabled={checkout.isPending}>
+      <Button type="submit" size="lg" block disabled={checkout.isPending || items.length === 0}>
         {checkout.isPending ? <Spinner className="text-primary-foreground" /> : <Lock />}
-        {checkout.isPending ? 'Redirecting…' : 'Pay securely'}
+        Pay securely
       </Button>
-      <p className="text-muted-foreground text-center text-xs">
-        Payments are processed securely by Stripe. You won't be charged until you confirm.
-      </p>
     </form>
   );
 }

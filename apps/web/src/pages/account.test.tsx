@@ -6,6 +6,18 @@ import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
 import { renderApp } from '../test/utils';
 
+const emptyProfile = {
+  phone: null,
+  country: null,
+  city: null,
+  bio: null,
+  shippingAddress: null,
+  discountCode: null,
+  preferredCurrency: 'eur' as const,
+  marketingOptIn: false,
+  updatedAt: '2024-01-01T00:00:00.000Z',
+};
+
 const user: PublicUser = {
   id: 'usr_1',
   email: 'ash@pallet.town',
@@ -13,6 +25,7 @@ const user: PublicUser = {
   role: 'customer',
   emailVerifiedAt: '2024-01-01T00:00:00.000Z',
   hasPassword: true,
+  profile: emptyProfile,
   createdAt: '2024-01-01T00:00:00.000Z',
 };
 
@@ -47,7 +60,7 @@ describe('Account pages', () => {
     renderApp('/account');
 
     expect(await screen.findByText(/Hi, Ash/)).toBeInTheDocument();
-    expect(screen.getByText(user.email)).toBeInTheDocument();
+    expect(screen.getByDisplayValue(user.name)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Orders' })).toHaveAttribute('href', '/account/orders');
   });
 
@@ -87,6 +100,14 @@ describe('Account pages', () => {
     expect(screen.getByRole('menuitem', { name: 'Orders' })).toHaveAttribute(
       'href',
       '/account/orders',
+    );
+    expect(screen.getByRole('menuitem', { name: 'Favorites' })).toHaveAttribute(
+      'href',
+      '/account/favorites',
+    );
+    expect(screen.getByRole('menuitem', { name: 'Discount' })).toHaveAttribute(
+      'href',
+      '/account/discount',
     );
     expect(screen.getByRole('menuitem', { name: 'Settings' })).toHaveAttribute(
       'href',

@@ -3,7 +3,13 @@ import type { EmailService } from './lib/email.js';
 import type { TokenPayload } from './lib/jwt.js';
 import type { PaymentService } from './lib/payments.js';
 import type { StorageService } from './lib/storage.js';
-import type { OrderRepository, ProductRepository, UserRepository } from './repositories/interfaces.js';
+import type {
+  FavoriteRepository,
+  OrderRepository,
+  ProductRepository,
+  ProductReviewRepository,
+  UserRepository,
+} from './repositories/interfaces.js';
 
 /** Dependencies wired into each app instance (injectable for tests). */
 export interface AppDeps {
@@ -11,6 +17,8 @@ export interface AppDeps {
   users: UserRepository;
   orders: OrderRepository;
   products: ProductRepository;
+  favorites: FavoriteRepository;
+  reviews: ProductReviewRepository;
   payments: PaymentService;
   storage: StorageService;
   email: EmailService;

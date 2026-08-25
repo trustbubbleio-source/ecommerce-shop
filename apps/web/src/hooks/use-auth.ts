@@ -1,8 +1,9 @@
-import type { LoginInput, RegisterInput, VerifyEmailInput } from '@akknerds/shared';
+import type { LoginInput, RegisterInput, UpdateProfileInput, VerifyEmailInput } from '@akknerds/shared';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { ApiError, api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
+import { useCurrencyStore } from '../store/currency';
 
 export function useRegister() {
   return useMutation({
@@ -48,19 +49,24 @@ export function useSetPassword() {
 
 export function useUpdateProfile() {
   const setUser = useAuthStore((s) => s.setUser);
+  const setCurrency = useCurrencyStore((s) => s.setCurrency);
   return useMutation({
-    mutationFn: (name: string) => api.updateProfile({ name }),
-    onSuccess: ({ user }) => setUser(user),
+    mutationFn: (input: UpdateProfileInput) => api.updateProfile(input),
+    onSuccess: ({ user }) => {
+      setUser(user);
+      setCurrency(user.profile.preferredCurrency);
+    },
   });
 }
 
 /**
  * On mount, if a persisted token exists, refresh the current user. A 401 means
- * the token expired, so we log out cleanly.
+ * the token expired, so we log out cleanly. Also sync preferred currency.
  */
 export function useInitAuth(): void {
   const token = useAuthStore((s) => s.token);
   const setUser = useAuthStore((s) => s.setUser);
+  const setCurrency = useCurrencyStore((s) => s.setCurrency);
   const logout = useAuthStore((s) => s.logout);
 
   useEffect(() => {
@@ -69,7 +75,9 @@ export function useInitAuth(): void {
     api
       .me()
       .then(({ user }) => {
-        if (active) setUser(user);
+        if (!active) return;
+        setUser(user);
+        setCurrency(user.profile.preferredCurrency);
       })
       .catch((error) => {
         if (active && error instanceof ApiError && (error.status === 401 || error.status === 403)) {
@@ -79,5 +87,5 @@ export function useInitAuth(): void {
     return () => {
       active = false;
     };
-  }, [token, setUser, logout]);
+  }, [token, setUser, setCurrency, logout]);
 }

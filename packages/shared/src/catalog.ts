@@ -20,6 +20,7 @@ interface ProductSeed {
   rarity?: CardRarity;
   condition?: CardCondition;
   cardNumber?: string;
+  artist?: string;
   releaseDate: string;
 }
 

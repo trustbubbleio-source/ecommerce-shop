@@ -3,6 +3,8 @@
  * Monetary values are always integers in the smallest currency unit (cents).
  */
 
+import type { SupportedCurrency } from './currency.js';
+
 export type {
   CardCondition,
   CardRarity,
@@ -47,6 +49,8 @@ export interface Product {
   language: import('./enums.js').ProductLanguage;
   /** Collector number, e.g. "178/165". Shown on shop card previews. */
   cardNumber?: string;
+  /** Card illustrator — included in product search when set. */
+  artist?: string;
   releaseDate: string;
 }
 
@@ -88,6 +92,20 @@ export interface Order {
   createdAt: string;
 }
 
+export interface UserProfile {
+  phone: string | null;
+  country: string | null;
+  city: string | null;
+  bio: string | null;
+  /** Default shipping address used to prefill checkout. */
+  shippingAddress: Address | null;
+  /** Saved promo code applied automatically at checkout. */
+  discountCode: string | null;
+  preferredCurrency: SupportedCurrency;
+  marketingOptIn: boolean;
+  updatedAt: string;
+}
+
 export interface PublicUser {
   id: string;
   email: string;
@@ -97,7 +115,21 @@ export interface PublicUser {
   emailVerifiedAt: string | null;
   /** False until the user chooses a password (email signup or Google-only). */
   hasPassword: boolean;
+  profile: UserProfile;
   createdAt: string;
+}
+
+/** Buyer review shown on the product page (members only). */
+export interface ProductReview {
+  id: string;
+  productId: string;
+  rating: number;
+  body: string;
+  createdAt: string;
+  author: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface AuthResponse {

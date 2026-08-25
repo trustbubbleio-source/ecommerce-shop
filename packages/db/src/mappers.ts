@@ -54,6 +54,7 @@ export function toProduct(row: DbProduct): Product {
     condition: row.condition ? fromPrismaCondition(row.condition) : undefined,
     language: fromPrismaLanguage(row.language),
     cardNumber: row.cardNumber ?? undefined,
+    artist: row.artist ?? undefined,
     releaseDate: row.releaseDate,
   };
 }
@@ -88,6 +89,7 @@ export function fromProduct(product: Product) {
     condition: product.condition ? toPrismaCondition(product.condition) : null,
     language: toPrismaLanguage(product.language),
     cardNumber: product.cardNumber ?? null,
+    artist: product.artist ?? null,
     releaseDate: product.releaseDate,
   };
 }

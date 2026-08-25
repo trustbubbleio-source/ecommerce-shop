@@ -1,15 +1,36 @@
-import { FREE_SHIPPING_THRESHOLD } from '@akknerds/shared';
+import {
+  FREE_SHIPPING_THRESHOLD,
+  applyDiscountCode,
+  isWelcomeDiscountCode,
+} from '@akknerds/shared';
 import { cn } from '@akknerds/ui';
 import { useFormatMoney } from '../../hooks/use-format-money';
-import { type CartItem, cartShipping, cartSubtotal, cartTotal } from '../../store/cart';
+import { useMyOrders } from '../../hooks/use-orders';
+import { useAuthStore } from '../../store/auth';
+import { type CartItem, cartShipping, cartSubtotal } from '../../store/cart';
 
 export function CartSummary({ items, className }: { items: CartItem[]; className?: string }) {
   const formatMoney = useFormatMoney();
+  const discountCode = useAuthStore((s) => s.user?.profile.discountCode);
+  const token = useAuthStore((s) => s.token);
+  const orders = useMyOrders();
+  const hasCompletedOrder =
+    Boolean(token) &&
+    (orders.data?.orders.some((o) => o.status === 'paid' || o.status === 'fulfilled') ?? false);
+
   const subtotal = cartSubtotal(items);
-  const shipping = cartShipping(items);
-  const total = cartTotal(items);
+  const baseShipping = cartShipping(items);
+  const applied = applyDiscountCode(subtotal, baseShipping, discountCode, { hasCompletedOrder });
+  const shipping = applied?.shipping ?? baseShipping;
+  const discount = applied?.amount ?? 0;
+  const total = Math.max(0, subtotal + shipping - discount);
   const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const progress = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
+  const discountLabel = applied
+    ? isWelcomeDiscountCode(applied.code)
+      ? 'Welcome offer'
+      : `Discount (${applied.code})`
+    : null;
 
   return (
     <div className={cn('flex flex-col gap-4', className)}>
@@ -45,6 +66,18 @@ export function CartSummary({ items, className }: { items: CartItem[]; className
             {shipping === 0 ? 'Free' : formatMoney(shipping)}
           </dd>
         </div>
+        {discount > 0 && discountLabel && (
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{discountLabel}</dt>
+            <dd className="text-success font-medium">−{formatMoney(discount)}</dd>
+          </div>
+        )}
+        {discount === 0 && applied?.code === 'FREESHIP' && discountLabel && (
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{discountLabel}</dt>
+            <dd className="text-success font-medium">Free shipping</dd>
+          </div>
+        )}
         <div className="border-border mt-2 flex justify-between border-t pt-3 text-base">
           <dt className="text-foreground font-bold">Total</dt>
           <dd className="text-foreground font-extrabold">{formatMoney(total)}</dd>

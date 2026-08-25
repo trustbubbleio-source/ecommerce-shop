@@ -96,6 +96,7 @@ const defaultValues = {
   accent: '#a855f7',
   releaseDate: new Date().toISOString().slice(0, 10),
   cardNumber: '',
+  artist: '',
   rarity: '' as CardRarity | '',
   condition: '' as CardCondition | '',
   language: 'english' as ProductLanguage,
@@ -124,6 +125,7 @@ function buildCreateProductDraft(
     featured: values.featured,
     releaseDate: values.releaseDate,
     cardNumber: values.cardNumber.trim() || undefined,
+    artist: values.artist.trim() || undefined,
     rarity: values.rarity as CardRarity,
     condition: values.condition as CardCondition,
     language: values.language,
@@ -167,6 +169,7 @@ export function AdminNewProductPage() {
         featured: values.featured,
         releaseDate: values.releaseDate,
         cardNumber: values.cardNumber.trim() || undefined,
+        artist: values.artist.trim() || undefined,
         rarity: values.rarity as CardRarity,
         condition: values.condition as CardCondition,
         language: values.language,
@@ -385,6 +388,20 @@ export function AdminNewProductPage() {
                     </Button>
                   )}
                 </div>
+              )}
+            </Field>
+            <Field
+              label="Artist"
+              error={errors.artist}
+              hint="Illustrator name — customers can search by artist once set."
+            >
+              {(props) => (
+                <Input
+                  {...props}
+                  value={values.artist}
+                  onChange={(e) => setValues((v) => ({ ...v, artist: e.target.value }))}
+                  placeholder="e.g. Mitsuhiro Arita"
+                />
               )}
             </Field>
             <Field label="Product name" error={errors.name} hint={nameGuide.hint} required>

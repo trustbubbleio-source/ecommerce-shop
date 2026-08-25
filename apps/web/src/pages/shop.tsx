@@ -73,7 +73,7 @@ export function ShopPage() {
                 type="search"
                 value={filters.search}
                 onChange={(e) => update({ search: e.target.value })}
-                placeholder="Search products, sets, cards…"
+                placeholder="Search products, sets, artists…"
                 aria-label="Search products"
                 className="pl-9"
               />

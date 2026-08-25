@@ -76,4 +76,15 @@ export class ProductRepository implements IProductRepository {
     this.products[index] = updated;
     return updated;
   }
+
+  async setRatingStats(
+    productId: string,
+    stats: { rating: number; reviewCount: number },
+  ): Promise<Product | undefined> {
+    const product = this.products.find((p) => p.id === productId);
+    if (!product) return undefined;
+    product.rating = stats.rating;
+    product.reviewCount = stats.reviewCount;
+    return product;
+  }
 }

@@ -2,6 +2,8 @@ import type { RouteObject } from 'react-router-dom';
 import { AdminGuard } from './components/admin/admin-guard';
 import { AdminLayout } from './components/layout/admin-layout';
 import { RootLayout } from './components/layout/root-layout';
+import { AccountDiscountPage } from './pages/account/discount';
+import { AccountFavoritesPage } from './pages/account/favorites';
 import { AccountLayout } from './pages/account/layout';
 import { AccountOrdersPage } from './pages/account/orders';
 import { AccountProfilePage } from './pages/account/profile';
@@ -30,6 +32,7 @@ import { VerifyEmailPage } from './pages/verify-email';
 import { ReturnsPage } from './pages/returns';
 import { ShippingPage } from './pages/shipping';
 import { ShopPage } from './pages/shop';
+import { SellPage } from './pages/sell';
 import { SocialsPage } from './pages/socials';
 import { TermsPage } from './pages/terms';
 
@@ -40,6 +43,7 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <HomePage /> },
       { path: 'shop', element: <ShopPage /> },
+      { path: 'sell', element: <SellPage /> },
       { path: 'product/:slug', element: <ProductDetailPage /> },
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
@@ -55,6 +59,8 @@ export const routes: RouteObject[] = [
         children: [
           { index: true, element: <AccountProfilePage /> },
           { path: 'orders', element: <AccountOrdersPage /> },
+          { path: 'favorites', element: <AccountFavoritesPage /> },
+          { path: 'discount', element: <AccountDiscountPage /> },
           { path: 'settings', element: <AccountSettingsPage /> },
         ],
       },

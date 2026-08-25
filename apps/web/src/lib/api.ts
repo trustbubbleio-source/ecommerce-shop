@@ -6,6 +6,7 @@ import type {
   CheckoutSession,
   ContactInput,
   CreateProductInput,
+  CreateProductReviewInput,
   FetchCardImageInput,
   ForgotPasswordInput,
   GoogleAuthInput,
@@ -14,6 +15,7 @@ import type {
   Product,
   ProductCategory,
   ProductLanguage,
+  ProductReview,
   PublicUser,
   RegisterInput,
   RegisterPendingResponse,
@@ -129,6 +131,22 @@ export const api = {
   getProduct(idOrSlug: string): Promise<{ product: Product }> {
     return request(`/products/${encodeURIComponent(idOrSlug)}`);
   },
+  listProductReviews(idOrSlug: string): Promise<{
+    reviews: ProductReview[];
+    canReview: boolean;
+    myReview: ProductReview | null;
+  }> {
+    return request(`/products/${encodeURIComponent(idOrSlug)}/reviews`);
+  },
+  createProductReview(
+    idOrSlug: string,
+    input: CreateProductReviewInput,
+  ): Promise<{ review: ProductReview }> {
+    return request(`/products/${encodeURIComponent(idOrSlug)}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
   catalogMeta(): Promise<CatalogMeta> {
     return request('/products/meta');
   },
@@ -167,6 +185,18 @@ export const api = {
   },
   myOrders(): Promise<{ orders: Order[] }> {
     return request('/orders');
+  },
+  listFavorites(): Promise<{ products: Product[] }> {
+    return request('/favorites');
+  },
+  listFavoriteIds(): Promise<{ productIds: string[] }> {
+    return request('/favorites/ids');
+  },
+  addFavorite(productId: string): Promise<{ ok: boolean; productIds: string[] }> {
+    return request(`/favorites/${encodeURIComponent(productId)}`, { method: 'POST' });
+  },
+  removeFavorite(productId: string): Promise<{ ok: boolean; productIds: string[] }> {
+    return request(`/favorites/${encodeURIComponent(productId)}`, { method: 'DELETE' });
   },
   adminListProducts(): Promise<{ products: Product[]; total: number; stats: CatalogStats }> {
     return request('/admin/products');
@@ -220,5 +250,8 @@ export const api = {
   },
   contact(input: ContactInput): Promise<{ ok: boolean; message: string }> {
     return request('/contact', { method: 'POST', body: JSON.stringify(input) });
+  },
+  submitSellRequest(formData: FormData): Promise<{ ok: boolean; message: string }> {
+    return uploadRequest('/sell', formData);
   },
 };

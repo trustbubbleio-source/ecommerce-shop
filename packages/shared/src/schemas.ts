@@ -54,6 +54,12 @@ export const createProductInputSchema = z
       .trim()
       .regex(CARD_NUMBER_PATTERN, 'Use a card number like 208 or 208/325')
       .optional(),
+    artist: z
+      .string()
+      .trim()
+      .max(80, 'Artist name is too long')
+      .optional()
+      .transform((v) => (v === '' || v === undefined ? undefined : v)),
     rarity: z.enum(CARD_RARITIES, { required_error: 'Rarity is required' }),
     condition: z.enum(CARD_CONDITIONS, { required_error: 'Condition is required' }),
     language: z.enum(PRODUCT_LANGUAGES),
@@ -94,7 +100,12 @@ export const fetchCardImageInputSchema = z
 export const addressSchema = z.object({
   fullName: z.string().trim().min(1, 'Full name is required').max(100),
   line1: z.string().trim().min(1, 'Address is required').max(120),
-  line2: z.string().trim().max(120).optional(),
+  line2: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .transform((v) => (v === '' || v === undefined ? undefined : v)),
   city: z.string().trim().min(1, 'City is required').max(80),
   postalCode: z.string().trim().min(1, 'Postal code is required').max(20),
   country: z.string().trim().min(2, 'Country is required').max(60),
@@ -146,7 +157,51 @@ export const setPasswordInputSchema = z.object({
 });
 
 export const updateProfileInputSchema = z.object({
-  name: z.string().trim().min(1, 'Name is required').max(80),
+  name: z.string().trim().min(1, 'Name is required').max(80).optional(),
+  phone: z
+    .string()
+    .trim()
+    .max(40, 'Phone is too long')
+    .optional()
+    .nullable()
+    .transform((v) => (v === '' ? null : v)),
+  country: z
+    .string()
+    .trim()
+    .max(80, 'Country is too long')
+    .optional()
+    .nullable()
+    .transform((v) => (v === '' ? null : v)),
+  city: z
+    .string()
+    .trim()
+    .max(80, 'City is too long')
+    .optional()
+    .nullable()
+    .transform((v) => (v === '' ? null : v)),
+  bio: z
+    .string()
+    .trim()
+    .max(280, 'Keep it under 280 characters')
+    .optional()
+    .nullable()
+    .transform((v) => (v === '' ? null : v)),
+  preferredCurrency: z.enum(['eur', 'sek']).optional(),
+  marketingOptIn: z.boolean().optional(),
+  /** Pass a full address to save, or null to clear the default shipping address. */
+  shippingAddress: addressSchema.nullable().optional(),
+  /**
+   * Promo code to save on the profile (applied at checkout), or null/'' to clear.
+   * Validity is checked against the shared discount catalogue.
+   */
+  discountCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .max(40, 'Code is too long')
+    .nullable()
+    .optional()
+    .transform((v) => (v === '' || v == null ? null : v)),
 });
 
 export const googleAuthInputSchema = z.object({
@@ -164,6 +219,29 @@ export const contactInputSchema = z.object({
     .max(2000, 'Message is too long'),
 });
 
+export const createProductReviewInputSchema = z.object({
+  rating: z.number().int().min(1, 'Pick at least 1 star').max(5, 'Max 5 stars'),
+  body: z
+    .string()
+    .trim()
+    .min(10, 'Write at least 10 characters')
+    .max(1000, 'Keep it under 1000 characters'),
+});
+
+export const sellRequestItemSchema = z.object({
+  title: z.string().trim().min(1, 'Card name is required').max(120),
+  notes: z.string().trim().max(500).optional().default(''),
+  condition: z.string().trim().max(40).optional().default(''),
+});
+
+export const sellRequestInputSchema = z.object({
+  notes: z.string().trim().max(2000).optional().default(''),
+  items: z
+    .array(sellRequestItemSchema)
+    .min(1, 'Add at least one card')
+    .max(8, 'Max 8 cards per submission'),
+});
+
 export type AddressInput = z.infer<typeof addressSchema>;
 export type CartLineInput = z.infer<typeof cartLineSchema>;
 export type CheckoutInput = z.infer<typeof checkoutInputSchema>;
@@ -176,6 +254,8 @@ export type SetPasswordInput = z.infer<typeof setPasswordInputSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileInputSchema>;
 export type GoogleAuthInput = z.infer<typeof googleAuthInputSchema>;
 export type ContactInput = z.infer<typeof contactInputSchema>;
+export type CreateProductReviewInput = z.infer<typeof createProductReviewInputSchema>;
+export type SellRequestInput = z.infer<typeof sellRequestInputSchema>;
 export type CreateProductInput = z.infer<typeof createProductInputSchema>;
 export type UpdateProductInput = z.infer<typeof createProductInputSchema>;
 export type FetchCardImageInput = z.infer<typeof fetchCardImageInputSchema>;

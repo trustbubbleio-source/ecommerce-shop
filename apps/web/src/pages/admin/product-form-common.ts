@@ -60,6 +60,7 @@ export type ProductFormValues = {
   accent: string;
   releaseDate: string;
   cardNumber: string;
+  artist: string;
   rarity: CardRarity | '';
   condition: CardCondition | '';
   language: ProductLanguage;
@@ -79,6 +80,7 @@ export const defaultProductFormValues: ProductFormValues = {
   accent: '#a855f7',
   releaseDate: new Date().toISOString().slice(0, 10),
   cardNumber: '',
+  artist: '',
   rarity: '',
   condition: '',
   language: 'english',
@@ -157,6 +159,7 @@ export function buildProductDraft(
     featured: values.featured,
     releaseDate: values.releaseDate,
     cardNumber: values.cardNumber.trim() || undefined,
+    artist: values.artist.trim() || undefined,
     rarity: values.rarity as CardRarity,
     condition: values.condition as CardCondition,
     language: values.language,

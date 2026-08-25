@@ -12,6 +12,17 @@ const user: PublicUser = {
   role: 'customer',
   emailVerifiedAt: '2024-01-01T00:00:00.000Z',
   hasPassword: true,
+  profile: {
+    phone: null,
+    country: null,
+    city: null,
+    bio: null,
+    shippingAddress: null,
+    discountCode: null,
+    preferredCurrency: 'eur',
+    marketingOptIn: false,
+    updatedAt: '2024-01-01T00:00:00.000Z',
+  },
   createdAt: '2024-01-01T00:00:00.000Z',
 };
 

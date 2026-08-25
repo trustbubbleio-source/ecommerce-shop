@@ -1,5 +1,5 @@
 import { Button, cn } from '@akknerds/ui';
-import { ChevronDown, LogIn, LogOut, Package, Settings, Shield, User } from 'lucide-react';
+import { ChevronDown, Heart, LogIn, LogOut, Package, Settings, Shield, TicketPercent, User } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ACCOUNT_NAV } from '../../config/account';
@@ -8,6 +8,8 @@ import { useAuthStore } from '../../store/auth';
 const NAV_ICONS = {
   '/account': User,
   '/account/orders': Package,
+  '/account/favorites': Heart,
+  '/account/discount': TicketPercent,
   '/account/settings': Settings,
 } as const;
 

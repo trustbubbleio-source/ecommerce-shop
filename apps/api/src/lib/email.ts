@@ -1,6 +1,12 @@
 import { Resend } from 'resend';
 import type { Env } from '../env.js';
 
+export interface SendEmailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType?: string;
+}
+
 export interface SendEmailInput {
   to: string | string[];
   subject: string;
@@ -9,6 +15,7 @@ export interface SendEmailInput {
   replyTo?: string;
   /** Overrides the default from address when needed. */
   from?: string;
+  attachments?: SendEmailAttachment[];
 }
 
 export interface SendEmailResult {
@@ -36,8 +43,13 @@ export class EmailService {
     const to = Array.isArray(input.to) ? input.to : [input.to];
 
     if (!this.client) {
+      const attachmentNote = input.attachments?.length
+        ? ` attachments=${input.attachments.length}(${input.attachments
+            .map((a) => `${a.filename}:${a.content.byteLength}b`)
+            .join(',')})`
+        : '';
       console.info(
-        `[email:mock] to=${to.join(',')} subject=${JSON.stringify(input.subject)} from=${from}`,
+        `[email:mock] to=${to.join(',')} subject=${JSON.stringify(input.subject)} from=${from}${attachmentNote}`,
       );
       return { id: `mock_${Date.now()}`, mocked: true };
     }
@@ -49,6 +61,11 @@ export class EmailService {
       html: input.html,
       text: input.text,
       replyTo: input.replyTo,
+      attachments: input.attachments?.map((attachment) => ({
+        filename: attachment.filename,
+        content: attachment.content,
+        contentType: attachment.contentType,
+      })),
     });
 
     if (error) {
@@ -81,6 +98,68 @@ export class EmailService {
         <hr />
         <p style="white-space:pre-wrap">${escapeHtml(input.message)}</p>
       `,
+    });
+  }
+
+  async sendSellRequest(input: {
+    name: string;
+    email: string;
+    userId: string;
+    notes: string;
+    items: Array<{ title: string; notes: string; condition: string; hasPhoto: boolean }>;
+    attachments?: SendEmailAttachment[];
+  }): Promise<SendEmailResult> {
+    const photoCount = input.attachments?.length ?? input.items.filter((item) => item.hasPhoto).length;
+    const lines = input.items.map((item, index) => {
+      const bits = [
+        `${index + 1}. ${item.title}`,
+        item.condition ? `condition=${item.condition}` : null,
+        item.hasPhoto ? 'photo=yes' : 'photo=no',
+        item.notes ? `notes=${item.notes}` : null,
+      ].filter(Boolean);
+      return bits.join(' | ');
+    });
+
+    return this.send({
+      to: this.env.email.contactInbox,
+      replyTo: input.email,
+      subject: `[Sell] ${input.items.length} card(s) from ${input.name}`,
+      text: [
+        `From: ${input.name} <${input.email}>`,
+        `User ID: ${input.userId}`,
+        `Cards: ${input.items.length}`,
+        `Photo attachments: ${photoCount}`,
+        '',
+        input.notes ? `Seller notes:\n${input.notes}\n` : '',
+        'Items:',
+        ...lines,
+      ].join('\n'),
+      html: `
+        <p><strong>From:</strong> ${escapeHtml(input.name)} &lt;${escapeHtml(input.email)}&gt;</p>
+        <p><strong>User ID:</strong> ${escapeHtml(input.userId)}</p>
+        <p><strong>Cards:</strong> ${input.items.length} · <strong>Photo attachments:</strong> ${photoCount}</p>
+        ${
+          input.notes
+            ? `<p><strong>Seller notes:</strong></p><p style="white-space:pre-wrap">${escapeHtml(input.notes)}</p>`
+            : ''
+        }
+        <hr />
+        <ol>
+          ${input.items
+            .map(
+              (item) => `
+            <li>
+              <strong>${escapeHtml(item.title)}</strong>
+              ${item.condition ? ` · ${escapeHtml(item.condition)}` : ''}
+              ${item.hasPhoto ? ' · photo attached' : ''}
+              ${item.notes ? `<div style="color:#666;white-space:pre-wrap">${escapeHtml(item.notes)}</div>` : ''}
+            </li>`,
+            )
+            .join('')}
+        </ol>
+        <p style="color:#666;font-size:13px">Card photos are attached to this email when provided.</p>
+      `,
+      attachments: input.attachments,
     });
   }
 

@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
+import { clearWelcomeDiscountAfterPurchase } from '../lib/welcome-discount.js';
 
 export function webhookRoutes(deps: AppDeps) {
   const app = new Hono<AppEnv>();
@@ -25,7 +26,8 @@ export function webhookRoutes(deps: AppDeps) {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as { id: string };
-      await deps.orders.markStatusBySession(session.id, 'paid');
+      const order = await deps.orders.markStatusBySession(session.id, 'paid');
+      await clearWelcomeDiscountAfterPurchase(deps, order?.userId);
     }
 
     return c.json({ received: true });

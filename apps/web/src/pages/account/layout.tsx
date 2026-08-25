@@ -15,7 +15,7 @@ export function AccountLayout() {
     <div className="container max-w-3xl py-8">
       <PageHeader
         title={`Hi, ${user.name.split(' ')[0]}`}
-        description="Manage your profile, orders, and account settings."
+        description="Your collector hub — profile, orders, favorites, discounts, and settings."
       />
 
       <nav

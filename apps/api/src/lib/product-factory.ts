@@ -29,6 +29,7 @@ export function newProductFromInput(input: CreateProductInput): Product {
     condition: input.condition,
     language: input.language,
     cardNumber: input.cardNumber,
+    artist: input.artist,
     releaseDate: input.releaseDate,
   };
 }
@@ -55,6 +56,7 @@ export function applyProductInput(existing: Product, input: CreateProductInput):
     condition: input.condition,
     language: input.language,
     cardNumber: input.cardNumber,
+    artist: input.artist,
     releaseDate: input.releaseDate,
   };
 }

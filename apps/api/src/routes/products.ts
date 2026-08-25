@@ -1,9 +1,11 @@
 import type { ProductFilter, SortKey } from '@akknerds/shared';
-import { CARD_CONDITIONS, PRODUCT_LANGUAGES } from '@akknerds/shared';
+import { CARD_CONDITIONS, PRODUCT_LANGUAGES, createProductReviewInputSchema } from '@akknerds/shared';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import type { AppDeps, AppEnv } from '../context.js';
 import { validate } from '../lib/http.js';
+import { aggregateRatings } from '../lib/review-stats.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const SORT_KEYS = [
   'featured',
@@ -67,6 +69,58 @@ export function productRoutes(deps: AppDeps) {
   });
 
   app.get('/meta', async (c) => c.json(await deps.products.meta()));
+
+  app.get('/:idOrSlug/reviews', requireAuth(), async (c) => {
+    const product = await deps.products.getByIdOrSlug(c.req.param('idOrSlug'));
+    if (!product) return c.json({ error: 'Product not found' }, 404);
+
+    const user = c.get('user')!;
+    const [reviews, myReview, purchased] = await Promise.all([
+      deps.reviews.listByProduct(product.id),
+      deps.reviews.findByUserAndProduct(user.sub, product.id),
+      deps.orders.hasPurchasedProduct(user.sub, product.id),
+    ]);
+
+    return c.json({
+      reviews,
+      canReview: purchased && !myReview,
+      myReview: myReview ?? null,
+    });
+  });
+
+  app.post(
+    '/:idOrSlug/reviews',
+    requireAuth(),
+    validate('json', createProductReviewInputSchema),
+    async (c) => {
+      const product = await deps.products.getByIdOrSlug(c.req.param('idOrSlug'));
+      if (!product) return c.json({ error: 'Product not found' }, 404);
+
+      const user = c.get('user')!;
+      const existing = await deps.reviews.findByUserAndProduct(user.sub, product.id);
+      if (existing) {
+        return c.json({ error: 'You already reviewed this product' }, 409);
+      }
+
+      const purchased = await deps.orders.hasPurchasedProduct(user.sub, product.id);
+      if (!purchased) {
+        return c.json({ error: 'Only verified buyers can leave a review' }, 403);
+      }
+
+      const input = c.req.valid('json');
+      const review = await deps.reviews.create({
+        userId: user.sub,
+        productId: product.id,
+        rating: input.rating,
+        body: input.body,
+      });
+
+      const ratings = await deps.reviews.listRatings(product.id);
+      await deps.products.setRatingStats(product.id, aggregateRatings(ratings));
+
+      return c.json({ review }, 201);
+    },
+  );
 
   app.get('/:idOrSlug', async (c) => {
     const product = await deps.products.getByIdOrSlug(c.req.param('idOrSlug'));

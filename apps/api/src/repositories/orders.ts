@@ -47,4 +47,13 @@ export class OrderRepository implements IOrderRepository {
       .filter((o) => o.userId === userId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
+
+  async hasPurchasedProduct(userId: string, productId: string): Promise<boolean> {
+    return [...this.byId.values()].some(
+      (o) =>
+        o.userId === userId &&
+        (o.status === 'paid' || o.status === 'fulfilled') &&
+        o.lines.some((line) => line.productId === productId),
+    );
+  }
 }

@@ -72,6 +72,7 @@ export interface NavLink {
 
 export const MAIN_NAV: NavLink[] = [
   { label: 'Shop', to: '/shop' },
+  { label: 'Sell', to: '/sell' },
   { label: 'Booster Boxes', to: '/shop?category=booster-box' },
   { label: 'Singles', to: '/shop?category=single-card' },
   { label: 'Graded Slabs', to: '/shop?category=graded-slab' },

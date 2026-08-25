@@ -2,6 +2,7 @@ import { type Product, isCardStyleCategory } from '@akknerds/shared';
 import { Card, Rating } from '@akknerds/ui';
 import { Link } from 'react-router-dom';
 import { AddToCartButton } from './add-to-cart-button';
+import { FavoriteButton } from './favorite-button';
 import { LaunchBadge } from './launch-badge';
 import { PriceTag } from './price-tag';
 import { ProductArt } from './product-art';
@@ -11,7 +12,12 @@ export function ProductCard({ product }: { product: Product }) {
   const soldOut = product.stock <= 0;
 
   return (
-    <Card className="hover:border-foreground/25 hover:shadow-glow group flex flex-col overflow-hidden transition-all hover:-translate-y-1">
+    <Card className="hover:border-foreground/25 hover:shadow-glow group relative flex flex-col overflow-hidden transition-all hover:-translate-y-1">
+      <FavoriteButton
+        productId={product.id}
+        productName={product.name}
+        className="absolute right-2 top-2 z-20"
+      />
       <Link
         to={`/product/${product.slug}`}
         className="bg-muted/20 relative block aspect-[5/7] overflow-hidden"

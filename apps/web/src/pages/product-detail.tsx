@@ -6,11 +6,14 @@ import { Link, useParams } from 'react-router-dom';
 import { EmptyState } from '../components/common/empty-state';
 import { SectionHeader } from '../components/common/section';
 import { AddToCartButton } from '../components/product/add-to-cart-button';
+import { FavoriteButton } from '../components/product/favorite-button';
 import { LaunchBadge } from '../components/product/launch-badge';
 import { PriceTag } from '../components/product/price-tag';
 import { ProductArt } from '../components/product/product-art';
 import { RarityIcon } from '../components/product/rarity-icon';
 import { ProductGrid } from '../components/product/product-grid';
+import { ProductPriceHistory } from '../components/product/product-price-history';
+import { ProductReviewsSection } from '../components/product/product-reviews';
 import { PRELAUNCH, isPrelaunchActive } from '../config/launch';
 import { useProduct, useProducts } from '../hooks/use-products';
 
@@ -160,9 +163,18 @@ export function ProductDetailPage() {
                 <Badge variant="muted">{titleCase(product.condition.replace(/-/g, ' '))}</Badge>
               )}
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{product.name}</h1>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{product.name}</h1>
+              <FavoriteButton
+                productId={product.id}
+                productName={product.name}
+                size="md"
+                className="shrink-0"
+              />
+            </div>
             <p className="text-muted-foreground text-sm">
               {product.series} · {product.set}
+              {product.artist ? ` · Illus. ${product.artist}` : ''}
             </p>
             <Rating value={product.rating} reviewCount={product.reviewCount} size={16} />
           </div>
@@ -226,6 +238,10 @@ export function ProductDetailPage() {
           </ul>
         </div>
       </div>
+
+      <ProductPriceHistory productId={product.id} currentPriceCents={product.price} />
+
+      <ProductReviewsSection productSlug={product.slug} />
 
       {relatedProducts.length > 0 && (
         <section className="mt-16">

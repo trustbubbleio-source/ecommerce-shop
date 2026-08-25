@@ -33,7 +33,7 @@ function Hero() {
       <div className="container relative grid gap-10 py-16 lg:grid-cols-2 lg:py-24">
         <div className="flex flex-col items-start justify-center gap-6">
           <span className="border-border bg-secondary text-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold">
-            <Pokeball className="size-4" /> {PRELAUNCH.homeEyebrow}
+            <Pokeball className="size-4" /> {PRELAUNCH.homeEyebrow2}
           </span>
           <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
             Just one more <span className="text-gradient">rip</span>.<br />

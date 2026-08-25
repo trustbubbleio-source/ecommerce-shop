@@ -75,17 +75,31 @@ export function matchIntent(message: string, ctx: ChatContext): ChatMatchResult 
       {
         ...FALLBACK_INTENT,
         reply: (c) =>
-          `Say hi, or ask about shipping, returns, or a card you are hunting at ${c.brandName}.`,
+          `Say hi, or ask about shipping, returns, welcome offers, partners, the Båstad store, or a card at ${c.brandName}.`,
       },
       ctx,
     );
   }
 
   let best: { intent: ChatIntent; score: number } | null = null;
+  let bestSpecialised: { intent: ChatIntent; score: number } | null = null;
   for (const intent of CHAT_INTENTS) {
     const score = scoreIntent(normalized, intent);
     if (score <= 0) continue;
     if (!best || score > best.score) best = { intent, score };
+    if (!intent.productSearch && (!bestSpecialised || score > bestSpecialised.score)) {
+      bestSpecialised = { intent, score };
+    }
+  }
+
+  // “Looking for …” also triggers product search — prefer domain intents when they score well.
+  if (
+    best?.intent.productSearch &&
+    bestSpecialised &&
+    bestSpecialised.score >= 2 &&
+    bestSpecialised.score >= best.score * 0.65
+  ) {
+    best = bestSpecialised;
   }
 
   if (best?.intent.productSearch) {

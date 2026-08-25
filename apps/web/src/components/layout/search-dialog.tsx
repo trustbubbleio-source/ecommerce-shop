@@ -56,6 +56,7 @@ function ResultRow({
         <p className="text-muted-foreground truncate text-xs">
           {categoryLabel(product.category)}
           {product.set ? ` · ${product.set}` : ''}
+          {product.artist ? ` · ${product.artist}` : ''}
         </p>
       </div>
       <span className="text-foreground shrink-0 text-sm font-semibold">
@@ -191,7 +192,7 @@ export function SearchDialog() {
                     type="search"
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Search products, sets, cards…"
+                    placeholder="Search products, sets, artists…"
                     aria-label="Search products"
                     className="border-0 bg-transparent shadow-none focus-visible:ring-0"
                     autoComplete="off"

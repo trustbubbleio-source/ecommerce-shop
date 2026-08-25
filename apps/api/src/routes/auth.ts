@@ -1,6 +1,8 @@
 import {
+  findDiscountCode,
   forgotPasswordInputSchema,
   googleAuthInputSchema,
+  isManualDiscountAllowed,
   loginInputSchema,
   registerInputSchema,
   resetPasswordInputSchema,
@@ -173,8 +175,17 @@ export function authRoutes(deps: AppDeps) {
 
   app.patch('/me', requireAuth(), validate('json', updateProfileInputSchema), async (c) => {
     const payload = c.get('user')!;
-    const { name } = c.req.valid('json');
-    const user = await deps.users.updateProfile(payload.sub, { name });
+    const input = c.req.valid('json');
+    if (input.discountCode != null && !findDiscountCode(input.discountCode)) {
+      return c.json({ error: 'That discount code is not valid.' }, 400);
+    }
+    if (input.discountCode != null && !isManualDiscountAllowed(input.discountCode)) {
+      return c.json(
+        { error: 'That welcome offer is applied automatically for new accounts only.' },
+        400,
+      );
+    }
+    const user = await deps.users.updateProfile(payload.sub, input);
     if (!user || !isEmailVerified(user)) {
       return c.json({ error: 'Could not update profile.' }, 400);
     }

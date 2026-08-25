@@ -277,8 +277,32 @@ model User {
   emailVerifiedAt DateTime? @map("email_verified_at")
   createdAt       DateTime  @default(now()) @map("created_at")
   orders          Order[]
+  profile         Profile?
+  favorites       Favorite[]
+  reviews         ProductReview[]
 
   @@map("users")
+}
+
+/** Extended account details (1:1 with User). Created when the user registers. */
+model Profile {
+  userId            String   @id @map("user_id")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone             String?
+  country           String?
+  city              String?
+  /** Short collector note shown on the account profile. */
+  bio               String?
+  /** Default shipping address (Address JSON). Prefills checkout. */
+  shippingAddress   Json?    @map("shipping_address")
+  /** Saved promo code applied automatically at checkout. */
+  discountCode      String?  @map("discount_code")
+  preferredCurrency String   @default("eur") @map("preferred_currency")
+  marketingOptIn    Boolean  @default(false) @map("marketing_opt_in")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("profiles")
 }
 
 model Product {
@@ -305,12 +329,49 @@ model Product {
   condition      CardCondition?
   language       ProductLanguage  @default(english)
   cardNumber     String?            @map("card_number")
+  /** Illustrator name for single cards (searchable). */
+  artist         String?
   releaseDate    String             @map("release_date")
+  favorites      Favorite[]
+  reviews        ProductReview[]
 
   @@index([category])
   @@index([series])
   @@index([featured])
   @@map("products")
+}
+
+/** Verified buyer review + comment (one per user per product). */
+model ProductReview {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  /** Star rating 1–5. */
+  rating    Int
+  /** Review comment body. */
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@map("product_reviews")
+}
+
+/** Per-user saved products (wishlist). */
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("favorites")
 }
 
 model Order {

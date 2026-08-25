@@ -49,4 +49,15 @@ describe('ProductDetailPage', () => {
     renderApp('/product/ghost');
     await waitFor(() => expect(screen.getByText('Product not found')).toBeInTheDocument());
   });
+
+  it('shows a sign-in gate for comments while keeping public ratings', async () => {
+    vi.spyOn(api, 'getProduct').mockResolvedValue({
+      product: makeProduct({ rating: 4.5, reviewCount: 12 }),
+    });
+    vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
+    renderApp('/product/pokemon-151-booster-box-bb-151');
+
+    expect(await screen.findByRole('heading', { name: /Reviews & comments/i })).toBeInTheDocument();
+    expect(screen.getByText(/Sign in to read comments/i)).toBeInTheDocument();
+  });
 });

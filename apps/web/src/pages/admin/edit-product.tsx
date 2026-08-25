@@ -67,6 +67,7 @@ function productToFormValues(product: Product): ProductFormValues {
     accent: product.accent,
     releaseDate: product.releaseDate,
     cardNumber: product.cardNumber ?? '',
+    artist: product.artist ?? '',
     rarity: product.rarity ?? '',
     condition: product.condition ?? '',
     language: product.language,
@@ -335,6 +336,20 @@ export function AdminEditProductPage() {
                     </Button>
                   )}
                 </div>
+              )}
+            </Field>
+            <Field
+              label="Artist"
+              error={errors.artist}
+              hint="Illustrator name — customers can search by artist once set."
+            >
+              {(props) => (
+                <Input
+                  {...props}
+                  value={values.artist}
+                  onChange={(e) => setValues((v) => ({ ...v, artist: e.target.value }))}
+                  placeholder="e.g. Mitsuhiro Arita"
+                />
               )}
             </Field>
             <Field label="Product name" error={errors.name} hint={nameGuide.hint} required>

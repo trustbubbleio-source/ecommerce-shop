@@ -13,8 +13,10 @@ import { authRoutes } from './routes/auth.js';
 import { adminRoutes } from './routes/admin.js';
 import { checkoutRoutes } from './routes/checkout.js';
 import { contactRoutes } from './routes/contact.js';
+import { favoriteRoutes } from './routes/favorites.js';
 import { orderRoutes } from './routes/orders.js';
 import { productRoutes } from './routes/products.js';
+import { sellRoutes } from './routes/sell.js';
 import { webhookRoutes } from './routes/webhooks.js';
 
 export interface CreatedApp {
@@ -31,6 +33,8 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
     users: overrides.users ?? memory.users,
     orders: overrides.orders ?? memory.orders,
     products: overrides.products ?? memory.products,
+    favorites: overrides.favorites ?? memory.favorites,
+    reviews: overrides.reviews ?? memory.reviews,
     payments: overrides.payments ?? new PaymentService(env),
     storage: overrides.storage ?? new StorageService(env.storage),
     email: overrides.email ?? new EmailService(env),
@@ -60,7 +64,9 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
   api.route('/admin', adminRoutes(deps));
   api.route('/checkout', checkoutRoutes(deps));
   api.route('/orders', orderRoutes(deps));
+  api.route('/favorites', favoriteRoutes(deps));
   api.route('/contact', contactRoutes(deps));
+  api.route('/sell', sellRoutes(deps));
   api.route('/webhooks', webhookRoutes(deps));
 
   app.route('/api', api);

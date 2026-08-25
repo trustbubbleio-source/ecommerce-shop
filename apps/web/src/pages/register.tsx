@@ -8,9 +8,8 @@ export function RegisterPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Create your account</CardTitle>
-          <p className="text-muted-foreground text-sm">
-            Just your email — confirm it, then choose a password. Or continue with Google.
-          </p>
+          <p className="text-muted-foreground text-sm">Just your email, then choose a password.</p>
+          <p className="text-muted-foreground text-sm">Or continue with Google.</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <AuthForm mode="register" />
