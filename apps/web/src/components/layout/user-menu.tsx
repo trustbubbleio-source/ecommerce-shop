@@ -1,5 +1,5 @@
 import { Button, cn } from '@akknerds/ui';
-import { ChevronDown, Heart, LogIn, LogOut, Package, Settings, Shield, TicketPercent, User } from 'lucide-react';
+import { ChevronDown, Heart, LogIn, LogOut, Package, Settings, Shield, User } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ACCOUNT_NAV } from '../../config/account';
@@ -9,9 +9,10 @@ const NAV_ICONS = {
   '/account': User,
   '/account/orders': Package,
   '/account/favorites': Heart,
-  '/account/discount': TicketPercent,
   '/account/settings': Settings,
 } as const;
+
+const DROPDOWN_NAV = ACCOUNT_NAV.filter((link) => link.to !== '/account/discount');
 
 export function UserMenu() {
   const user = useAuthStore((s) => s.user);
@@ -79,8 +80,8 @@ export function UserMenu() {
             <p className="text-muted-foreground truncate text-xs">{user.email}</p>
           </div>
           <div className="flex flex-col p-1">
-            {ACCOUNT_NAV.map((link) => {
-              const Icon = NAV_ICONS[link.to];
+            {DROPDOWN_NAV.map((link) => {
+              const Icon = NAV_ICONS[link.to as keyof typeof NAV_ICONS];
               return (
                 <Link
                   key={link.to}
@@ -89,7 +90,7 @@ export function UserMenu() {
                   onClick={() => setOpen(false)}
                   className="text-foreground hover:bg-secondary flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium"
                 >
-                  <Icon className="text-muted-foreground size-4" />
+                  {Icon ? <Icon className="text-muted-foreground size-4" /> : null}
                   {link.label}
                 </Link>
               );
