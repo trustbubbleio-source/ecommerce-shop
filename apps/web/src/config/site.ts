@@ -70,12 +70,17 @@ export interface NavLink {
   to: string;
 }
 
-export const MAIN_NAV: NavLink[] = [
-  { label: 'Shop', to: '/shop' },
-  { label: 'Sell', to: '/sell' },
+/** Category shortcuts nested under Buy in the header dropdown. */
+export const SHOP_NAV: NavLink[] = [
+  { label: 'All products', to: '/shop' },
   { label: 'Booster Boxes', to: '/shop?category=booster-box' },
   { label: 'Singles', to: '/shop?category=single-card' },
   { label: 'Graded Slabs', to: '/shop?category=graded-slab' },
+];
+
+export const MAIN_NAV: NavLink[] = [
+  { label: 'Buy', to: '/shop' },
+  { label: 'Sell', to: '/sell' },
   { label: 'Blog', to: '/blog' },
   { label: 'Socials', to: '/socials' },
   { label: 'Contact', to: '/contact' },

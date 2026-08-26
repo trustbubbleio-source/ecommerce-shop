@@ -59,7 +59,7 @@ export function CartDrawer() {
               icon={<ShoppingBag />}
               title="Your cart is empty"
               description="Find your next chase card or sealed box."
-              action={<Button onClick={() => go('/shop')}>Browse the shop</Button>}
+              action={<Button onClick={() => go('/shop')}>Browse products</Button>}
               className="border-none bg-transparent"
             />
           </div>

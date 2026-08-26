@@ -57,7 +57,7 @@ export function AccountOrdersPage() {
       description="When you place an order it will appear here."
       action={
         <Button asChild>
-          <Link to="/shop">Start shopping</Link>
+          <Link to="/shop">Start buying</Link>
         </Button>
       }
     />

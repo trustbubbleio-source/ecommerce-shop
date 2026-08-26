@@ -1,4 +1,4 @@
-import { SORT_OPTIONS } from '@akknerds/shared';
+﻿import { SORT_OPTIONS } from '@akknerds/shared';
 import {
   Button,
   Input,
@@ -49,7 +49,7 @@ export function ShopPage() {
   return (
     <div className="container py-8">
       <PageHeader
-        title="Shop"
+        title="Buy"
         description="Browse our full catalogue of sealed product and singles."
       />
 
@@ -73,7 +73,7 @@ export function ShopPage() {
                 type="search"
                 value={filters.search}
                 onChange={(e) => update({ search: e.target.value })}
-                placeholder="Search products, sets, artists…"
+                placeholder="Search products, sets, artistsâ€¦"
                 aria-label="Search products"
                 className="pl-9"
               />
@@ -113,7 +113,7 @@ export function ShopPage() {
 
           <p className="text-muted-foreground text-sm" aria-live="polite">
             {isInitialLoading
-              ? 'Loading…'
+              ? 'Loadingâ€¦'
               : total === 0
                 ? '0 products'
                 : loaded < total
@@ -139,7 +139,7 @@ export function ShopPage() {
               >
                 {products.isFetchingNextPage ? (
                   <>
-                    <Spinner /> Loading…
+                    <Spinner /> Loadingâ€¦
                   </>
                 ) : (
                   'Load more'

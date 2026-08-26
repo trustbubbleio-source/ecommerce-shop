@@ -591,7 +591,7 @@ export function SellPage() {
                 Submit another lot
               </Button>
               <Button asChild variant="outline">
-                <Link to="/shop">Back to shop</Link>
+                <Link to="/shop">Back to Buy</Link>
               </Button>
             </div>
           </div>

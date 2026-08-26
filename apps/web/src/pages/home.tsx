@@ -46,7 +46,7 @@ function Hero() {
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">
               <Link to="/shop">
-                Shop all products <ArrowRight />
+                Buy all products <ArrowRight />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
@@ -157,7 +157,7 @@ function Categories() {
 
   return (
     <section className="container py-12">
-      <SectionHeader title="Shop by category" subtitle="Find exactly what you're hunting for" />
+      <SectionHeader title="Buy by category" subtitle="Find exactly what you're hunting for" />
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         {CATEGORY_TILES.map((tile) => {
           const imageUrl = pickCategoryImage(catalog.data?.products, tile.category);
@@ -186,7 +186,7 @@ function Categories() {
                 <h3 className="text-foreground font-bold">{tile.label}</h3>
                 <p className="text-muted-foreground mt-1 text-sm">{tile.blurb}</p>
                 <span className="text-primary mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold">
-                  Shop now{' '}
+                  Buy now{' '}
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </div>

@@ -262,7 +262,7 @@ export function SearchDialog() {
                         className="text-primary inline-flex items-center gap-1 text-sm font-semibold hover:underline"
                         onClick={() => goToShopSearch(debouncedQuery)}
                       >
-                        Search the full shop
+                        Search all products
                         <ArrowRight className="size-3.5" />
                       </button>
                     </div>

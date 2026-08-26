@@ -22,7 +22,7 @@ export function CartPage() {
           description="Once you add products they'll show up here."
           action={
             <Button asChild>
-              <Link to="/shop">Browse the shop</Link>
+              <Link to="/shop">Browse products</Link>
             </Button>
           }
         />
@@ -66,7 +66,7 @@ export function CartPage() {
               </Button>
             )}
             <Button asChild variant="outline" block>
-              <Link to="/shop">Continue shopping</Link>
+              <Link to="/shop">Continue buying</Link>
             </Button>
           </CardContent>
         </Card>

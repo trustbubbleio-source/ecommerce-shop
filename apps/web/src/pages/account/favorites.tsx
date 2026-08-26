@@ -28,7 +28,7 @@ export function AccountFavoritesPage() {
         description="Tap the heart on any product to save it here for later."
         action={
           <Button asChild>
-            <Link to="/shop">Browse the shop</Link>
+            <Link to="/shop">Browse products</Link>
           </Button>
         }
       />

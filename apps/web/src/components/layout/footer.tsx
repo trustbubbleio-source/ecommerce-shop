@@ -1,15 +1,8 @@
 import { Link } from 'react-router-dom';
 import footerLogo from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
-import { MAIN_NAV, SITE } from '../../config/site';
+import { SHOP_NAV, SITE } from '../../config/site';
 
-const SHOP_LINKS = MAIN_NAV.filter(
-  (link) =>
-    link.to !== '/shop' &&
-    link.to !== '/sell' &&
-    link.to !== '/blog' &&
-    link.to !== '/contact' &&
-    link.to !== '/socials',
-);
+const SHOP_LINKS = SHOP_NAV.filter((link) => link.to !== '/shop');
 
 const CUSTOMER_SERVICE_LINKS = [
   { label: 'Contact', to: '/contact' },
@@ -47,8 +40,8 @@ export function Footer() {
           </p>
         </div>
 
-        <nav className="flex flex-col gap-2" aria-label="Shop">
-          <h3 className="text-foreground text-sm font-semibold">Shop</h3>
+        <nav className="flex flex-col gap-2" aria-label="Buy">
+          <h3 className="text-foreground text-sm font-semibold">Buy</h3>
           {SHOP_LINKS.map((link) => (
             <Link
               key={link.to}

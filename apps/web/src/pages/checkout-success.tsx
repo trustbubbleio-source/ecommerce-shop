@@ -38,7 +38,7 @@ export function CheckoutSuccessPage() {
           description="If you just paid, your confirmation email will have the details."
           action={
             <Button asChild>
-              <Link to="/shop">Continue shopping</Link>
+              <Link to="/shop">Continue buying</Link>
             </Button>
           }
         />
@@ -96,7 +96,7 @@ export function CheckoutSuccessPage() {
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
         <Button asChild>
-          <Link to="/shop">Continue shopping</Link>
+          <Link to="/shop">Continue buying</Link>
         </Button>
         <Button asChild variant="outline">
           <Link to="/account/orders">View my orders</Link>

@@ -52,7 +52,7 @@ export function ProductDetailPage() {
           description="This product may have sold out or moved."
           action={
             <Button asChild>
-              <Link to="/shop">Back to shop</Link>
+              <Link to="/shop">Back to Buy</Link>
             </Button>
           }
         />
@@ -76,7 +76,7 @@ export function ProductDetailPage() {
         to="/shop"
         className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1 text-sm"
       >
-        <ArrowLeft className="size-4" /> Back to shop
+        <ArrowLeft className="size-4" /> Back to Buy
       </Link>
 
       <div className="grid gap-8 lg:grid-cols-2">

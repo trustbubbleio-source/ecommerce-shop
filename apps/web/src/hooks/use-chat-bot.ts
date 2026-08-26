@@ -56,9 +56,9 @@ async function resolveBotReply(result: ChatMatchResult): Promise<{
     const { products } = await api.listProducts({ search: query, limit: 5 });
     if (products.length === 0) {
       return {
-        text: `I could not find anything matching “${query}”. Try another name, or browse the shop filters.`,
+        text: `I could not find anything matching “${query}”. Try another name, or browse the Buy filters.`,
         links: [
-          { label: 'Shop', href: '/shop' },
+          { label: 'Buy', href: '/shop' },
           { label: 'FAQ', href: '/faq' },
         ],
         suggestions: ['Singles', 'Graded slabs', 'Shipping times'],
@@ -75,15 +75,15 @@ async function resolveBotReply(result: ChatMatchResult): Promise<{
           label: product.name,
           href: `/product/${product.slug}`,
         })),
-        { label: 'Shop all', href: `/shop?search=${encodeURIComponent(query)}` },
+        { label: 'Buy all', href: `/shop?search=${encodeURIComponent(query)}` },
       ],
       suggestions: result.suggestions.length > 0 ? result.suggestions : CHAT_STARTER_CHIPS,
     };
   } catch {
     return {
-      text: `I hit a snag checking stock for “${query}”. You can search the shop directly, or try again in a moment.`,
+      text: `I hit a snag checking stock for “${query}”. You can search Buy directly, or try again in a moment.`,
       links: [
-        { label: 'Shop', href: `/shop?search=${encodeURIComponent(query)}` },
+        { label: 'Buy', href: `/shop?search=${encodeURIComponent(query)}` },
         { label: 'Contact', href: '/contact' },
       ],
       suggestions: ['Contact', 'Shipping times'],

@@ -72,7 +72,7 @@ export const CHAT_INTENTS: ChatIntent[] = [
       `Hey! Welcome to ${ctx.brandName}. I can help with shipping, returns, your account, welcome discounts, trade/partners, store info, or finding a card.`,
     suggestions: STARTER_SUGGESTIONS,
     links: [
-      { label: 'Shop', href: '/shop' },
+      { label: 'Buy', href: '/shop' },
       { label: 'FAQ', href: '/faq' },
     ],
   },
@@ -82,9 +82,9 @@ export const CHAT_INTENTS: ChatIntent[] = [
     weight: 0.7,
     reply: (ctx) =>
       `Anytime — happy ripping! If you need a human, email ${ctx.supportEmail} or use Contact.`,
-    suggestions: ['Shop', 'FAQ'],
+    suggestions: ['Buy', 'FAQ'],
     links: [
-      { label: 'Shop', href: '/shop' },
+      { label: 'Buy', href: '/shop' },
       { label: 'Contact', href: '/contact' },
     ],
   },
@@ -100,7 +100,7 @@ export const CHAT_INTENTS: ChatIntent[] = [
     weight: 1.4,
     reply: (ctx) =>
       `Yes — standard tracked shipping is free on orders over ${ctx.freeShippingLabel}. Below that, a flat shipping fee is shown in your cart and at checkout before you pay. You can switch EUR/SEK in the header.`,
-    suggestions: ['Shipping times', 'Track order', 'Shop'],
+    suggestions: ['Shipping times', 'Track order', 'Buy'],
     links: [
       { label: 'Shipping', href: '/shipping' },
       { label: 'FAQ', href: '/faq' },
@@ -230,9 +230,9 @@ export const CHAT_INTENTS: ChatIntent[] = [
     weight: 1.3,
     reply:
       'Every sealed product is sourced from authorised distributors and arrives factory-sealed. We never sell resealed or tampered product. Singles are inspected by our team before listing. Booster boxes and ETBs ship in original factory shrink when the manufacturer provides it.',
-    suggestions: ['Singles condition', 'Graded slabs', 'Shop'],
+    suggestions: ['Singles condition', 'Graded slabs', 'Buy'],
     links: [
-      { label: 'Shop', href: '/shop' },
+      { label: 'Buy', href: '/shop' },
       { label: 'FAQ', href: '/faq' },
     ],
   },
@@ -262,9 +262,9 @@ export const CHAT_INTENTS: ChatIntent[] = [
     weight: 1.25,
     reply:
       'Many single-card listings include the illustrator. Use the shop search (or the header search) and type an artist name — results match name, set, series, tags, and artist when set.',
-    suggestions: ['Find a card', 'Singles', 'Shop'],
+    suggestions: ['Find a card', 'Singles', 'Buy'],
     links: [
-      { label: 'Shop', href: '/shop' },
+      { label: 'Buy', href: '/shop' },
       { label: 'Singles', href: '/shop?category=single-card' },
     ],
   },
@@ -274,16 +274,17 @@ export const CHAT_INTENTS: ChatIntent[] = [
     weight: 1.3,
     reply:
       'Graded slabs (PSA, CGC, BGS and more) live in their own shop category. Each listing shows the grade and photos of the exact slab you will receive. Ask me to find a card if you have a name or set in mind.',
-    suggestions: ['Find a card', 'Shop slabs', 'Authenticity'],
+    suggestions: ['Find a card', 'Buy slabs', 'Authenticity'],
     links: [
       { label: 'Graded Slabs', href: '/shop?category=graded-slab' },
-      { label: 'Shop', href: '/shop' },
+      { label: 'Buy', href: '/shop' },
     ],
   },
   {
     id: 'shop',
     keywords: [
       'shop',
+      'buy',
       'browse',
       'catalogue',
       'catalog',
@@ -295,10 +296,10 @@ export const CHAT_INTENTS: ChatIntent[] = [
     ],
     weight: 1.0,
     reply: (ctx) =>
-      `${ctx.brandName} sells sealed booster boxes, Elite Trainer Boxes, packs, single cards, graded slabs, bundles, and accessories. Use Shop by category on the homepage, or filter the shop by series, language, and condition.`,
+      `${ctx.brandName} sells sealed booster boxes, Elite Trainer Boxes, packs, single cards, graded slabs, bundles, and accessories. Use Buy by category on the homepage, or filter the shop by series, language, and condition.`,
     suggestions: ['Find a card', 'Singles', 'Graded slabs'],
     links: [
-      { label: 'Shop', href: '/shop' },
+      { label: 'Buy', href: '/shop' },
       { label: 'Booster Boxes', href: '/shop?category=booster-box' },
       { label: 'Singles', href: '/shop?category=single-card' },
     ],
@@ -322,7 +323,7 @@ export const CHAT_INTENTS: ChatIntent[] = [
     weight: 1.35,
     reply:
       'Create a free account to unlock a welcome discount on your first paid order — it is assigned automatically when you sign up (we do not publish the code publicly). Existing accounts cannot claim that welcome offer by typing a shared code. After signup, check Account → Discount to see if your welcome offer is active.',
-    suggestions: ['Create account', 'Discount codes', 'Shop'],
+    suggestions: ['Create account', 'Discount codes', 'Buy'],
     links: [
       { label: 'Create account', href: '/register' },
       { label: 'Discount', href: '/account/discount' },
@@ -386,7 +387,7 @@ export const CHAT_INTENTS: ChatIntent[] = [
     weight: 1.55,
     reply: (ctx) =>
       `For wholesale / trade enquiries email ${ctx.tradeEmail}. Tell us who you are and what supply you offer. Sponsorships and creative collabs go to ${ctx.partnerEmail} — see Looking for partners.`,
-    suggestions: ['Partners', 'Contact', 'Shop'],
+    suggestions: ['Partners', 'Contact', 'Buy'],
     links: [
       { label: 'Partners', href: '/partners' },
       { label: 'Contact', href: '/contact' },
@@ -469,10 +470,10 @@ export const CHAT_INTENTS: ChatIntent[] = [
     weight: 1.4,
     reply: (ctx) =>
       `Our physical store is at ${ctx.storeLine}. Online purchases and the storefront open ${ctx.launchDateLabel} — you can browse the catalogue now; checkout unlocks on launch day.`,
-    suggestions: ['Shop', 'Partners', 'Contact'],
+    suggestions: ['Buy', 'Partners', 'Contact'],
     links: [
       { label: 'Contact / map', href: '/contact' },
-      { label: 'Shop', href: '/shop' },
+      { label: 'Buy', href: '/shop' },
     ],
   },
   {
@@ -501,8 +502,8 @@ export const CHAT_INTENTS: ChatIntent[] = [
     weight: 1.5,
     productSearch: true,
     reply: 'Let me check the catalogue…',
-    suggestions: ['Singles', 'Graded slabs', 'Shop'],
-    links: [{ label: 'Shop', href: '/shop' }],
+    suggestions: ['Singles', 'Graded slabs', 'Buy'],
+    links: [{ label: 'Buy', href: '/shop' }],
   },
 ];
 
@@ -515,8 +516,9 @@ export const FALLBACK_INTENT: ChatIntent = {
   links: [
     { label: 'FAQ', href: '/faq' },
     { label: 'Contact', href: '/contact' },
-    { label: 'Shop', href: '/shop' },
+    { label: 'Buy', href: '/shop' },
   ],
 };
 
 export const CHAT_STARTER_CHIPS = STARTER_SUGGESTIONS;
+

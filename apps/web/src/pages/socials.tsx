@@ -255,10 +255,10 @@ export function SocialsPage() {
 
       <section className="mb-6">
         <h2 className="text-foreground mb-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
-          Shop × socials
+          Buy × socials
         </h2>
         <p className="text-muted-foreground mb-6 max-w-2xl text-sm sm:text-base">
-          The webshop and the feed are one brand. Follow for signal, shop when the chase hits.
+          The catalogue and the feed are one brand. Follow for signal, buy when the chase hits.
         </p>
         <div className="grid gap-4 md:grid-cols-3">
           {SHOP_TO_SOCIAL.map(({ icon: Icon, title, text }) => (
