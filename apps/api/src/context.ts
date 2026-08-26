@@ -9,6 +9,7 @@ import type {
   ProductRepository,
   ProductReviewRepository,
   UserRepository,
+  WantListRepository,
 } from './repositories/interfaces.js';
 
 /** Dependencies wired into each app instance (injectable for tests). */
@@ -19,6 +20,7 @@ export interface AppDeps {
   products: ProductRepository;
   favorites: FavoriteRepository;
   reviews: ProductReviewRepository;
+  wantList: WantListRepository;
   payments: PaymentService;
   storage: StorageService;
   email: EmailService;

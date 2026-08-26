@@ -11,6 +11,8 @@ import type {
   SortKey,
   UpdateProfileInput,
   UserRole,
+  WantListAdminItem,
+  WantListItem,
 } from '@akknerds/shared';
 import type { StoredUser } from './users.js';
 
@@ -112,4 +114,22 @@ export interface ProductReviewRepository {
   create(input: CreateReviewInput): Promise<ProductReview>;
   /** All star ratings for a product (for aggregate recalculation). */
   listRatings(productId: string): Promise<number[]>;
+}
+
+export interface CreateWantListInput {
+  userId: string;
+  preset: string;
+  title: string;
+  notes: string;
+}
+
+export interface WantListRepository {
+  listByUser(userId: string): Promise<WantListItem[]>;
+  listAll(): Promise<WantListAdminItem[]>;
+  create(input: CreateWantListInput): Promise<WantListItem>;
+  remove(userId: string, id: string): Promise<boolean>;
+  updateStatus(
+    id: string,
+    input: { status: string; adminNote?: string | null },
+  ): Promise<WantListAdminItem | undefined>;
 }

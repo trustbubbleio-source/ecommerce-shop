@@ -280,6 +280,7 @@ model User {
   profile         Profile?
   favorites       Favorite[]
   reviews         ProductReview[]
+  wantListItems   WantListItem[]
 
   @@map("users")
 }
@@ -372,6 +373,27 @@ model Favorite {
   @@unique([userId, productId])
   @@index([userId])
   @@map("favorites")
+}
+
+/** Member sourcing request — what they want us to find / offer. */
+model WantListItem {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  /** Preset id from shared WANT_LIST_PRESETS. */
+  preset    String
+  title     String
+  notes     String   @default("")
+  /** pending | reviewing | accepted | rejected | found | contacted */
+  status    String   @default("pending")
+  adminNote String?  @map("admin_note")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("want_list_items")
 }
 
 model Order {

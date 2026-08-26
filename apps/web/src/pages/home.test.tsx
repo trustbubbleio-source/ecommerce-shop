@@ -16,7 +16,9 @@ describe('HomePage', () => {
       screen.getByRole('img', { name: /One More Rip storefront in Båstad/i }),
     ).toBeInTheDocument();
     expect(screen.getByText('Buy by category')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Never miss a drop/i, level: 2 })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /Never miss a drop/i, level: 2 }),
+    ).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getAllByRole('link', { name: /151 Booster Box/i }).length).toBeGreaterThan(0),
     );

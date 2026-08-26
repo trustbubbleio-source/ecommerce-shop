@@ -24,7 +24,11 @@ import type {
   SortKey,
   UpdateProductInput,
   UpdateProfileInput,
+  UpdateWantListStatusInput,
   VerifyEmailInput,
+  WantListAdminItem,
+  WantListItem,
+  CreateWantListItemInput,
 } from '@akknerds/shared';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
@@ -253,5 +257,26 @@ export const api = {
   },
   submitSellRequest(formData: FormData): Promise<{ ok: boolean; message: string }> {
     return uploadRequest('/sell', formData);
+  },
+  listWantList(): Promise<{ items: WantListItem[] }> {
+    return request('/want-list');
+  },
+  createWantListItem(input: CreateWantListItemInput): Promise<{ item: WantListItem }> {
+    return request('/want-list', { method: 'POST', body: JSON.stringify(input) });
+  },
+  removeWantListItem(id: string): Promise<{ ok: boolean }> {
+    return request(`/want-list/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  },
+  adminListWantList(): Promise<{ items: WantListAdminItem[] }> {
+    return request('/admin/want-list');
+  },
+  adminUpdateWantListItem(
+    id: string,
+    input: UpdateWantListStatusInput,
+  ): Promise<{ item: WantListAdminItem }> {
+    return request(`/admin/want-list/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    });
   },
 };

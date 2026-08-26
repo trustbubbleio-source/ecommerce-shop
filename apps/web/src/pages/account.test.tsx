@@ -105,6 +105,10 @@ describe('Account pages', () => {
       'href',
       '/account/favorites',
     );
+    expect(screen.getByRole('menuitem', { name: 'Want list' })).toHaveAttribute(
+      'href',
+      '/account/want-list',
+    );
     expect(screen.queryByRole('menuitem', { name: 'Discount' })).not.toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Settings' })).toHaveAttribute(
       'href',

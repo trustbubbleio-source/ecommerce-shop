@@ -8,6 +8,8 @@ import { AccountLayout } from './pages/account/layout';
 import { AccountOrdersPage } from './pages/account/orders';
 import { AccountProfilePage } from './pages/account/profile';
 import { AccountSettingsPage } from './pages/account/settings';
+import { AccountWantListPage } from './pages/account/want-list';
+import { AdminWantListPage } from './pages/admin/want-list';
 import { BlogPage } from './pages/blog';
 import { BlogPostPage } from './pages/blog-post';
 import { AdminEditProductPage } from './pages/admin/edit-product';
@@ -60,6 +62,7 @@ export const routes: RouteObject[] = [
           { index: true, element: <AccountProfilePage /> },
           { path: 'orders', element: <AccountOrdersPage /> },
           { path: 'favorites', element: <AccountFavoritesPage /> },
+          { path: 'want-list', element: <AccountWantListPage /> },
           { path: 'discount', element: <AccountDiscountPage /> },
           { path: 'settings', element: <AccountSettingsPage /> },
         ],
@@ -86,6 +89,7 @@ export const routes: RouteObject[] = [
         element: <AdminGuard />,
         children: [
           { index: true, element: <AdminProductsPage /> },
+          { path: 'want-list', element: <AdminWantListPage /> },
           { path: 'new', element: <AdminNewProductPage /> },
           { path: 'products/:id', element: <AdminEditProductPage /> },
         ],

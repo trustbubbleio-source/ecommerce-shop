@@ -17,6 +17,7 @@ import { favoriteRoutes } from './routes/favorites.js';
 import { orderRoutes } from './routes/orders.js';
 import { productRoutes } from './routes/products.js';
 import { sellRoutes } from './routes/sell.js';
+import { adminWantListRoutes, wantListRoutes } from './routes/want-list.js';
 import { webhookRoutes } from './routes/webhooks.js';
 
 export interface CreatedApp {
@@ -35,6 +36,7 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
     products: overrides.products ?? memory.products,
     favorites: overrides.favorites ?? memory.favorites,
     reviews: overrides.reviews ?? memory.reviews,
+    wantList: overrides.wantList ?? memory.wantList,
     payments: overrides.payments ?? new PaymentService(env),
     storage: overrides.storage ?? new StorageService(env.storage),
     email: overrides.email ?? new EmailService(env),
@@ -67,6 +69,8 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
   api.route('/favorites', favoriteRoutes(deps));
   api.route('/contact', contactRoutes(deps));
   api.route('/sell', sellRoutes(deps));
+  api.route('/want-list', wantListRoutes(deps));
+  api.route('/admin/want-list', adminWantListRoutes(deps));
   api.route('/webhooks', webhookRoutes(deps));
 
   app.route('/api', api);

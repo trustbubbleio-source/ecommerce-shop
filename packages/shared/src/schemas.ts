@@ -242,6 +242,24 @@ export const sellRequestInputSchema = z.object({
     .max(8, 'Max 8 cards per submission'),
 });
 
+export const createWantListItemSchema = z.object({
+  preset: z.enum([
+    'singles-nm-en',
+    'singles-nm-jp',
+    'sealed-en',
+    'sealed-jp',
+    'graded-any',
+    'custom',
+  ]),
+  title: z.string().trim().min(2, 'What are you looking for?').max(160),
+  notes: z.string().trim().max(1000).optional().default(''),
+});
+
+export const updateWantListStatusSchema = z.object({
+  status: z.enum(['pending', 'reviewing', 'accepted', 'rejected', 'found', 'contacted']),
+  adminNote: z.string().trim().max(1000).nullable().optional(),
+});
+
 export type AddressInput = z.infer<typeof addressSchema>;
 export type CartLineInput = z.infer<typeof cartLineSchema>;
 export type CheckoutInput = z.infer<typeof checkoutInputSchema>;
@@ -256,6 +274,8 @@ export type GoogleAuthInput = z.infer<typeof googleAuthInputSchema>;
 export type ContactInput = z.infer<typeof contactInputSchema>;
 export type CreateProductReviewInput = z.infer<typeof createProductReviewInputSchema>;
 export type SellRequestInput = z.infer<typeof sellRequestInputSchema>;
+export type CreateWantListItemInput = z.infer<typeof createWantListItemSchema>;
+export type UpdateWantListStatusInput = z.infer<typeof updateWantListStatusSchema>;
 export type CreateProductInput = z.infer<typeof createProductInputSchema>;
 export type UpdateProductInput = z.infer<typeof createProductInputSchema>;
 export type FetchCardImageInput = z.infer<typeof fetchCardImageInputSchema>;

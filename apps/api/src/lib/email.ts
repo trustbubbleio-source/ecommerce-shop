@@ -163,6 +163,40 @@ export class EmailService {
     });
   }
 
+  async sendWantListAlert(input: {
+    name: string;
+    email: string;
+    userId: string;
+    presetLabel: string;
+    title: string;
+    notes: string;
+  }): Promise<SendEmailResult> {
+    return this.send({
+      to: this.env.email.contactInbox,
+      replyTo: input.email,
+      subject: `[Want list] ${input.presetLabel} — ${input.title.slice(0, 60)}`,
+      text: [
+        `From: ${input.name} <${input.email}>`,
+        `User ID: ${input.userId}`,
+        `Preset: ${input.presetLabel}`,
+        `Looking for: ${input.title}`,
+        '',
+        input.notes ? `Notes:\n${input.notes}` : '',
+      ].join('\n'),
+      html: `
+        <p><strong>From:</strong> ${escapeHtml(input.name)} &lt;${escapeHtml(input.email)}&gt;</p>
+        <p><strong>User ID:</strong> ${escapeHtml(input.userId)}</p>
+        <p><strong>Preset:</strong> ${escapeHtml(input.presetLabel)}</p>
+        <p><strong>Looking for:</strong> ${escapeHtml(input.title)}</p>
+        ${
+          input.notes
+            ? `<p><strong>Notes:</strong></p><p style="white-space:pre-wrap">${escapeHtml(input.notes)}</p>`
+            : ''
+        }
+      `,
+    });
+  }
+
   async sendWelcome(input: { name: string; email: string }): Promise<SendEmailResult> {
     const shopUrl = this.env.webOrigins[0] ?? 'https://onemorerip.cards';
     return this.send({

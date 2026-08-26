@@ -12,3 +12,4 @@ export * from './catalog.js';
 export * from './catalog-stats.js';
 export * from './assets.js';
 export * from './sell-upload.js';
+export * from './want-list.js';
