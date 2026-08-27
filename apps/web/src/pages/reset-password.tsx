@@ -2,7 +2,7 @@ import { resetPasswordInputSchema } from '@akknerds/shared';
 import { Button, Card, CardContent, CardHeader, CardTitle, Field, Input, Spinner, useToast } from '@akknerds/ui';
 import { type FormEvent, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ApiError, api } from '../lib/api';
+import { ApiError, api } from '@akknerds/api-client';
 
 export function ResetPasswordPage() {
   const [params] = useSearchParams();

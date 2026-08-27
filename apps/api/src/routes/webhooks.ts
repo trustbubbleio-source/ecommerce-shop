@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
 import { clearWelcomeDiscountAfterPurchase } from '../lib/welcome-discount.js';
+import { notifyPaidOrder } from '../lib/order-alert.js';
+import type { StripeCheckoutSessionLike } from '../lib/payments.js';
 
 export function webhookRoutes(deps: AppDeps) {
   const app = new Hono<AppEnv>();
@@ -25,9 +27,16 @@ export function webhookRoutes(deps: AppDeps) {
     }
 
     if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as { id: string };
+      const session = event.data.object as StripeCheckoutSessionLike;
+      const existing = await deps.orders.getByStripeSession(session.id);
+      const newlyPaid = existing?.status !== 'paid' && existing?.status !== 'fulfilled';
       const order = await deps.orders.markStatusBySession(session.id, 'paid');
       await clearWelcomeDiscountAfterPurchase(deps, order?.userId);
+      if (order && !order.invoiceUrl) {
+        const doc = await deps.payments.resolveInvoiceDocument(session.id, session);
+        if (doc) await deps.orders.setInvoiceUrl(order.id, doc.url);
+      }
+      if (newlyPaid && order) await notifyPaidOrder(deps.email, deps.env, order);
     }
 
     return c.json({ received: true });

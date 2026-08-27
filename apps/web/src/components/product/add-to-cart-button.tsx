@@ -1,7 +1,7 @@
 import type { Product } from '@akknerds/shared';
 import { Button, type ButtonProps, useToast } from '@akknerds/ui';
 import { Check, Clock, ShoppingCart } from 'lucide-react';
-import { PRELAUNCH, isPrelaunchActive } from '../../config/launch';
+import { PRELAUNCH, usePurchaseLocked } from '../../config/launch';
 import { toCartProduct, useCartStore } from '../../store/cart';
 
 interface AddToCartButtonProps extends Omit<ButtonProps, 'onClick' | 'children'> {
@@ -22,7 +22,7 @@ export function AddToCartButton({
   const add = useCartStore((s) => s.add);
   const { toast } = useToast();
   const soldOut = product.stock <= 0;
-  const prelaunch = isPrelaunchActive();
+  const prelaunch = usePurchaseLocked();
   const disabled = soldOut || prelaunch;
   const prelaunchLabel = compact ? PRELAUNCH.buttonLabelShort : PRELAUNCH.buttonLabel;
 

@@ -1,5 +1,6 @@
 import type {
   Address,
+  FulfillmentStep,
   Order,
   OrderLine,
   OrderStatus,
@@ -106,6 +107,10 @@ export function toOrder(row: DbOrder): Order {
     currency: row.currency,
     status: row.status as OrderStatus,
     stripeSessionId: row.stripeSessionId ?? undefined,
+    invoiceUrl: row.invoiceUrl ?? undefined,
+    fulfillmentStep: (row.fulfillmentStep as FulfillmentStep | null) ?? undefined,
+    carrierName: row.carrierName ?? undefined,
+    trackingUrl: row.trackingUrl ?? undefined,
     shippingAddress: (row.shippingAddress as unknown as Address | null) ?? undefined,
     createdAt: row.createdAt.toISOString(),
   };

@@ -1,7 +1,7 @@
 import type { PublicUser } from '@akknerds/shared';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { setAuthToken } from '../lib/api';
+import { setAuthToken } from '@akknerds/api-client';
 
 interface AuthState {
   token: string | null;
@@ -47,8 +47,12 @@ export const useAuthStore = create<AuthState>()(
         mustSetPassword: state.mustSetPassword,
       }),
       onRehydrateStorage: () => (state) => {
-        if (state?.token) setAuthToken(state.token);
+        setAuthToken(state?.token ?? null);
       },
     },
   ),
 );
+
+useAuthStore.subscribe((state) => {
+  setAuthToken(state.token);
+});

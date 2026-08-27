@@ -2,7 +2,7 @@ import type { PublicUser } from '@akknerds/shared';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, api } from '../../lib/api';
+import { ApiError, api } from '@akknerds/api-client';
 import { useAuthStore } from '../../store/auth';
 import { LocationProbe, renderWithProviders } from '../../test/utils';
 import { AuthForm } from './auth-form';

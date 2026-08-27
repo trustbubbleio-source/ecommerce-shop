@@ -1,6 +1,6 @@
 import type { PublicUser } from '@akknerds/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as apiModule from '../lib/api';
+import * as apiModule from '@akknerds/api-client';
 import { useAuthStore } from './auth';
 
 const user: PublicUser = {

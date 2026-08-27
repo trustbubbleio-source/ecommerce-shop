@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
-import { api } from './lib/api';
+import { api } from '@akknerds/api-client';
 
 beforeEach(() => vi.restoreAllMocks());
 

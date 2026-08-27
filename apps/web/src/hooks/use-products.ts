@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { type ProductsQuery, SHOP_PAGE_SIZE, api } from '../lib/api';
+import { type ProductsQuery, SHOP_PAGE_SIZE, api } from '@akknerds/api-client';
 
 export const productKeys = {
   all: ['products'] as const,

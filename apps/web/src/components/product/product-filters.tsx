@@ -10,7 +10,7 @@ import {
 } from '@akknerds/shared';
 import { Button, Label, Separator, cn } from '@akknerds/ui';
 import { RotateCcw } from 'lucide-react';
-import type { CatalogMeta } from '../../lib/api';
+import type { CatalogMeta } from '@akknerds/api-client';
 import { type ProductFilters, isDefaultFilters } from '../../lib/filters';
 
 interface ProductFiltersPanelProps {

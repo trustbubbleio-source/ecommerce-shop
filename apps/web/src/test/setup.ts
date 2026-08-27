@@ -1,6 +1,11 @@
 import '@testing-library/jest-dom/vitest';
+import { configureApiClient } from '@akknerds/api-client';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
+
+configureApiClient({
+  baseUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:4000',
+});
 
 afterEach(() => {
   cleanup();

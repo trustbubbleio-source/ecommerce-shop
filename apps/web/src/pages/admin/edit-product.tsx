@@ -42,7 +42,7 @@ import { ImagePlus, Sparkles, X } from 'lucide-react';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useSingleCardAutoCopy } from '../../hooks/use-single-card-auto-copy';
-import { ApiError, api } from '../../lib/api';
+import { ApiError, api } from '@akknerds/api-client';
 import { ProductTagPicker, normalizeProductTags } from '../../components/admin/product-tag-picker';
 import { ProductVisibilityFields } from '../../components/admin/product-visibility-fields';
 import { SingleCardPriceField } from '../../components/admin/single-card-price-field';

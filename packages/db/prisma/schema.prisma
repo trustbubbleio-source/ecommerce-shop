@@ -408,6 +408,10 @@ model Order {
   total           Int
   currency        String
   stripeSessionId String?  @unique @map("stripe_session_id")
+  invoiceUrl      String?  @map("invoice_url")
+  fulfillmentStep String?  @map("fulfillment_step")
+  carrierName     String?  @map("carrier_name")
+  trackingUrl     String?  @map("tracking_url")
   shippingAddress Json?    @map("shipping_address")
   createdAt       DateTime @default(now()) @map("created_at")
 

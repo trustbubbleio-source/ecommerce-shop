@@ -35,6 +35,8 @@ export interface EmailEnv {
   from: string;
   /** Inbox that receives contact-form submissions. */
   contactInbox: string;
+  /** Inbox that receives paid-order packing alerts. */
+  ordersInbox: string;
 }
 
 export interface GoogleAuthEnv {
@@ -95,6 +97,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
       apiKey: resendApiKey,
       from: source.EMAIL_FROM ?? 'One More Rip <onboarding@resend.dev>',
       contactInbox: source.EMAIL_CONTACT_INBOX ?? 'contact@onemorerip.cards',
+      ordersInbox: source.EMAIL_ORDERS_INBOX ?? 'order@onemorerip.cards',
     },
     google: {
       enabled: isReal(googleClientId),

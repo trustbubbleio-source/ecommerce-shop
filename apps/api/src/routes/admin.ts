@@ -13,11 +13,22 @@ import {
   type PriceSyncOutcome,
 } from '@akknerds/price-fetcher';
 import { Hono } from 'hono';
+import { z } from 'zod';
 import type { AppDeps, AppEnv } from '../context.js';
 import { validate } from '../lib/http.js';
 import type { UploadableFile } from '../lib/storage.js';
 import { requireAdmin } from '../middleware/admin.js';
 import { requireAuth } from '../middleware/auth.js';
+
+const ADMIN_PRODUCTS_PAGE_SIZE = 10;
+
+const adminProductQuerySchema = z.object({
+  search: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(50).optional(),
+  offset: z.coerce.number().int().min(0).optional(),
+  sortKey: z.enum(['name', 'category', 'price', 'stock', 'status']).optional(),
+  sortDir: z.enum(['asc', 'desc']).optional(),
+});
 
 function collectFiles(raw: unknown): File[] {
   if (!raw) return [];
@@ -27,11 +38,34 @@ function collectFiles(raw: unknown): File[] {
 export function adminRoutes(deps: AppDeps) {
   const app = new Hono<AppEnv>();
 
-  app.get('/products', requireAuth(), requireAdmin(deps), async (c) => {
-    const products = await deps.products.list({ sort: 'name-asc' });
-    const stats = await deps.products.catalogStats();
-    return c.json({ products, total: products.length, stats });
-  });
+  app.get(
+    '/products',
+    requireAuth(),
+    requireAdmin(deps),
+    validate('query', adminProductQuerySchema),
+    async (c) => {
+      const q = c.req.valid('query');
+      const limit = q.limit ?? ADMIN_PRODUCTS_PAGE_SIZE;
+      const offset = q.offset ?? 0;
+      const [page, stats] = await Promise.all([
+        deps.products.listPage({
+          filter: { search: q.search },
+          adminSort: { key: q.sortKey ?? 'name', dir: q.sortDir ?? 'asc' },
+          limit,
+          offset,
+        }),
+        deps.products.catalogStats(),
+      ]);
+      return c.json({
+        products: page.products,
+        total: page.total,
+        limit,
+        offset,
+        hasMore: offset + page.products.length < page.total,
+        stats,
+      });
+    },
+  );
 
   app.post('/uploads', requireAuth(), requireAdmin(deps), async (c) => {
     if (!deps.storage.enabled) {

@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SHOP_PAGE_SIZE, api } from '../lib/api';
+import { SHOP_PAGE_SIZE, api } from '@akknerds/api-client';
 import { makeProduct, renderApp } from '../test/utils';
 
 beforeEach(() => vi.restoreAllMocks());

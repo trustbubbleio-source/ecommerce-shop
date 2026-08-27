@@ -11,6 +11,7 @@ import { authOptional } from './middleware/auth.js';
 import { createMemoryRepositories } from './repositories/factory.js';
 import { authRoutes } from './routes/auth.js';
 import { adminRoutes } from './routes/admin.js';
+import { adminOrderRoutes } from './routes/admin-orders.js';
 import { checkoutRoutes } from './routes/checkout.js';
 import { contactRoutes } from './routes/contact.js';
 import { favoriteRoutes } from './routes/favorites.js';
@@ -64,6 +65,7 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
   api.route('/products', productRoutes(deps));
   api.route('/auth', authRoutes(deps));
   api.route('/admin', adminRoutes(deps));
+  api.route('/admin/orders', adminOrderRoutes(deps));
   api.route('/checkout', checkoutRoutes(deps));
   api.route('/orders', orderRoutes(deps));
   api.route('/favorites', favoriteRoutes(deps));

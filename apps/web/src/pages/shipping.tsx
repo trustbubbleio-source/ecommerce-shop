@@ -21,9 +21,10 @@ const SECTIONS: PolicySection[] = [
     id: 'methods',
     title: '2. Delivery methods',
     body: [
-      'Standard tracked parcel delivery — all paid orders ship with tracking once the carrier accepts the parcel.',
-      'We currently offer a single standard tracked service at checkout. Carrier assignment may vary by destination (for example PostNord or equivalent partners within Sweden/EU, and international postal/courier partners abroad).',
-      'You will receive a dispatch email with tracking details when your order leaves us. Tracking can take a short time to activate after the label is created.',
+      `Standard delivery at checkout. Carrier tracking (name and tracking URL) is included when your merchandise subtotal is ${freeAt} or more.`,
+      `Orders below ${freeAt} ship as untracked postal. You can follow packing and delivery on the order page in your account — that is the live status for those shipments.`,
+      'We currently offer a single standard service at checkout. On tracked orders, carrier assignment may vary by destination (for example PostNord or equivalent partners within Sweden/EU, and international postal/courier partners abroad).',
+      'On tracked orders, you will receive a dispatch email with tracking details when the parcel is collected. Tracking can take a short time to activate after the label is created.',
     ],
   },
   {

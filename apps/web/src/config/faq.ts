@@ -32,7 +32,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What delivery options do you offer?',
         answer:
-          'We offer standard tracked parcel delivery at checkout. All paid shipments include tracking once the carrier accepts the parcel. See Shipping & Delivery for carriers, geography and times.',
+          `We offer standard parcel delivery at checkout. Carrier tracking (name and tracking URL) is included on orders with a subtotal of ${freeAt} or more. Orders below ${freeAt} ship untracked — follow packing and delivery on the order page in your account. See Shipping & Delivery for carriers, geography and times.`,
       },
       {
         question: 'Do you offer free shipping?',
@@ -47,7 +47,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'How do I track my order?',
         answer:
-          'Once dispatched, you will receive an email with a tracking link. You can also view tracking on your order confirmation page and in your account under My orders. Tracking may take a few hours to activate after the label is created.',
+          `Every paid order can be followed on the order page in your account (Received → Delivered). Carrier name and tracking URL are included only when the merchandise subtotal is ${freeAt} or more; they appear after the parcel is collected. Orders below ${freeAt} have no carrier tracking number — this website is the live status.`,
       },
     ],
   },

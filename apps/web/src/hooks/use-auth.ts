@@ -1,7 +1,7 @@
 import type { LoginInput, RegisterInput, UpdateProfileInput, VerifyEmailInput } from '@akknerds/shared';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { ApiError, api } from '../lib/api';
+import { ApiError, api } from '@akknerds/api-client';
 import { useAuthStore } from '../store/auth';
 import { useCurrencyStore } from '../store/currency';
 

@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { api } from '../../lib/api';
+import { api } from '@akknerds/api-client';
 import { type CartProduct, useCartStore } from '../../store/cart';
 import { renderWithProviders } from '../../test/utils';
 import { CheckoutForm } from './checkout-form';

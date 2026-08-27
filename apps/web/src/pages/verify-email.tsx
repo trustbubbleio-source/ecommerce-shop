@@ -1,7 +1,7 @@
 import { Button, Card, CardContent, CardHeader, CardTitle, Spinner } from '@akknerds/ui';
 import { useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ApiError } from '../lib/api';
+import { ApiError } from '@akknerds/api-client';
 import { useVerifyEmail } from '../hooks/use-auth';
 
 export function VerifyEmailPage() {

@@ -1,7 +1,7 @@
 import { Button, cn, useToast } from '@akknerds/ui';
 import { Heart } from 'lucide-react';
 import { type MouseEvent } from 'react';
-import { ApiError } from '../../lib/api';
+import { ApiError } from '@akknerds/api-client';
 import { useFavoriteIds, useToggleFavorite } from '../../hooks/use-favorites';
 import { useAuthStore } from '../../store/auth';
 

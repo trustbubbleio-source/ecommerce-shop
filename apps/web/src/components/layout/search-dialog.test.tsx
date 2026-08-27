@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { api } from '../../lib/api';
+import { api } from '@akknerds/api-client';
 import { LocationProbe, makeProduct, renderWithProviders } from '../../test/utils';
 import { SearchDialog } from './search-dialog';
 

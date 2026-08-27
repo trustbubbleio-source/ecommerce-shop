@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CreateProductReviewInput } from '@akknerds/shared';
-import { api } from '../lib/api';
+import { api } from '@akknerds/api-client';
 import { useAuthStore } from '../store/auth';
 import { productKeys } from './use-products';
 

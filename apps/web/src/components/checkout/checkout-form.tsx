@@ -4,7 +4,7 @@ import { Lock } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
-import { ApiError } from '../../lib/api';
+import { ApiError } from '@akknerds/api-client';
 import { useCheckout } from '../../hooks/use-checkout';
 import { useAuthStore } from '../../store/auth';
 import { useCartStore } from '../../store/cart';

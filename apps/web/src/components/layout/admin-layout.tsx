@@ -1,5 +1,5 @@
 import { Button, cn } from '@akknerds/ui';
-import { ClipboardList, LayoutDashboard, LogOut, Store } from 'lucide-react';
+import { ClipboardList, LayoutDashboard, LogOut, Package, Store } from 'lucide-react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth';
 
@@ -17,7 +17,7 @@ export function AdminLayout() {
               <LayoutDashboard className="text-primary size-5" aria-hidden />
               <div>
                 <p className="text-sm font-bold leading-none">One More Rip Admin</p>
-                <p className="text-muted-foreground text-xs">Catalog & sourcing</p>
+                <p className="text-muted-foreground text-xs">Catalog, orders & sourcing</p>
               </div>
             </div>
             <nav className="ml-2 flex items-center gap-1 overflow-x-auto">
@@ -34,6 +34,20 @@ export function AdminLayout() {
                 }
               >
                 Products
+              </NavLink>
+              <NavLink
+                to="/admin/orders"
+                className={({ isActive }) =>
+                  cn(
+                    'inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium',
+                    isActive
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )
+                }
+              >
+                <Package className="size-3.5" />
+                Orders
               </NavLink>
               <NavLink
                 to="/admin/want-list"

@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { jsonRequest, makeApp, registerAndLogin } from '../test/helpers.js';
+import { describe, expect, it, vi } from 'vitest';
+import { PaymentService } from '../lib/payments.js';
+import { jsonRequest, makeApp, registerAndLogin, testEnv } from '../test/helpers.js';
 
 async function placeOrder(app: ReturnType<typeof makeApp>['app'], token?: string) {
   const { data } = await jsonRequest(
@@ -56,5 +57,34 @@ describe('GET /api/orders', () => {
     });
     expect(res.status).toBe(200);
     expect(data.orders).toHaveLength(2);
+  });
+
+  it('hydrates a Stripe invoice URL onto paid orders', async () => {
+    const sessionId = 'cs_live_hydrate';
+    const env = testEnv({
+      STRIPE_SECRET_KEY: 'sk_test_real',
+      STRIPE_WEBHOOK_SECRET: 'whsec_real',
+    });
+    const payments = new PaymentService(env, {
+      checkout: {
+        sessions: {
+          create: vi.fn().mockResolvedValue({ id: sessionId, url: 'https://stripe.test/pay' }),
+          retrieve: vi.fn().mockResolvedValue({
+            id: sessionId,
+            invoice: { invoice_pdf: 'https://pay.stripe.com/invoice/inv_h/pdf' },
+          }),
+        },
+      },
+      webhooks: { constructEvent: vi.fn() },
+    });
+    const created = makeApp({ env, payments });
+    const token = await registerAndLogin(created);
+    const orderId = await placeOrder(created.app, token);
+    await created.deps.orders.setStatus(orderId, 'paid');
+
+    const { data } = await jsonRequest(created.app, 'GET', '/api/orders', undefined, {
+      authorization: `Bearer ${token}`,
+    });
+    expect(data.orders[0]?.invoiceUrl).toBe('https://pay.stripe.com/invoice/inv_h/pdf');
   });
 });

@@ -39,7 +39,7 @@ function matches(product: Product, filter: ProductFilter): boolean {
   if (typeof filter.maxPrice === 'number' && product.price > filter.maxPrice) return false;
   if (filter.search) {
     const haystack =
-      `${product.name} ${product.set} ${product.series} ${product.artist ?? ''} ${product.tags.join(' ')}`.toLowerCase();
+      `${product.name} ${product.set} ${product.series} ${product.artist ?? ''} ${product.tags.join(' ')} ${product.id} ${product.cardNumber ?? ''}`.toLowerCase();
     if (!haystack.includes(filter.search.trim().toLowerCase())) return false;
   }
   return true;

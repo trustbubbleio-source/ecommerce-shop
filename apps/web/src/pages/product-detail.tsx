@@ -14,7 +14,7 @@ import { RarityIcon } from '../components/product/rarity-icon';
 import { ProductGrid } from '../components/product/product-grid';
 import { ProductPriceHistory } from '../components/product/product-price-history';
 import { ProductReviewsSection } from '../components/product/product-reviews';
-import { PRELAUNCH, isPrelaunchActive } from '../config/launch';
+import { PRELAUNCH, usePurchaseLocked } from '../config/launch';
 import { useProduct, useProducts } from '../hooks/use-products';
 
 function DetailSkeleton() {
@@ -40,6 +40,7 @@ export function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const purchaseLocked = usePurchaseLocked();
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -61,7 +62,6 @@ export function ProductDetailPage() {
   }
 
   const soldOut = product.stock <= 0;
-  const prelaunch = isPrelaunchActive();
   const gallery = productImageUrls(product, import.meta.env.VITE_ASSET_CDN_URL);
   const isCardStyle = isCardStyleCategory(product.category);
   const mainImageAspect = isCardStyle ? 'aspect-[5/7]' : 'aspect-square';
@@ -184,7 +184,7 @@ export function ProductDetailPage() {
           <p className="text-muted-foreground leading-relaxed">{product.description}</p>
 
           <div className="flex items-center gap-2 text-sm">
-            {prelaunch ? (
+            {purchaseLocked ? (
               <span className="font-semibold text-amber-400">{PRELAUNCH.description}</span>
             ) : (
               <>
@@ -205,7 +205,7 @@ export function ProductDetailPage() {
           <Separator />
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            {!soldOut && !prelaunch && (
+            {!soldOut && !purchaseLocked && (
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium">Qty</span>
                 <QuantityStepper

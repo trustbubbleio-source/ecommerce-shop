@@ -2,6 +2,7 @@ import type {
   Address,
   CatalogStats,
   CreateProductInput,
+  FulfillmentStep,
   Order,
   OrderLine,
   OrderStatus,
@@ -46,16 +47,28 @@ export interface UserRepository {
   markEmailVerified(userId: string): Promise<StoredUser | undefined>;
 }
 
+export interface OrderFulfillmentPatch {
+  fulfillmentStep: FulfillmentStep;
+  carrierName?: string;
+  trackingUrl?: string | null;
+}
+
 export interface OrderRepository {
   create(input: CreateOrderInput): Promise<Order>;
   get(id: string): Promise<Order | undefined>;
+  getByStripeSession(sessionId: string): Promise<Order | undefined>;
+  listAll(): Promise<Order[]>;
   attachSession(orderId: string, sessionId: string): Promise<void>;
+  setInvoiceUrl(orderId: string, invoiceUrl: string): Promise<void>;
+  updateFulfillment(orderId: string, input: OrderFulfillmentPatch): Promise<Order | undefined>;
   markStatusBySession(sessionId: string, status: OrderStatus): Promise<Order | undefined>;
   setStatus(orderId: string, status: OrderStatus): Promise<Order | undefined>;
   listByUser(userId: string): Promise<Order[]>;
   /** True if the user has a paid/fulfilled order containing the product. */
   hasPurchasedProduct(userId: string, productId: string): Promise<boolean>;
 }
+
+export type AdminProductSortKey = 'name' | 'category' | 'price' | 'stock' | 'status';
 
 export interface ListOptions {
   filter?: ProductFilter;
@@ -64,6 +77,7 @@ export interface ListOptions {
   isNew?: boolean;
   limit?: number;
   offset?: number;
+  adminSort?: { key: AdminProductSortKey; dir: 'asc' | 'desc' };
 }
 
 export interface ProductPage {

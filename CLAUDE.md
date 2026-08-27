@@ -7,7 +7,8 @@ Guidance for working in this repository.
 `One More Rip` — a mobile-first Pokémon TCG e-commerce app. pnpm monorepo with a Vite
 
 - React storefront (`apps/web`), a Hono API (`apps/api`), a shared domain package
-  (`packages/shared`) and a shared design system (`packages/ui`).
+  (`packages/shared`), a typed HTTP client (`packages/api-client`), and a shared
+  design system (`packages/ui`).
 
 ## Commands
 
@@ -29,6 +30,10 @@ pnpm --filter @akknerds/api dev
 - **`packages/shared` is the contract.** Product types, zod schemas, the product
   catalogue, pricing and filter/sort logic live here and are imported by BOTH the
   API and the web app. Change domain shapes here, not in app code.
+- **`packages/api-client` is the HTTP client.** Typed `api.*` methods, `ApiError`,
+  and `configureApiClient({ baseUrl })` live here. Web calls `configureApiClient`
+  once in `main.tsx` (and test setup); then import `{ api }` from
+  `@akknerds/api-client` everywhere. Do not add fetch wrappers in app code.
 - **Money is integer cents** everywhere. Format only at the edge with `formatPrice`.
 - **Never trust client prices.** `POST /api/checkout` re-prices the cart from the
   catalogue via `priceCart()` and clamps quantities to stock.

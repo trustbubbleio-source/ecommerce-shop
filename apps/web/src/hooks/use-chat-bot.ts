@@ -9,7 +9,7 @@ import { formatPrice } from '@akknerds/shared';
 import { useCallback, useRef } from 'react';
 import { PRELAUNCH } from '../config/launch';
 import { SITE } from '../config/site';
-import { api } from '../lib/api';
+import { api } from '@akknerds/api-client';
 import { useChatStore } from '../store/chat';
 
 const launchDateLabel = PRELAUNCH.description.replace(/^Purchases open\s+/i, '').replace(/\.$/, '');

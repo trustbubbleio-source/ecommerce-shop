@@ -7,6 +7,8 @@ describe('loadEnv', () => {
     expect(env.port).toBe(4000);
     expect(env.webOrigins).toEqual(['http://localhost:5173']);
     expect(env.stripeEnabled).toBe(false);
+    expect(env.email.contactInbox).toBe('contact@onemorerip.cards');
+    expect(env.email.ordersInbox).toBe('order@onemorerip.cards');
   });
 
   it('parses a comma-separated origin list', () => {

@@ -17,6 +17,29 @@ export function calcShipping(subtotal: number): number {
   return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING_FEE;
 }
 
+/**
+ * Carrier name + tracking URL are included from the same subtotal as free shipping.
+ * Below that, the order page timeline is the live status (untracked postal).
+ */
+export function hasCarrierTracking(
+  subtotal: number,
+  currency: string = BASE_CURRENCY,
+): boolean {
+  return subtotal >= convertFromEur(FREE_SHIPPING_THRESHOLD, normalizeCurrency(currency));
+}
+
+/** Standard Swedish VAT on goods (percent). Catalogue prices are VAT-inclusive. */
+export const VAT_PERCENT = 25;
+
+/**
+ * VAT already included in a gross amount (integer cents/öre).
+ * 750,00 at 25% → 150,00 (`gross × 25 / 125`).
+ */
+export function vatIncludedIn(grossCents: number): number {
+  if (grossCents <= 0) return 0;
+  return Math.round((grossCents * VAT_PERCENT) / (100 + VAT_PERCENT));
+}
+
 export function calcSubtotal(lines: Array<Pick<OrderLine, 'unitPrice' | 'quantity'>>): number {
   return lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
 }

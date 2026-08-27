@@ -5,13 +5,13 @@ import { CartLineItem } from '../components/cart/cart-line-item';
 import { CartSummary } from '../components/cart/cart-summary';
 import { EmptyState } from '../components/common/empty-state';
 import { PageHeader } from '../components/common/page-header';
-import { PRELAUNCH, isPrelaunchActive } from '../config/launch';
+import { PRELAUNCH, usePurchaseLocked } from '../config/launch';
 import { useCartStore } from '../store/cart';
 
 export function CartPage() {
   const items = useCartStore((s) => s.items);
   const clear = useCartStore((s) => s.clear);
-  const prelaunch = isPrelaunchActive();
+  const prelaunch = usePurchaseLocked();
 
   if (items.length === 0) {
     return (

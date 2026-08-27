@@ -55,18 +55,56 @@ describe('GET /api/admin/products', () => {
     });
     expect(res.status).toBe(200);
     expect(data.products.length).toBeGreaterThan(0);
-    expect(data.total).toBe(data.products.length);
+    expect(data.products.length).toBeLessThanOrEqual(10);
+    expect(data.limit).toBe(10);
+    expect(data.offset).toBe(0);
+    expect(data.total).toBeGreaterThanOrEqual(data.products.length);
     expect(data.stats).toMatchObject({
       listings: data.total,
       unitsInStock: expect.any(Number),
       inventoryValueCents: expect.any(Number),
     });
-    const expectedValue = data.products.reduce(
-      (sum: number, product: { price: number; stock: number }) =>
-        sum + product.price * Math.max(0, product.stock),
-      0,
+    expect(data.hasMore).toBe(data.total > data.products.length);
+  });
+
+  it('pages and searches the catalog', async () => {
+    const { app, deps } = makeApp();
+    await seedAdmin(deps);
+    const { data: login } = await jsonRequest(app, 'POST', '/api/auth/login', {
+      email: adminCreds.email,
+      password: adminCreds.password,
+    });
+
+    const { data: first } = await jsonRequest(
+      app,
+      'GET',
+      '/api/admin/products?limit=2&offset=0',
+      undefined,
+      { authorization: `Bearer ${login.token}` },
     );
-    expect(data.stats.inventoryValueCents).toBe(expectedValue);
+    expect(first.products).toHaveLength(2);
+    expect(first.limit).toBe(2);
+    expect(first.hasMore).toBe(true);
+
+    const { data: second } = await jsonRequest(
+      app,
+      'GET',
+      '/api/admin/products?limit=2&offset=2',
+      undefined,
+      { authorization: `Bearer ${login.token}` },
+    );
+    expect(second.products).toHaveLength(2);
+    expect(second.products[0].id).not.toBe(first.products[0].id);
+
+    const { data: search } = await jsonRequest(
+      app,
+      'GET',
+      '/api/admin/products?search=charizard',
+      undefined,
+      { authorization: `Bearer ${login.token}` },
+    );
+    expect(search.total).toBeGreaterThan(0);
+    expect(search.products.length).toBeGreaterThan(0);
   });
 });
 

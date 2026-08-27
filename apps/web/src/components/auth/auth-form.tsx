@@ -3,7 +3,7 @@ import { Button, Field, Input, Spinner, useToast } from '@akknerds/ui';
 import { type FormEvent, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { ZodError } from 'zod';
-import { ApiError } from '../../lib/api';
+import { ApiError } from '@akknerds/api-client';
 import { useLogin, useRegister } from '../../hooks/use-auth';
 import { GoogleSignInButton } from './google-sign-in-button';
 
@@ -15,12 +15,13 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? '/account';
+  const prefillEmail = (location.state as { email?: string } | null)?.email ?? '';
 
   const register = useRegister();
   const login = useLogin();
   const { toast } = useToast();
 
-  const [values, setValues] = useState({ email: '', password: '' });
+  const [values, setValues] = useState({ email: prefillEmail, password: '' });
   const [errors, setErrors] = useState<Errors>({});
   const [checkEmail, setCheckEmail] = useState<string>();
 

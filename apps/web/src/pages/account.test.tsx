@@ -2,7 +2,7 @@ import type { Order, PublicUser } from '@akknerds/shared';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { api } from '../lib/api';
+import { api } from '@akknerds/api-client';
 import { useAuthStore } from '../store/auth';
 import { renderApp } from '../test/utils';
 
@@ -40,6 +40,14 @@ const order: Order = {
   currency: 'eur',
   status: 'paid',
   createdAt: '2024-02-01T00:00:00.000Z',
+  invoiceUrl: 'https://pay.stripe.com/invoice/acct/inv_1/pdf',
+  shippingAddress: {
+    fullName: 'Ash Ketchum',
+    line1: '1 Pallet Path',
+    city: 'Malmö',
+    postalCode: '211 00',
+    country: 'Sweden',
+  },
 };
 
 beforeEach(() => {
@@ -72,8 +80,40 @@ describe('Account pages', () => {
     renderApp('/account/orders');
 
     expect(await screen.findByText(/Hi, Ash/)).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByText('ord_123')).toBeInTheDocument());
-    expect(screen.getByText('paid')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Booster Box')).toBeInTheDocument());
+    expect(screen.getByText('Confirmed')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Booster Box, Confirmed/i })).toHaveAttribute(
+      'href',
+      '/account/orders/ord_123',
+    );
+    expect(screen.getByText(/Malmö/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Invoice.pdf' })).toHaveAttribute(
+      'href',
+      order.invoiceUrl,
+    );
+  });
+
+  it('opens order details with a tracking timeline', async () => {
+    useAuthStore.setState({ token: 'tok_1', user });
+    vi.spyOn(api, 'me').mockResolvedValue({ user });
+    vi.spyOn(api, 'getOrder').mockResolvedValue({ order });
+
+    renderApp('/account/orders/ord_123');
+
+    expect(await screen.findByText('Order details')).toBeInTheDocument();
+    expect(screen.getByText('Received')).toBeInTheDocument();
+    expect(screen.getByText('Packing')).toBeInTheDocument();
+    expect(screen.getByText('Awaiting pickup')).toBeInTheDocument();
+    expect(screen.getByText('Handed to carrier')).toBeInTheDocument();
+    expect(screen.getByText('In transit')).toBeInTheDocument();
+    expect(screen.getByText('Delivered')).toBeInTheDocument();
+    expect(screen.getByText('In progress')).toBeInTheDocument();
+    expect(screen.getByText('Carrier details')).toBeInTheDocument();
+    expect(screen.getByText('Assigned at dispatch')).toBeInTheDocument();
+    expect(screen.getByText('Issued when the parcel is collected')).toBeInTheDocument();
+    expect(screen.getByText('Ash Ketchum')).toBeInTheDocument();
+    expect(screen.getByText(/1 Pallet Path/)).toBeInTheDocument();
+    expect(screen.getByText(/of which VAT \(25%\)/)).toBeInTheDocument();
   });
 
   it('opens the account dropdown from the header', async () => {

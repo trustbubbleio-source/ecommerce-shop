@@ -1,7 +1,7 @@
 import type { PublicUser } from '@akknerds/shared';
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, api } from '../lib/api';
+import { ApiError, api } from '@akknerds/api-client';
 import { useAuthStore } from '../store/auth';
 import { useInitAuth } from './use-auth';
 

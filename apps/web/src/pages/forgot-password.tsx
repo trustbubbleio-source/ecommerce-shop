@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Field, Input, Spinner
 import { forgotPasswordInputSchema } from '@akknerds/shared';
 import { type FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ApiError, api } from '../lib/api';
+import { ApiError, api } from '@akknerds/api-client';
 
 export function ForgotPasswordPage() {
   const { toast } = useToast();

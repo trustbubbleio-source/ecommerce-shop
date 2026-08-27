@@ -22,10 +22,13 @@ describe('queryProducts', () => {
     expect(result.every((p) => p.series === 'Sword & Shield')).toBe(true);
   });
 
-  it('filters by search across name, set, series, artist and tags', () => {
+  it('filters by search across name, set, series, artist, tags, id and card number', () => {
     expect(queryProducts(PRODUCTS, { filter: { search: 'charizard' } }).length).toBeGreaterThan(0);
     expect(queryProducts(PRODUCTS, { filter: { search: 'CHARIZARD' } }).length).toBeGreaterThan(0);
     expect(queryProducts(PRODUCTS, { filter: { search: 'zzz-no-match' } })).toHaveLength(0);
+    expect(queryProducts(PRODUCTS, { filter: { search: 'bb-151' } }).some((p) => p.id === 'bb-151')).toBe(
+      true,
+    );
 
     const withArtist = PRODUCTS.map((p, i) =>
       i === 0 ? { ...p, artist: 'Mitsuhiro Arita' } : p,

@@ -4,6 +4,7 @@
  */
 
 import type { SupportedCurrency } from './currency.js';
+import type { FulfillmentStep } from './fulfillment.js';
 
 export type {
   CardCondition,
@@ -87,8 +88,15 @@ export interface Order {
   total: number;
   currency: string;
   status: OrderStatus;
+  /** Warehouse progress after payment. Omitted while pending/cancelled. */
+  fulfillmentStep?: FulfillmentStep;
   stripeSessionId?: string;
+  /** Stripe invoice PDF (or hosted receipt fallback). */
+  invoiceUrl?: string;
   shippingAddress?: Address;
+  /** Set when a tracked parcel is handed to the courier. */
+  carrierName?: string;
+  trackingUrl?: string;
   createdAt: string;
 }
 

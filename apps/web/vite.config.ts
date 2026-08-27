@@ -32,7 +32,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ['@akknerds/ui', '@akknerds/shared', '@akknerds/chat'],
+    exclude: ['@akknerds/ui', '@akknerds/shared', '@akknerds/chat', '@akknerds/api-client'],
   },
   test: {
     globals: true,
@@ -46,7 +46,7 @@ export default defineConfig({
     },
     server: {
       deps: {
-        inline: ['@akknerds/ui', '@akknerds/shared', '@akknerds/chat'],
+        inline: ['@akknerds/ui', '@akknerds/shared', '@akknerds/chat', '@akknerds/api-client'],
       },
     },
     coverage: {

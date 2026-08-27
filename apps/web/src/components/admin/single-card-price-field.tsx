@@ -7,7 +7,7 @@ import { Button, Input, Spinner, useToast, type InputProps } from '@akknerds/ui'
 import { useMutation } from '@tanstack/react-query';
 import { Wand2 } from 'lucide-react';
 import type { ProductFormValues } from '../../pages/admin/product-form-common';
-import { ApiError, api } from '../../lib/api';
+import { ApiError, api } from '@akknerds/api-client';
 
 type PriceFetchContext = Pick<
   ProductFormValues,

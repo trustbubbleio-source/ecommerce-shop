@@ -13,6 +13,7 @@
     "clean": "rimraf dist .turbo coverage"
   },
   "dependencies": {
+    "@akknerds/api-client": "workspace:*",
     "@akknerds/chat": "workspace:*",
     "@akknerds/shared": "workspace:*",
     "@akknerds/ui": "workspace:*",

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api';
+import { api } from '@akknerds/api-client';
 import { useAuthStore } from '../store/auth';
 
 export const favoriteKeys = {

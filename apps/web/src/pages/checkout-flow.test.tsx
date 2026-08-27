@@ -1,7 +1,7 @@
 import type { Order } from '@akknerds/shared';
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { api } from '../lib/api';
+import { api } from '@akknerds/api-client';
 import { type CartProduct, useCartStore } from '../store/cart';
 import { renderApp } from '../test/utils';
 
@@ -59,6 +59,7 @@ describe('CheckoutSuccessPage', () => {
 
     expect(await screen.findByText(/Thank you for your order/i)).toBeInTheDocument();
     expect(screen.getByText('ord_1')).toBeInTheDocument();
+    expect(screen.getByText(/of which VAT \(25%\)/)).toBeInTheDocument();
     await waitFor(() => expect(useCartStore.getState().items).toHaveLength(0));
   });
 

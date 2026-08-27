@@ -4,6 +4,7 @@ import { CheckCircle2, PackageX } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { EmptyState } from '../components/common/empty-state';
+import { IncludedVatLine } from '../components/common/included-vat-line';
 import { useOrder } from '../hooks/use-orders';
 import { useCartStore } from '../store/cart';
 
@@ -91,6 +92,10 @@ export function CheckoutSuccessPage() {
             <span>Total</span>
             <span>{formatPrice(order.total, order.currency)}</span>
           </div>
+          <IncludedVatLine
+            grossCents={order.total}
+            format={(cents) => formatPrice(cents, order.currency)}
+          />
         </CardContent>
       </Card>
 
@@ -99,7 +104,7 @@ export function CheckoutSuccessPage() {
           <Link to="/shop">Continue buying</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to="/account/orders">View my orders</Link>
+          <Link to={`/account/orders/${order.id}`}>View this order</Link>
         </Button>
       </div>
     </div>

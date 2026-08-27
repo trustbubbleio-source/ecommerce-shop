@@ -63,6 +63,14 @@ describe('PaymentService (live mode, injected client)', () => {
     expect(params.line_items.at(-1).price_data.product_data.name).toBe('Shipping');
     expect(params.customer_email).toBe('buyer@example.com');
     expect(params.metadata.orderId).toBe('ord_test');
+    expect(params.invoice_creation).toEqual({
+      enabled: true,
+      invoice_data: {
+        description: 'One More Rip order ord_test',
+        metadata: { orderId: 'ord_test' },
+        footer: 'One More Rip · Hallandsvägen 21, 269 36 Båstad, Sweden',
+      },
+    });
   });
 
   it('omits the shipping line when shipping is free', async () => {
@@ -94,5 +102,36 @@ describe('PaymentService (live mode, injected client)', () => {
     const event = service.constructEvent('payload', 'sig');
     expect(constructEvent).toHaveBeenCalledWith('payload', 'sig', 'whsec_real');
     expect(event.type).toBe('checkout.session.completed');
+  });
+
+  it('resolves an invoice PDF from an expanded checkout session', async () => {
+    const retrieve = vi.fn().mockResolvedValue({
+      id: 'cs_live_1',
+      invoice: { invoice_pdf: 'https://pay.stripe.com/invoice/inv_1/pdf' },
+    });
+    const service = new PaymentService(env, {
+      checkout: { sessions: { create: vi.fn(), retrieve } },
+      webhooks: { constructEvent: vi.fn() },
+    });
+    await expect(service.resolveInvoiceDocument('cs_live_1')).resolves.toEqual({
+      url: 'https://pay.stripe.com/invoice/inv_1/pdf',
+      label: 'Invoice.pdf',
+    });
+  });
+
+  it('falls back to the hosted receipt when no invoice exists', async () => {
+    const retrieve = vi.fn().mockResolvedValue({
+      id: 'cs_live_1',
+      invoice: null,
+      payment_intent: { latest_charge: { receipt_url: 'https://pay.stripe.com/receipts/abc' } },
+    });
+    const service = new PaymentService(env, {
+      checkout: { sessions: { create: vi.fn(), retrieve } },
+      webhooks: { constructEvent: vi.fn() },
+    });
+    await expect(service.resolveInvoiceDocument('cs_live_1')).resolves.toEqual({
+      url: 'https://pay.stripe.com/receipts/abc',
+      label: 'Receipt',
+    });
   });
 });

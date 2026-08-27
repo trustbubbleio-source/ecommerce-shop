@@ -33,7 +33,9 @@ describe('SignupPromptModal', () => {
       await vi.advanceTimersByTimeAsync(15_000);
     });
 
-    expect(screen.getByRole('heading', { name: /10% off your first order/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Receive 10% off/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Enter your email address/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Claim 10% off/i })).toBeInTheDocument();
     expect(screen.queryByText(/ONEMORERIP10/)).not.toBeInTheDocument();
   });
 

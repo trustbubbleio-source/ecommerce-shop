@@ -53,6 +53,45 @@ describe('POST /api/webhooks/stripe', () => {
     expect((await deps.orders.get(checkout.orderId))?.status).toBe('paid');
   });
 
+  it('stores the Stripe invoice PDF on the order', async () => {
+    const sessionId = 'cs_live_invoice';
+    const { app, deps } = liveApp({
+      checkout: {
+        sessions: {
+          create: vi.fn().mockResolvedValue({ id: sessionId, url: 'https://stripe.test/pay' }),
+        },
+      },
+      webhooks: {
+        constructEvent: vi.fn().mockReturnValue({
+          type: 'checkout.session.completed',
+          data: {
+            object: {
+              id: sessionId,
+              invoice: { invoice_pdf: 'https://pay.stripe.com/invoice/inv_1/pdf' },
+            },
+          },
+        }),
+      },
+    });
+
+    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', {
+      email: 'buyer@example.com',
+      items: [{ productId: 'bb-151', quantity: 1 }],
+    });
+
+    await jsonRequest(
+      app,
+      'POST',
+      '/api/webhooks/stripe',
+      {},
+      { 'stripe-signature': 'valid-sig' },
+    );
+
+    expect((await deps.orders.get(checkout.orderId))?.invoiceUrl).toBe(
+      'https://pay.stripe.com/invoice/inv_1/pdf',
+    );
+  });
+
   it('rejects a request without a signature header', async () => {
     const { app } = liveApp({
       checkout: { sessions: { create: vi.fn() } },

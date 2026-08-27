@@ -7,7 +7,7 @@ import {
 import { Alert, Button, Card, CardContent, Field, Input, Spinner, useToast } from '@akknerds/ui';
 import { TicketPercent } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
-import { ApiError } from '../../lib/api';
+import { ApiError } from '@akknerds/api-client';
 import { useUpdateProfile } from '../../hooks/use-auth';
 import { useAuthStore } from '../../store/auth';
 

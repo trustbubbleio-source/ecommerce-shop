@@ -2,6 +2,8 @@ import { checkoutInputSchema, priceCartAsync } from '@akknerds/shared';
 import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
 import { validate } from '../lib/http.js';
+import { notifyPaidOrder } from '../lib/order-alert.js';
+import { canPurchase } from '../lib/prelaunch.js';
 import {
   clearWelcomeDiscountAfterPurchase,
   userHasCompletedOrder,
@@ -16,6 +18,10 @@ export function checkoutRoutes(deps: AppDeps) {
     const savedUser = auth ? await deps.users.findById(auth.sub) : undefined;
     const hasCompletedOrder = auth ? await userHasCompletedOrder(deps, auth.sub) : false;
     const discountCode = savedUser?.profile.discountCode ?? null;
+
+    if (!canPurchase(savedUser?.role)) {
+      return c.json({ error: 'Purchases open October 15, 2026.' }, 403);
+    }
 
     const priced = await priceCartAsync(
       input.items,
@@ -46,8 +52,9 @@ export function checkoutRoutes(deps: AppDeps) {
     // In mock mode there is no Stripe webhook, so settle the order immediately
     // to make the end-to-end purchase flow demoable without credentials.
     if (!deps.payments.enabled) {
-      await deps.orders.setStatus(order.id, 'paid');
+      const paid = await deps.orders.setStatus(order.id, 'paid');
       await clearWelcomeDiscountAfterPurchase(deps, auth?.sub);
+      if (paid) await notifyPaidOrder(deps.email, deps.env, paid);
     }
 
     return c.json({ url: checkout.url, orderId: order.id }, 201);

@@ -4,7 +4,7 @@ import { CartSummary } from '../components/cart/cart-summary';
 import { CheckoutForm } from '../components/checkout/checkout-form';
 import { PageHeader } from '../components/common/page-header';
 import { ProductArt } from '../components/product/product-art';
-import { isPrelaunchActive } from '../config/launch';
+import { usePurchaseLocked } from '../config/launch';
 import { useFormatMoney } from '../hooks/use-format-money';
 import { useCartStore } from '../store/cart';
 
@@ -12,7 +12,9 @@ export function CheckoutPage() {
   const formatMoney = useFormatMoney();
   const items = useCartStore((s) => s.items);
 
-  if (isPrelaunchActive() || items.length === 0) {
+  const purchaseLocked = usePurchaseLocked();
+
+  if (purchaseLocked || items.length === 0) {
     return <Navigate to="/cart" replace />;
   }
 

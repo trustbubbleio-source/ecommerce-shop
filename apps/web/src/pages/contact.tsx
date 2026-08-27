@@ -7,7 +7,7 @@ import { PageHeader } from '../components/common/page-header';
 import { StoreMap } from '../components/common/store-map';
 import { SITE } from '../config/site';
 import { useContact } from '../hooks/use-contact';
-import { ApiError } from '../lib/api';
+import { ApiError } from '@akknerds/api-client';
 
 type Values = { name: string; email: string; subject: string; message: string };
 type Errors = Partial<Record<keyof Values, string>>;

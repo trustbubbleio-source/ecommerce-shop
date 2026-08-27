@@ -260,6 +260,25 @@ export const updateWantListStatusSchema = z.object({
   adminNote: z.string().trim().max(1000).nullable().optional(),
 });
 
+export const updateOrderFulfillmentSchema = z.object({
+  fulfillmentStep: z.enum([
+    'packing',
+    'awaiting_pickup',
+    'handed_to_carrier',
+    'in_transit',
+    'delivered',
+  ]),
+  carrierName: z.string().trim().max(80).optional(),
+  trackingUrl: z
+    .string()
+    .trim()
+    .max(500)
+    .refine((value) => value === '' || /^https?:\/\//i.test(value), {
+      message: 'Tracking URL must start with http:// or https://',
+    })
+    .optional(),
+});
+
 export type AddressInput = z.infer<typeof addressSchema>;
 export type CartLineInput = z.infer<typeof cartLineSchema>;
 export type CheckoutInput = z.infer<typeof checkoutInputSchema>;
@@ -276,6 +295,7 @@ export type CreateProductReviewInput = z.infer<typeof createProductReviewInputSc
 export type SellRequestInput = z.infer<typeof sellRequestInputSchema>;
 export type CreateWantListItemInput = z.infer<typeof createWantListItemSchema>;
 export type UpdateWantListStatusInput = z.infer<typeof updateWantListStatusSchema>;
+export type UpdateOrderFulfillmentInput = z.infer<typeof updateOrderFulfillmentSchema>;
 export type CreateProductInput = z.infer<typeof createProductInputSchema>;
 export type UpdateProductInput = z.infer<typeof createProductInputSchema>;
 export type FetchCardImageInput = z.infer<typeof fetchCardImageInputSchema>;

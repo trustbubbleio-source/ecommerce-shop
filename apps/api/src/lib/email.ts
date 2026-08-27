@@ -269,6 +269,36 @@ export class EmailService {
       `,
     });
   }
+
+  async sendPaidOrderAlert(input: {
+    orderId: string;
+    email: string;
+    totalLabel: string;
+    itemSummary: string;
+    city?: string;
+    adminUrl: string;
+  }): Promise<SendEmailResult> {
+    const where = input.city ? ` · ${input.city}` : '';
+    return this.send({
+      to: this.env.email.ordersInbox,
+      subject: `[Order paid] ${input.orderId} — ${input.totalLabel}`,
+      text: [
+        `Paid order ${input.orderId}`,
+        `Customer: ${input.email}${where}`,
+        `Items: ${input.itemSummary}`,
+        `Total: ${input.totalLabel}`,
+        '',
+        `Pack it: ${input.adminUrl}`,
+      ].join('\n'),
+      html: `
+        <p><strong>Paid order</strong> <code>${escapeHtml(input.orderId)}</code></p>
+        <p><strong>Customer:</strong> ${escapeHtml(input.email)}${where ? escapeHtml(where) : ''}</p>
+        <p><strong>Items:</strong> ${escapeHtml(input.itemSummary)}</p>
+        <p><strong>Total:</strong> ${escapeHtml(input.totalLabel)}</p>
+        <p><a href="${escapeHtml(input.adminUrl)}">Open in Admin → Orders</a></p>
+      `,
+    });
+  }
 }
 
 function escapeHtml(value: string): string {

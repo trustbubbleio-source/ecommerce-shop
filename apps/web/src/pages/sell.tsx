@@ -29,7 +29,7 @@ import {
   type SellStep,
 } from '../components/sell/sell-types';
 import { SITE } from '../config/site';
-import { ApiError, api } from '../lib/api';
+import { ApiError, api } from '@akknerds/api-client';
 import { useAuthStore } from '../store/auth';
 import bulkCardsHero from '../assets/rarity/bulkcards.jpg';
 

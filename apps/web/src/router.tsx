@@ -5,11 +5,14 @@ import { RootLayout } from './components/layout/root-layout';
 import { AccountDiscountPage } from './pages/account/discount';
 import { AccountFavoritesPage } from './pages/account/favorites';
 import { AccountLayout } from './pages/account/layout';
+import { AccountOrderDetailPage } from './pages/account/order-detail';
 import { AccountOrdersPage } from './pages/account/orders';
 import { AccountProfilePage } from './pages/account/profile';
 import { AccountSettingsPage } from './pages/account/settings';
 import { AccountWantListPage } from './pages/account/want-list';
 import { AdminWantListPage } from './pages/admin/want-list';
+import { AdminOrdersPage } from './pages/admin/orders';
+import { AdminOrderDetailPage } from './pages/admin/order-detail';
 import { BlogPage } from './pages/blog';
 import { BlogPostPage } from './pages/blog-post';
 import { AdminEditProductPage } from './pages/admin/edit-product';
@@ -61,6 +64,7 @@ export const routes: RouteObject[] = [
         children: [
           { index: true, element: <AccountProfilePage /> },
           { path: 'orders', element: <AccountOrdersPage /> },
+          { path: 'orders/:orderId', element: <AccountOrderDetailPage /> },
           { path: 'favorites', element: <AccountFavoritesPage /> },
           { path: 'want-list', element: <AccountWantListPage /> },
           { path: 'discount', element: <AccountDiscountPage /> },
@@ -89,6 +93,8 @@ export const routes: RouteObject[] = [
         element: <AdminGuard />,
         children: [
           { index: true, element: <AdminProductsPage /> },
+          { path: 'orders', element: <AdminOrdersPage /> },
+          { path: 'orders/:orderId', element: <AdminOrderDetailPage /> },
           { path: 'want-list', element: <AdminWantListPage /> },
           { path: 'new', element: <AdminNewProductPage /> },
           { path: 'products/:id', element: <AdminEditProductPage /> },

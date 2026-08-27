@@ -19,7 +19,7 @@ import {
 import { MapPin, Package, UserRound } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ApiError } from '../../lib/api';
+import { ApiError } from '@akknerds/api-client';
 import { useMyOrders } from '../../hooks/use-orders';
 import { useUpdateProfile } from '../../hooks/use-auth';
 import { useAuthStore } from '../../store/auth';

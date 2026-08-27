@@ -31,4 +31,26 @@ describe('EmailService', () => {
     expect(info.mock.calls[0]?.[0]).toContain('inbox@example.com');
     info.mockRestore();
   });
+
+  it('alerts the inbox when an order is paid', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const email = new EmailService(
+      loadEnv({
+        RESEND_API_KEY: '',
+        EMAIL_ORDERS_INBOX: 'order@example.com',
+        WEB_ORIGIN: 'http://localhost:5173',
+      }),
+    );
+    await email.sendPaidOrderAlert({
+      orderId: 'ord_1',
+      email: 'ash@pallet.town',
+      totalLabel: '750,00 €',
+      itemSummary: 'Lost Origin Booster box',
+      city: 'Båstad',
+      adminUrl: 'http://localhost:5173/admin/orders/ord_1',
+    });
+    expect(info.mock.calls[0]?.[0]).toContain('order@example.com');
+    expect(info.mock.calls[0]?.[0]).toContain('ord_1');
+    info.mockRestore();
+  });
 });

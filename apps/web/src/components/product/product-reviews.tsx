@@ -4,7 +4,7 @@ import { Lock, MessageSquareText, Star } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCreateProductReview, useProductReviews } from '../../hooks/use-product-reviews';
-import { ApiError } from '../../lib/api';
+import { ApiError } from '@akknerds/api-client';
 import { useAuthStore } from '../../store/auth';
 
 interface ProductReviewsSectionProps {

@@ -10,7 +10,7 @@ import {
 import { ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PRELAUNCH, isPrelaunchActive } from '../../config/launch';
+import { PRELAUNCH, usePurchaseLocked } from '../../config/launch';
 import { cartCount, useCartStore } from '../../store/cart';
 import { CartLineItem } from '../cart/cart-line-item';
 import { CartSummary } from '../cart/cart-summary';
@@ -21,7 +21,7 @@ export function CartDrawer() {
   const items = useCartStore((s) => s.items);
   const count = cartCount(items);
   const navigate = useNavigate();
-  const prelaunch = isPrelaunchActive();
+  const prelaunch = usePurchaseLocked();
 
   const go = (to: string) => {
     setOpen(false);

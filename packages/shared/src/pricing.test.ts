@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { EUR_TO_SEK } from './currency.js';
 import {
   FLAT_SHIPPING_FEE,
   FREE_SHIPPING_THRESHOLD,
+  VAT_PERCENT,
   calcShipping,
   calcSubtotal,
+  hasCarrierTracking,
   priceCart,
+  vatIncludedIn,
 } from './pricing.js';
 import type { Product } from './types.js';
 
@@ -45,6 +49,28 @@ describe('calcShipping', () => {
   it('is free at or above the threshold', () => {
     expect(calcShipping(FREE_SHIPPING_THRESHOLD)).toBe(0);
     expect(calcShipping(FREE_SHIPPING_THRESHOLD + 5000)).toBe(0);
+  });
+});
+
+describe('hasCarrierTracking', () => {
+  it('is included at the free-shipping subtotal', () => {
+    expect(hasCarrierTracking(FREE_SHIPPING_THRESHOLD - 1)).toBe(false);
+    expect(hasCarrierTracking(FREE_SHIPPING_THRESHOLD)).toBe(true);
+  });
+
+  it('uses the same EUR bar when the order is in SEK', () => {
+    expect(hasCarrierTracking(Math.round((FREE_SHIPPING_THRESHOLD - 1) * EUR_TO_SEK), 'sek')).toBe(
+      false,
+    );
+    expect(hasCarrierTracking(Math.round(FREE_SHIPPING_THRESHOLD * EUR_TO_SEK), 'sek')).toBe(true);
+  });
+});
+
+describe('vatIncludedIn', () => {
+  it('extracts 25% VAT from a VAT-inclusive amount', () => {
+    expect(VAT_PERCENT).toBe(25);
+    expect(vatIncludedIn(75_000)).toBe(15_000);
+    expect(vatIncludedIn(0)).toBe(0);
   });
 });
 

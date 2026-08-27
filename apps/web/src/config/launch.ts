@@ -1,9 +1,13 @@
+import { PURCHASES_LOCKED_UNTIL_LAUNCH } from '@akknerds/shared';
+import { useAuthStore } from '../store/auth';
+
 /**
- * Temporary pre-launch gate (remove or set `active: false` on Oct 15).
+ * Temporary pre-launch gate (remove or set `PURCHASES_LOCKED_UNTIL_LAUNCH` false on Oct 15).
  * Unit tests skip the shopping gate so cart flows keep working.
+ * Admins can still purchase while the public sees the Oct 15 lock.
  */
 export const PRELAUNCH = {
-  active: true,
+  active: PURCHASES_LOCKED_UNTIL_LAUNCH,
   badgeLabel: 'Available Oct 15',
   buttonLabel: 'Available Oct 15',
   /** Compact label for narrow product cards / mobile. */
@@ -21,4 +25,14 @@ export const PRELAUNCH = {
 export function isPrelaunchActive(): boolean {
   if (import.meta.env.MODE === 'test') return false;
   return PRELAUNCH.active;
+}
+
+/** Public shoppers are locked during prelaunch; admins can still buy. */
+export function isPurchaseLocked(isAdmin: boolean, prelaunch = isPrelaunchActive()): boolean {
+  return prelaunch && !isAdmin;
+}
+
+export function usePurchaseLocked(): boolean {
+  const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
+  return isPurchaseLocked(isAdmin);
 }

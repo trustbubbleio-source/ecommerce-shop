@@ -1,6 +1,23 @@
 import type { Order, OrderStatus } from '@akknerds/shared';
+import { defaultFulfillmentStep } from '@akknerds/shared';
 import { nanoid } from 'nanoid';
-import type { CreateOrderInput, OrderRepository as IOrderRepository } from './interfaces.js';
+import type {
+  CreateOrderInput,
+  OrderFulfillmentPatch,
+  OrderRepository as IOrderRepository,
+} from './interfaces.js';
+
+function applyStatus(order: Order, status: OrderStatus): Order {
+  order.status = status;
+  if (status === 'cancelled') {
+    order.fulfillmentStep = undefined;
+    return order;
+  }
+  const next = defaultFulfillmentStep(status);
+  if (next && !order.fulfillmentStep) order.fulfillmentStep = next;
+  if (status === 'fulfilled') order.fulfillmentStep = 'delivered';
+  return order;
+}
 
 /** In-memory order store, isolated per app instance. */
 export class OrderRepository implements IOrderRepository {
@@ -22,11 +39,41 @@ export class OrderRepository implements IOrderRepository {
     return this.byId.get(id);
   }
 
+  async getByStripeSession(sessionId: string): Promise<Order | undefined> {
+    const orderId = this.bySession.get(sessionId);
+    return orderId ? this.byId.get(orderId) : undefined;
+  }
+
+  async listAll(): Promise<Order[]> {
+    return [...this.byId.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
   async attachSession(orderId: string, sessionId: string): Promise<void> {
     const order = this.byId.get(orderId);
     if (!order) return;
     order.stripeSessionId = sessionId;
     this.bySession.set(sessionId, orderId);
+  }
+
+  async setInvoiceUrl(orderId: string, invoiceUrl: string): Promise<void> {
+    const order = this.byId.get(orderId);
+    if (!order) return;
+    order.invoiceUrl = invoiceUrl;
+  }
+
+  async updateFulfillment(orderId: string, input: OrderFulfillmentPatch): Promise<Order | undefined> {
+    const order = this.byId.get(orderId);
+    if (!order) return undefined;
+    if (order.status !== 'paid' && order.status !== 'fulfilled') return undefined;
+    order.fulfillmentStep = input.fulfillmentStep;
+    order.status = input.fulfillmentStep === 'delivered' ? 'fulfilled' : 'paid';
+    if (input.carrierName !== undefined) {
+      order.carrierName = input.carrierName.trim() || undefined;
+    }
+    if (input.trackingUrl !== undefined) {
+      order.trackingUrl = input.trackingUrl.trim() || undefined;
+    }
+    return order;
   }
 
   async markStatusBySession(sessionId: string, status: OrderStatus): Promise<Order | undefined> {
@@ -38,8 +85,7 @@ export class OrderRepository implements IOrderRepository {
   async setStatus(orderId: string, status: OrderStatus): Promise<Order | undefined> {
     const order = this.byId.get(orderId);
     if (!order) return undefined;
-    order.status = status;
-    return order;
+    return applyStatus(order, status);
   }
 
   async listByUser(userId: string): Promise<Order[]> {

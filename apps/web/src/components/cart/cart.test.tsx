@@ -51,6 +51,7 @@ describe('CartSummary', () => {
     expect(screen.getByText(/20[,.]00/)).toBeInTheDocument();
     expect(screen.getByText(/^5[,.]99/)).toBeInTheDocument(); // shipping
     expect(screen.getByText(/free shipping/i)).toBeInTheDocument();
+    expect(screen.getByText(/of which VAT \(25%\)/)).toBeInTheDocument();
   });
 
   it('shows free shipping when the threshold is met', () => {

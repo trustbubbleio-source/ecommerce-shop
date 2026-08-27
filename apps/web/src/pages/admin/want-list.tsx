@@ -9,7 +9,7 @@ import { ClipboardList, Mail, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAdminUpdateWantListItem, useAdminWantList } from '../../hooks/use-want-list';
-import { ApiError } from '../../lib/api';
+import { ApiError } from '@akknerds/api-client';
 
 const statusVariant: Record<string, 'secondary' | 'success' | 'destructive' | 'outline' | 'muted'> = {
   pending: 'secondary',

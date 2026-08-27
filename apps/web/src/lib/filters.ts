@@ -8,7 +8,7 @@ import {
   SORT_OPTIONS,
   type SortKey,
 } from '@akknerds/shared';
-import type { ProductsQuery } from './api';
+import type { ProductsQuery } from '@akknerds/api-client';
 
 export interface ProductFilters {
   category: ProductCategory | 'all';

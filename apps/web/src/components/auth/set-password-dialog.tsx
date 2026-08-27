@@ -13,7 +13,7 @@ import {
   useToast,
 } from '@akknerds/ui';
 import { type FormEvent, useState } from 'react';
-import { ApiError } from '../../lib/api';
+import { ApiError } from '@akknerds/api-client';
 import { useSetPassword } from '../../hooks/use-auth';
 import { useAuthStore } from '../../store/auth';
 

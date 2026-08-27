@@ -1,7 +1,7 @@
 import { useToast } from '@akknerds/ui';
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ApiError } from '../../lib/api';
+import { ApiError } from '@akknerds/api-client';
 import { useGoogleAuth } from '../../hooks/use-auth';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';

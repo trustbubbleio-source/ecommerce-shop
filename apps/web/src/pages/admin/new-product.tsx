@@ -43,7 +43,7 @@ import { ProductTagPicker } from '../../components/admin/product-tag-picker';
 import { ProductVisibilityFields } from '../../components/admin/product-visibility-fields';
 import { SingleCardPriceField } from '../../components/admin/single-card-price-field';
 import { useSingleCardAutoCopy } from '../../hooks/use-single-card-auto-copy';
-import { ApiError, api } from '../../lib/api';
+import { ApiError, api } from '@akknerds/api-client';
 
 interface ImageDraft {
   previewUrl: string;

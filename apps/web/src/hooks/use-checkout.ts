@@ -1,6 +1,6 @@
 import type { CheckoutInput } from '@akknerds/shared';
 import { useMutation } from '@tanstack/react-query';
-import { api } from '../lib/api';
+import { api } from '@akknerds/api-client';
 
 export function useCheckout() {
   return useMutation({
