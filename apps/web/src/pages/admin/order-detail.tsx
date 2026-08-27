@@ -131,7 +131,7 @@ export function AdminOrderDetailPage() {
                       key={step}
                       type="button"
                       size="sm"
-                      variant={currentStep === step ? 'default' : 'outline'}
+                      variant={currentStep === step ? 'primary' : 'outline'}
                       disabled={update.isPending}
                       onClick={() => save(step)}
                     >
