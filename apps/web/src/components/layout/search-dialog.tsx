@@ -19,8 +19,8 @@ const QUICK_LINKS = CATEGORY_TILES.slice(0, 5).map((tile) => ({
 
 const SUGGESTED_QUERIES = ['151', 'Charizard', 'ETB', 'PSA'] as const;
 
-/** Above header (40) and chat (40); fully owns the viewport while open. */
-const SEARCH_Z = 'z-[100]';
+/** Above header/chat (40) and Leaflet map panes (~1000); owns the viewport while open. */
+const SEARCH_Z = 'z-[1100]';
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);

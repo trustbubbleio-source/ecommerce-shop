@@ -2,6 +2,7 @@ import type { Address } from '@akknerds/shared';
 import { ExternalLink } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { SITE } from '../../config/site';
+import { CARTO_ATTRIBUTION, cartoDarkTileUrl } from '../../lib/carto-tiles';
 import { formatAddress } from '../../lib/order-progress';
 
 interface OrderRouteMapProps {
@@ -63,9 +64,8 @@ export function OrderRouteMap({ destination }: OrderRouteMapProps) {
         }).setView([origin.lat, origin.lng], dest ? 6 : 15);
 
         L.control.zoom({ position: 'topright' }).addTo(map);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        L.tileLayer(cartoDarkTileUrl(), {
+          attribution: CARTO_ATTRIBUTION,
           subdomains: 'abcd',
           maxZoom: 19,
         }).addTo(map);
@@ -121,7 +121,7 @@ export function OrderRouteMap({ destination }: OrderRouteMapProps) {
   }, [destQuery]);
 
   return (
-    <div className="border-border overflow-hidden rounded-2xl border">
+    <div className="border-border relative z-0 isolate overflow-hidden rounded-2xl border">
       <div
         ref={containerRef}
         role="img"

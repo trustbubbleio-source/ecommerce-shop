@@ -1,6 +1,7 @@
 import { ExternalLink } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { SITE } from '../../config/site';
+import { CARTO_ATTRIBUTION, cartoDarkTileUrl } from '../../lib/carto-tiles';
 
 const MAPS_QUERY = encodeURIComponent(SITE.store.line);
 const MAPS_LINK = `https://www.google.com/maps/search/?api=1&query=${MAPS_QUERY}`;
@@ -33,9 +34,8 @@ export function StoreMap() {
 
       L.control.zoom({ position: 'topright' }).addTo(map);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      L.tileLayer(cartoDarkTileUrl(), {
+        attribution: CARTO_ATTRIBUTION,
         subdomains: 'abcd',
         maxZoom: 19,
       }).addTo(map);
@@ -65,7 +65,7 @@ export function StoreMap() {
   }, []);
 
   return (
-    <div className="border-border group relative overflow-hidden rounded-2xl border">
+    <div className="border-border group relative z-0 isolate overflow-hidden rounded-2xl border">
       <div
         ref={containerRef}
         role="img"
