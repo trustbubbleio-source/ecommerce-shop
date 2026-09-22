@@ -1,9 +1,10 @@
-/** CARTO dark basemap URL for Leaflet (API key from `VITE_CARTO_API_KEY`). */
+/** CARTO dark basemap URL for Leaflet (`VITE_CARTO_API_KEY` → `?key=`). */
 export function cartoDarkTileUrl(): string {
-  const base = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+  const base =
+    'https://{s}.basemaps.cartocdn.com/rastertiles/dark_matter/{z}/{x}/{y}.png';
   const key = import.meta.env.VITE_CARTO_API_KEY?.trim();
   if (!key) return base;
-  return `${base}?api_key=${encodeURIComponent(key)}`;
+  return `${base}?key=${encodeURIComponent(key)}`;
 }
 
 export const CARTO_ATTRIBUTION =
