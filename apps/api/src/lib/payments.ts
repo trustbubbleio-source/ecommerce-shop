@@ -12,6 +12,7 @@ type StripeInvoiceLike = { invoice_pdf?: string | null };
 type StripeChargeLike = { receipt_url?: string | null };
 
 type StripePaymentIntentLike = {
+  id?: string;
   latest_charge?: string | StripeChargeLike | null;
 };
 
@@ -44,6 +45,9 @@ export interface StripeLike {
       signature: string,
       secret: string,
     ): { type: string; data: { object: unknown } };
+  };
+  refunds?: {
+    create(params: Stripe.RefundCreateParams): Promise<{ id: string }>;
   };
 }
 
@@ -132,6 +136,7 @@ export class PaymentService {
       success_url: `${this.env.checkoutSuccessUrl}?order_id=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: this.env.checkoutCancelUrl,
       metadata: { orderId: order.id },
+      payment_intent_data: { metadata: { orderId: order.id } },
       invoice_creation: {
         enabled: true,
         invoice_data: {
@@ -181,6 +186,41 @@ export class PaymentService {
     }
 
     return fromEvent;
+  }
+
+  /**
+   * Full refund of a paid Checkout session. Mock sessions have nothing to refund.
+   * Marks the refund so the webhook does not send a second, reason-less email.
+   */
+  async refundOrder(order: Order): Promise<{ refunded: boolean }> {
+    const sessionId = order.stripeSessionId;
+    if (!this.client || !sessionId || sessionId.startsWith('cs_mock_')) {
+      return { refunded: false };
+    }
+    if (!this.client.refunds?.create || !this.client.checkout.sessions.retrieve) {
+      throw new Error('Stripe refund is not available');
+    }
+
+    const session = await this.client.checkout.sessions.retrieve(sessionId, {
+      expand: ['payment_intent'],
+    });
+    const paymentIntent = session.payment_intent;
+    const paymentIntentId = typeof paymentIntent === 'string' ? paymentIntent : paymentIntent?.id;
+    if (!paymentIntentId) {
+      throw new Error('No payment to refund');
+    }
+
+    try {
+      await this.client.refunds.create({
+        payment_intent: paymentIntentId,
+        reason: 'requested_by_customer',
+        metadata: { orderId: order.id, adminCancel: 'true' },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (!/already been refunded/i.test(message)) throw error;
+    }
+    return { refunded: true };
   }
 
   constructEvent(payload: string, signature: string): { type: string; data: { object: unknown } } {

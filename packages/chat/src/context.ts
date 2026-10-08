@@ -16,7 +16,7 @@ export interface ChatContext {
   tradeEmail: string;
   freeShippingLabel: string;
   storeLine: string;
-  /** Human-readable launch / store opening date, e.g. "October 15, 2026". */
+  /** Human-readable launch / store opening date, e.g. "October 31, 2026". */
   launchDateLabel: string;
   supportHours: string;
 }
@@ -45,7 +45,7 @@ export function createChatContext(input: {
     tradeEmail: input.tradeEmail ?? input.supportEmail,
     freeShippingLabel: formatPrice(FREE_SHIPPING_THRESHOLD),
     storeLine: input.storeLine ?? 'Båstad, Sweden',
-    launchDateLabel: input.launchDateLabel ?? 'October 15, 2026',
+    launchDateLabel: input.launchDateLabel ?? 'October 31, 2026',
     supportHours: input.supportHours ?? 'Monday–Friday, typically within one business day',
   };
 }

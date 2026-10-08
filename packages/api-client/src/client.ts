@@ -4,6 +4,7 @@ import type {
   CheckoutInput,
   CheckoutSession,
   ContactInput,
+  NewsletterSubscribeInput,
   CreateProductInput,
   CreateProductReviewInput,
   CreateWantListItemInput,
@@ -22,6 +23,7 @@ import type {
   UpdateProductInput,
   UpdateProfileInput,
   UpdateWantListStatusInput,
+  CancelOrderInput,
   UpdateOrderFulfillmentInput,
   VerifyEmailInput,
   WantListAdminItem,
@@ -104,6 +106,7 @@ export interface ApiClient {
   adminCreateProduct(input: CreateProductInput): Promise<{ product: Product }>;
   adminUpdateProduct(id: string, input: UpdateProductInput): Promise<{ product: Product }>;
   contact(input: ContactInput): Promise<{ ok: boolean; message: string }>;
+  subscribeNewsletter(input: NewsletterSubscribeInput): Promise<{ ok: boolean; message: string }>;
   submitSellRequest(formData: FormData): Promise<{ ok: boolean; message: string }>;
   listWantList(): Promise<{ items: WantListItem[] }>;
   createWantListItem(input: CreateWantListItemInput): Promise<{ item: WantListItem }>;
@@ -119,6 +122,7 @@ export interface ApiClient {
     id: string,
     input: UpdateOrderFulfillmentInput,
   ): Promise<{ order: Order }>;
+  adminCancelOrder(id: string, input: CancelOrderInput): Promise<{ order: Order; emailed: boolean }>;
 }
 
 /**
@@ -274,6 +278,9 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     contact(input) {
       return request('/contact', { method: 'POST', body: JSON.stringify(input) });
     },
+    subscribeNewsletter(input) {
+      return request('/newsletter', { method: 'POST', body: JSON.stringify(input) });
+    },
     submitSellRequest(formData) {
       return uploadRequest('/sell', formData);
     },
@@ -304,6 +311,12 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     adminUpdateOrder(id, input) {
       return request(`/admin/orders/${encodeURIComponent(id)}`, {
         method: 'PATCH',
+        body: JSON.stringify(input),
+      });
+    },
+    adminCancelOrder(id, input) {
+      return request(`/admin/orders/${encodeURIComponent(id)}/cancel`, {
+        method: 'POST',
         body: JSON.stringify(input),
       });
     },

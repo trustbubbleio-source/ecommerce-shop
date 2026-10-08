@@ -208,6 +208,15 @@ export const googleAuthInputSchema = z.object({
   idToken: z.string().min(1, 'Google token is required'),
 });
 
+export const newsletterSubscribeInputSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email('A valid email is required')
+    .max(200)
+    .transform((email) => email.toLowerCase()),
+});
+
 export const contactInputSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(80),
   email: z.string().trim().email('A valid email is required'),
@@ -260,6 +269,10 @@ export const updateWantListStatusSchema = z.object({
   adminNote: z.string().trim().max(1000).nullable().optional(),
 });
 
+export const cancelOrderInputSchema = z.object({
+  reason: z.string().trim().min(3, 'Add a short reason').max(300, 'Reason is too long'),
+});
+
 export const updateOrderFulfillmentSchema = z.object({
   fulfillmentStep: z.enum([
     'packing',
@@ -291,10 +304,12 @@ export type SetPasswordInput = z.infer<typeof setPasswordInputSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileInputSchema>;
 export type GoogleAuthInput = z.infer<typeof googleAuthInputSchema>;
 export type ContactInput = z.infer<typeof contactInputSchema>;
+export type NewsletterSubscribeInput = z.infer<typeof newsletterSubscribeInputSchema>;
 export type CreateProductReviewInput = z.infer<typeof createProductReviewInputSchema>;
 export type SellRequestInput = z.infer<typeof sellRequestInputSchema>;
 export type CreateWantListItemInput = z.infer<typeof createWantListItemSchema>;
 export type UpdateWantListStatusInput = z.infer<typeof updateWantListStatusSchema>;
+export type CancelOrderInput = z.infer<typeof cancelOrderInputSchema>;
 export type UpdateOrderFulfillmentInput = z.infer<typeof updateOrderFulfillmentSchema>;
 export type CreateProductInput = z.infer<typeof createProductInputSchema>;
 export type UpdateProductInput = z.infer<typeof createProductInputSchema>;

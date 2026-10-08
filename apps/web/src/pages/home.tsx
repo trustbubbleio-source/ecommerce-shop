@@ -112,7 +112,7 @@ function LaunchAnnouncement() {
               {PRELAUNCH.homeBody}
             </p>
             <p className="text-foreground text-sm font-semibold tracking-wide">
-              Online shop · Physical store · October 15, 2026
+              Online shop · Physical store · October 31, 2026
             </p>
             <p className="text-muted-foreground inline-flex items-start gap-2 text-sm">
               <MapPin className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />

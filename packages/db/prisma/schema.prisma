@@ -412,10 +412,21 @@ model Order {
   fulfillmentStep String?  @map("fulfillment_step")
   carrierName     String?  @map("carrier_name")
   trackingUrl     String?  @map("tracking_url")
+  /** Why an admin cancelled the order. Shown to the customer. */
+  cancelReason    String?  @map("cancel_reason")
   shippingAddress Json?    @map("shipping_address")
   createdAt       DateTime @default(now()) @map("created_at")
 
   @@index([userId])
   @@index([status])
   @@map("orders")
+}
+
+/** Homepage drop-alert signups. */
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("newsletter_subscribers")
 }

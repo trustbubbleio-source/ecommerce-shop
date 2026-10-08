@@ -1,3 +1,4 @@
+import { formatPrice, type Order } from '@akknerds/shared';
 import { Resend } from 'resend';
 import type { Env } from '../env.js';
 
@@ -198,17 +199,19 @@ export class EmailService {
   }
 
   async sendWelcome(input: { name: string; email: string }): Promise<SendEmailResult> {
-    const shopUrl = this.env.webOrigins[0] ?? 'https://onemorerip.cards';
+    const shopUrl = `${this.env.webOrigins[0] ?? 'https://www.onemorerip.cards'}/shop`;
     return this.send({
       to: input.email,
+      replyTo: this.env.email.contactInbox,
       subject: 'Welcome to One More Rip',
-      text: `Hi ${input.name},\n\nWelcome to One More Rip — glad to have you.\n\nBrowse the shop: ${shopUrl}/shop\n\n— One More Rip`,
-      html: `
-        <p>Hi ${escapeHtml(input.name)},</p>
-        <p>Welcome to <strong>One More Rip</strong> — glad to have you.</p>
-        <p><a href="${shopUrl}/shop">Browse the shop</a></p>
-        <p>— One More Rip</p>
-      `,
+      text: `Hi ${input.name},\n\nWelcome to One More Rip.\n\nBrowse the shop: ${shopUrl}\n\n— One More Rip\nHallandsvägen 21, 269 36 Båstad, Sweden`,
+      html: brandedEmail({
+        preheader: 'Welcome to One More Rip.',
+        title: `Hi ${escapeHtml(input.name)},`,
+        body: '<p style="margin:0 0 16px;">Welcome to One More Rip. Your account is ready.</p>',
+        actionLabel: 'Browse the shop',
+        actionUrl: shopUrl,
+      }),
     });
   }
 
@@ -219,6 +222,7 @@ export class EmailService {
   }): Promise<SendEmailResult> {
     return this.send({
       to: input.email,
+      replyTo: this.env.email.contactInbox,
       subject: 'Confirm your One More Rip account',
       text: [
         `Hi ${input.name},`,
@@ -231,14 +235,16 @@ export class EmailService {
         'If you did not create an account, you can ignore this email.',
         '',
         '— One More Rip',
+        'Hallandsvägen 21, 269 36 Båstad, Sweden',
       ].join('\n'),
-      html: `
-        <p>Hi ${escapeHtml(input.name)},</p>
-        <p>Thanks for signing up. Confirm your email within <strong>24 hours</strong> to activate your account.</p>
-        <p><a href="${escapeHtml(input.verifyUrl)}">Confirm email &amp; continue</a></p>
-        <p style="color:#666;font-size:13px">Next you will choose a password. If you did not create an account, you can ignore this email.</p>
-        <p>— One More Rip</p>
-      `,
+      html: brandedEmail({
+        preheader: 'Confirm your email to finish creating your One More Rip account.',
+        title: `Hi ${escapeHtml(input.name)},`,
+        body: '<p style="margin:0 0 16px;">Thanks for signing up. Confirm your email within <strong>24 hours</strong> to activate your account. Next you will choose a password.</p>',
+        actionLabel: 'Confirm email',
+        actionUrl: input.verifyUrl,
+        footnote: 'If you did not create an account, you can ignore this email.',
+      }),
     });
   }
 
@@ -249,6 +255,7 @@ export class EmailService {
   }): Promise<SendEmailResult> {
     return this.send({
       to: input.email,
+      replyTo: this.env.email.contactInbox,
       subject: 'Reset your One More Rip password',
       text: [
         `Hi ${input.name},`,
@@ -259,14 +266,136 @@ export class EmailService {
         'If you did not ask for this, you can ignore this email.',
         '',
         '— One More Rip',
+        'Hallandsvägen 21, 269 36 Båstad, Sweden',
       ].join('\n'),
-      html: `
-        <p>Hi ${escapeHtml(input.name)},</p>
-        <p>We received a request to reset your password. This link expires in <strong>1 hour</strong>.</p>
-        <p><a href="${escapeHtml(input.resetUrl)}">Reset your password</a></p>
-        <p style="color:#666;font-size:13px">If you did not ask for this, you can ignore this email.</p>
-        <p>— One More Rip</p>
-      `,
+      html: brandedEmail({
+        preheader: 'Reset your One More Rip password. This link expires in 1 hour.',
+        title: `Hi ${escapeHtml(input.name)},`,
+        body: '<p style="margin:0 0 16px;">We received a request to reset your password. This link expires in <strong>1 hour</strong>.</p>',
+        actionLabel: 'Reset password',
+        actionUrl: input.resetUrl,
+        footnote: 'If you did not ask for this, you can ignore this email.',
+      }),
+    });
+  }
+
+  async sendOrderConfirmation(order: Order, orderUrl: string): Promise<SendEmailResult> {
+    const name = order.shippingAddress?.fullName?.trim() || 'there';
+    const items = order.lines
+      .map(
+        (line) =>
+          `<li style="margin:0 0 6px;">${line.quantity} × ${escapeHtml(line.name)} — ${escapeHtml(formatPrice(line.unitPrice * line.quantity, order.currency))}</li>`,
+      )
+      .join('');
+    const total = formatPrice(order.total, order.currency);
+    return this.send({
+      to: order.email,
+      replyTo: this.env.email.ordersInbox,
+      subject: `Order confirmed — ${order.id}`,
+      text: [
+        `Hi ${name},`,
+        '',
+        `We've received your order ${order.id}.`,
+        ...order.lines.map(
+          (line) =>
+            `${line.quantity} × ${line.name} — ${formatPrice(line.unitPrice * line.quantity, order.currency)}`,
+        ),
+        `Total: ${total}`,
+        '',
+        `View your order: ${orderUrl}`,
+        '',
+        '— One More Rip',
+      ].join('\n'),
+      html: brandedEmail({
+        preheader: `Order ${order.id} is confirmed.`,
+        title: `Hi ${escapeHtml(name)},`,
+        body: `<p style="margin:0 0 12px;">We've received your order <strong>${escapeHtml(order.id)}</strong>.</p><ul style="margin:0 0 12px;padding-left:18px;">${items}</ul><p style="margin:0 0 16px;">Total: <strong>${escapeHtml(total)}</strong></p>`,
+        actionLabel: 'View your order',
+        actionUrl: orderUrl,
+      }),
+    });
+  }
+
+  async sendOrderRefunded(order: Order, orderUrl: string): Promise<SendEmailResult> {
+    const name = order.shippingAddress?.fullName?.trim() || 'there';
+    const total = formatPrice(order.total, order.currency);
+    return this.send({
+      to: order.email,
+      replyTo: this.env.email.ordersInbox,
+      subject: `Refund sent — ${order.id}`,
+      text: [
+        `Hi ${name},`,
+        '',
+        `We've refunded ${total} for order ${order.id}.`,
+        'It can take several business days to show on your card.',
+        '',
+        `View your order: ${orderUrl}`,
+        '',
+        '— One More Rip',
+      ].join('\n'),
+      html: brandedEmail({
+        preheader: `Refund for order ${order.id} is on the way.`,
+        title: `Hi ${escapeHtml(name)},`,
+        body: `<p style="margin:0 0 16px;">We've refunded <strong>${escapeHtml(total)}</strong> for order <strong>${escapeHtml(order.id)}</strong>. It can take several business days to show on your card.</p>`,
+        actionLabel: 'View your order',
+        actionUrl: orderUrl,
+      }),
+    });
+  }
+
+  async sendOrderCancelled(
+    order: Order,
+    orderUrl: string,
+    input: { reason: string; refunded: boolean },
+  ): Promise<SendEmailResult> {
+    const name = order.shippingAddress?.fullName?.trim() || 'there';
+    const reason = input.reason.trim();
+    const total = formatPrice(order.total, order.currency);
+    const refundText = input.refunded
+      ? `We've refunded ${total}. It can take several business days to show on your card.`
+      : '';
+    const refundHtml = input.refunded
+      ? `<p style="margin:0 0 16px;">We've refunded <strong>${escapeHtml(total)}</strong>. It can take several business days to show on your card.</p>`
+      : '';
+    return this.send({
+      to: order.email,
+      replyTo: this.env.email.ordersInbox,
+      subject: `Order cancelled — ${order.id}`,
+      text: [
+        `Hi ${name},`,
+        '',
+        `We've cancelled order ${order.id}.`,
+        reason,
+        ...(refundText ? ['', refundText] : []),
+        '',
+        `View your order: ${orderUrl}`,
+        '',
+        '— One More Rip',
+      ].join('\n'),
+      html: brandedEmail({
+        preheader: `Order ${order.id} was cancelled.`,
+        title: `Hi ${escapeHtml(name)},`,
+        body: `<p style="margin:0 0 12px;">We've cancelled order <strong>${escapeHtml(order.id)}</strong>.</p><p style="margin:0 0 16px;">${escapeHtml(reason)}</p>${refundHtml}`,
+        actionLabel: 'View your order',
+        actionUrl: orderUrl,
+      }),
+    });
+  }
+
+  async sendNewsletterConfirmation(email: string): Promise<SendEmailResult> {
+    const shopUrl = `${this.env.webOrigins[0] ?? 'https://www.onemorerip.cards'}/shop`;
+    return this.send({
+      to: email,
+      replyTo: this.env.email.contactInbox,
+      subject: "You're on the One More Rip list",
+      text: `You're signed up for drop alerts from One More Rip.\n\nBrowse the shop: ${shopUrl}\n\n— One More Rip`,
+      html: brandedEmail({
+        preheader: "You're on the list for new drops and restocks.",
+        title: "You're on the list",
+        body: '<p style="margin:0 0 16px;">New drops and restocks will land in this inbox.</p>',
+        actionLabel: 'Browse the shop',
+        actionUrl: shopUrl,
+      }),
     });
   }
 
@@ -299,6 +428,57 @@ export class EmailService {
       `,
     });
   }
+}
+
+const LOGO_URL = 'https://www.onemorerip.cards/apple-touch-icon.png';
+
+/** Customer mail: dark card, logo, and one button. Inbox avatars are not controlled by this HTML. */
+export function brandedEmail(input: {
+  preheader: string;
+  title: string;
+  body: string;
+  actionLabel: string;
+  actionUrl: string;
+  footnote?: string;
+}): string {
+  const href = escapeHtml(input.actionUrl);
+  const footnote = input.footnote
+    ? `<p style="margin:20px 0 0;color:#8a8a8a;font-size:13px;line-height:1.5;">${escapeHtml(input.footnote)}</p>`
+    : '';
+  return `<!DOCTYPE html>
+<html lang="en">
+  <body style="margin:0;padding:0;background:#0a0a0a;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(input.preheader)}</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#141414;border:1px solid #2a2a2a;border-radius:16px;">
+            <tr>
+              <td align="center" style="padding:28px 28px 0;">
+                <img src="${LOGO_URL}" width="56" height="56" alt="One More Rip" style="display:block;border:0;border-radius:12px;" />
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 28px 28px;font-family:Arial,Helvetica,sans-serif;color:#f5f5f5;font-size:15px;line-height:1.5;">
+                <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;font-weight:700;">${input.title}</h1>
+                ${input.body}
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:8px;">
+                  <tr>
+                    <td style="border-radius:10px;background:#7c3aed;">
+                      <a href="${href}" style="display:inline-block;padding:12px 22px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;text-decoration:none;">${escapeHtml(input.actionLabel)}</a>
+                    </td>
+                  </tr>
+                </table>
+                ${footnote}
+              </td>
+            </tr>
+          </table>
+          <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;color:#8a8a8a;font-size:12px;line-height:1.5;">One More Rip · Hallandsvägen 21, 269 36 Båstad, Sweden</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
 }
 
 function escapeHtml(value: string): string {

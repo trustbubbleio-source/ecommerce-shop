@@ -76,6 +76,16 @@ export class OrderRepository implements IOrderRepository {
     return order;
   }
 
+  async cancel(orderId: string, reason: string): Promise<Order | undefined> {
+    const order = this.byId.get(orderId);
+    if (!order) return undefined;
+    if (order.status === 'fulfilled' || order.fulfillmentStep === 'delivered') return undefined;
+    order.status = 'cancelled';
+    order.fulfillmentStep = undefined;
+    order.cancelReason = reason;
+    return order;
+  }
+
   async markStatusBySession(sessionId: string, status: OrderStatus): Promise<Order | undefined> {
     const orderId = this.bySession.get(sessionId);
     if (!orderId) return undefined;

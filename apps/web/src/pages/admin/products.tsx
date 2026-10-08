@@ -1,13 +1,25 @@
 import {
+  PRODUCT_CATEGORIES,
   categoryLabel,
   formatPrice,
   primaryProductImage,
   resolveAssetUrl,
   type CatalogStats,
   type Product,
+  type ProductCategory,
 } from '@akknerds/shared';
 import { ADMIN_PRODUCTS_PAGE_SIZE, api, type AdminProductSortKey } from '@akknerds/api-client';
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input, Skeleton } from '@akknerds/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Select,
+  Skeleton,
+} from '@akknerds/ui';
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { ArrowDown, ArrowUp, ArrowUpDown, Boxes, ImagePlus, Package, RefreshCw, Search, Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -107,6 +119,7 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
 
 export function AdminProductsPage() {
   const [search, setSearch] = useState('');
+  const [category, setCategory] = useState<ProductCategory | 'all'>('all');
   const debouncedSearch = useDebouncedValue(search.trim(), 280);
   const [page, setPage] = useState(0);
   const [sortKey, setSortKey] = useState<AdminProductSortKey>('name');
@@ -116,13 +129,14 @@ export function AdminProductsPage() {
 
   useEffect(() => {
     setPage(0);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, category]);
 
   const products = useQuery({
-    queryKey: ['admin', 'products', { search: debouncedSearch, page, sortKey, sortDir }],
+    queryKey: ['admin', 'products', { search: debouncedSearch, category, page, sortKey, sortDir }],
     queryFn: () =>
       api.adminListProducts({
         search: debouncedSearch || undefined,
+        category: category === 'all' ? undefined : category,
         limit: ADMIN_PRODUCTS_PAGE_SIZE,
         offset: page * ADMIN_PRODUCTS_PAGE_SIZE,
         sortKey,
@@ -175,9 +189,10 @@ export function AdminProductsPage() {
     { key: 'status', label: 'Status' },
   ];
 
+  const filtered = Boolean(debouncedSearch) || category !== 'all';
   const title = products.isLoading
     ? 'Loading…'
-    : debouncedSearch
+    : filtered
       ? `${total} matching`
       : `${total} products in catalog`;
 
@@ -223,16 +238,31 @@ export function AdminProductsPage() {
       <Card>
         <CardHeader className="flex flex-col gap-3 space-y-0 pb-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="text-base font-semibold">{title}</CardTitle>
-          <div className="relative w-full sm:max-w-xs">
-            <Search className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
-            <Input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search name, Pokémon, set…"
-              aria-label="Search products"
-              className="pl-9"
+          <div className="flex w-full flex-col gap-2 sm:max-w-xl sm:flex-row">
+            <Select
+              aria-label="Product type"
+              value={category}
+              onChange={(event) => setCategory(event.target.value as ProductCategory | 'all')}
+              options={[
+                { value: 'all', label: 'All types' },
+                ...PRODUCT_CATEGORIES.map((value) => ({
+                  value,
+                  label: categoryLabel(value),
+                })),
+              ]}
+              className="sm:max-w-[14rem]"
             />
+            <div className="relative min-w-0 flex-1">
+              <Search className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+              <Input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search name, Pokémon, set…"
+                aria-label="Search products"
+                className="pl-9"
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -378,8 +408,8 @@ export function AdminProductsPage() {
             </>
           ) : (
             <p className="text-muted-foreground p-4 text-sm">
-              {debouncedSearch
-                ? 'No products match that search. Try another name before adding a new card.'
+              {filtered
+                ? 'No products match that filter.'
                 : 'No products yet.'}
             </p>
           )}

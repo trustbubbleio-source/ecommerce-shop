@@ -97,6 +97,8 @@ export interface Order {
   /** Set when a tracked parcel is handed to the courier. */
   carrierName?: string;
   trackingUrl?: string;
+  /** Why an admin cancelled the order. */
+  cancelReason?: string;
   createdAt: string;
 }
 

@@ -1,6 +1,7 @@
 import {
   FULFILLMENT_STEPS,
   FULFILLMENT_STEP_LABELS,
+  cancelOrderInputSchema,
   defaultFulfillmentStep,
   formatPrice,
   hasCarrierTracking,
@@ -15,6 +16,7 @@ import {
   Field,
   Input,
   Skeleton,
+  Textarea,
   useToast,
 } from '@akknerds/ui';
 import { ArrowLeft, MapPin, PackageX } from 'lucide-react';
@@ -24,7 +26,7 @@ import { OrderInvoiceLink } from '../../components/account/order-invoice-link';
 import { OrderTimeline } from '../../components/account/order-timeline';
 import { EmptyState } from '../../components/common/empty-state';
 import { IncludedVatLine } from '../../components/common/included-vat-line';
-import { useAdminOrder, useAdminUpdateOrder } from '../../hooks/use-orders';
+import { useAdminCancelOrder, useAdminOrder, useAdminUpdateOrder } from '../../hooks/use-orders';
 import { ApiError } from '@akknerds/api-client';
 import {
   formatAddress,
@@ -36,9 +38,12 @@ export function AdminOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const { data, isLoading, isError } = useAdminOrder(orderId);
   const update = useAdminUpdateOrder();
+  const cancelOrder = useAdminCancelOrder();
   const { toast } = useToast();
   const [carrierName, setCarrierName] = useState('');
   const [trackingUrl, setTrackingUrl] = useState('');
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelError, setCancelError] = useState<string>();
 
   const order = data?.order;
   useEffect(() => {
@@ -70,6 +75,9 @@ export function AdminOrderDetailPage() {
   }
 
   const paid = order.status === 'paid' || order.status === 'fulfilled';
+  const delivered = order.status === 'fulfilled' || order.fulfillmentStep === 'delivered';
+  const canCancel = !delivered && order.status !== 'cancelled';
+  const busy = update.isPending || cancelOrder.isPending;
   const currentStep = order.fulfillmentStep ?? defaultFulfillmentStep(order.status);
   const tracked = hasCarrierTracking(order.subtotal, order.currency);
   const timeline = orderTimeline(order.status, order.fulfillmentStep);
@@ -116,7 +124,10 @@ export function AdminOrderDetailPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-5">
             {order.status === 'cancelled' ? (
-              <p className="text-muted-foreground text-sm">This order was cancelled.</p>
+              <div className="flex flex-col gap-2 text-sm">
+                <p className="text-muted-foreground">This order was cancelled.</p>
+                {order.cancelReason ? <p>{order.cancelReason}</p> : null}
+              </div>
             ) : (
               <OrderTimeline state={timeline} cancelled={false} />
             )}
@@ -132,8 +143,8 @@ export function AdminOrderDetailPage() {
                       type="button"
                       size="sm"
                       variant={currentStep === step ? 'primary' : 'outline'}
-                      disabled={update.isPending}
-                      onClick={() => save(step)}
+        disabled={busy}
+        onClick={() => save(step)}
                     >
                       {FULFILLMENT_STEP_LABELS[step]}
                     </Button>
@@ -188,7 +199,7 @@ export function AdminOrderDetailPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={update.isPending}
+                  disabled={busy}
                   onClick={() => save(currentStep)}
                 >
                   Save carrier details
@@ -219,6 +230,80 @@ export function AdminOrderDetailPage() {
           </Card>
         </div>
       </div>
+
+      {canCancel ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Cancel order</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              className="flex flex-col gap-3"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const parsed = cancelOrderInputSchema.safeParse({ reason: cancelReason });
+                if (!parsed.success) {
+                  setCancelError(parsed.error.issues[0]?.message ?? 'Add a short reason');
+                  return;
+                }
+                setCancelError(undefined);
+                cancelOrder.mutate(
+                  { id: order.id, input: parsed.data },
+                  {
+                    onSuccess: (result) => {
+                      setCancelReason('');
+                      toast({
+                        title: 'Order cancelled',
+                        description: result.emailed
+                          ? 'The customer has been emailed.'
+                          : 'Saved, but the email could not be sent.',
+                        variant: result.emailed ? 'success' : 'error',
+                      });
+                    },
+                    onError: (error) => {
+                      toast({
+                        title: 'Could not cancel',
+                        description: error instanceof ApiError ? error.message : 'Please try again.',
+                        variant: 'error',
+                      });
+                    },
+                  },
+                );
+              }}
+            >
+              <p className="text-muted-foreground text-sm">
+                {order.status === 'paid'
+                  ? 'The customer is refunded in full and emailed this reason.'
+                  : 'The customer is emailed this reason. Nothing has been charged.'}
+              </p>
+              <Field label="Reason">
+                {(props) => (
+                  <Textarea
+                    {...props}
+                    value={cancelReason}
+                    onChange={(event) => {
+                      setCancelReason(event.target.value);
+                      if (cancelError) setCancelError(undefined);
+                    }}
+                    placeholder="This card is no longer in stock."
+                    rows={3}
+                    aria-invalid={Boolean(cancelError)}
+                    aria-describedby={cancelError ? 'cancel-reason-error' : undefined}
+                  />
+                )}
+              </Field>
+              {cancelError ? (
+                <p id="cancel-reason-error" className="text-destructive text-xs" role="alert">
+                  {cancelError}
+                </p>
+              ) : null}
+              <Button type="submit" variant="destructive" disabled={busy} className="self-start">
+                {cancelOrder.isPending ? 'Cancelling…' : 'Cancel order'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>

@@ -111,6 +111,7 @@ export function toOrder(row: DbOrder): Order {
     fulfillmentStep: (row.fulfillmentStep as FulfillmentStep | null) ?? undefined,
     carrierName: row.carrierName ?? undefined,
     trackingUrl: row.trackingUrl ?? undefined,
+    cancelReason: row.cancelReason ?? undefined,
     shippingAddress: (row.shippingAddress as unknown as Address | null) ?? undefined,
     createdAt: row.createdAt.toISOString(),
   };

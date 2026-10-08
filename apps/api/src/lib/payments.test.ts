@@ -63,6 +63,7 @@ describe('PaymentService (live mode, injected client)', () => {
     expect(params.line_items.at(-1).price_data.product_data.name).toBe('Shipping');
     expect(params.customer_email).toBe('buyer@example.com');
     expect(params.metadata.orderId).toBe('ord_test');
+    expect(params.payment_intent_data).toEqual({ metadata: { orderId: 'ord_test' } });
     expect(params.invoice_creation).toEqual({
       enabled: true,
       invoice_data: {

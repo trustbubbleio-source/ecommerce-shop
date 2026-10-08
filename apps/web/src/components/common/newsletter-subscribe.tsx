@@ -1,36 +1,40 @@
+import { ApiError } from '@akknerds/api-client';
+import { newsletterSubscribeInputSchema } from '@akknerds/shared';
 import { Button, Input, useToast } from '@akknerds/ui';
 import { Mail } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { NEWSLETTER } from '../../config/site';
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { useNewsletterSubscribe } from '../../hooks/use-newsletter';
 
 export function NewsletterSubscribe({ className }: { className?: string }) {
   const { toast } = useToast();
+  const subscribe = useNewsletterSubscribe();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
 
-  const onSubmit = (event: FormEvent) => {
+  const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    const trimmed = email.trim().toLowerCase();
-    if (!EMAIL_RE.test(trimmed)) {
-      setError('Enter a valid email address');
+    const parsed = newsletterSubscribeInputSchema.safeParse({ email });
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? 'Enter a valid email address');
       return;
     }
     setError(null);
-    setPending(true);
-
-    // UI-ready subscribe — wire to a newsletter provider/API when available.
-    window.setTimeout(() => {
-      setPending(false);
+    try {
+      const result = await subscribe.mutateAsync(parsed.data);
       setEmail('');
       toast({
         title: NEWSLETTER.successTitle,
-        description: NEWSLETTER.successDescription,
+        description: result.message,
         variant: 'success',
       });
-    }, 350);
+    } catch (err) {
+      toast({
+        title: 'Could not subscribe',
+        description: err instanceof ApiError ? err.message : 'Please try again.',
+        variant: 'error',
+      });
+    }
   };
 
   return (
@@ -102,10 +106,10 @@ export function NewsletterSubscribe({ className }: { className?: string }) {
               <Button
                 type="submit"
                 size="md"
-                disabled={pending}
+                disabled={subscribe.isPending}
                 className="h-11 shrink-0 sm:min-w-28"
               >
-                {pending ? 'Joining…' : NEWSLETTER.cta}
+                {subscribe.isPending ? 'Joining…' : NEWSLETTER.cta}
               </Button>
             </form>
           </div>

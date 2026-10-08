@@ -11,7 +11,7 @@ describe('HomePage', () => {
     renderApp('/');
 
     expect(screen.getByRole('heading', { name: /Just one more/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /We go live October 15/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /We go live October 31/i })).toBeInTheDocument();
     expect(
       screen.getByRole('img', { name: /One More Rip storefront in Båstad/i }),
     ).toBeInTheDocument();

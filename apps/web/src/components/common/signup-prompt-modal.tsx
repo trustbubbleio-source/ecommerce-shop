@@ -107,7 +107,7 @@ export function SignupPromptModal() {
         hideClose
         className={cn(
           'max-w-[22rem] gap-0 overflow-hidden border-0 p-0 text-white shadow-2xl sm:max-w-sm',
-          'bg-[#0b2f63] rounded-2xl',
+          'bg-[#16081f] rounded-2xl',
         )}
       >
         <div className="relative overflow-hidden px-6 pb-7 pt-5">
@@ -123,7 +123,7 @@ export function SignupPromptModal() {
               alt=""
               className="absolute -bottom-16 -left-10 h-48 w-48 -rotate-12 object-cover opacity-20"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0b2f63]/40 via-[#0b2f63]/85 to-[#071f42]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#7c3aed]/55 via-[#4c1d95]/80 to-[#120818]" />
             <img
               src={star}
               alt=""

@@ -61,6 +61,8 @@ export interface OrderRepository {
   attachSession(orderId: string, sessionId: string): Promise<void>;
   setInvoiceUrl(orderId: string, invoiceUrl: string): Promise<void>;
   updateFulfillment(orderId: string, input: OrderFulfillmentPatch): Promise<Order | undefined>;
+  /** Marks the order cancelled and stores the customer-facing reason. */
+  cancel(orderId: string, reason: string): Promise<Order | undefined>;
   markStatusBySession(sessionId: string, status: OrderStatus): Promise<Order | undefined>;
   setStatus(orderId: string, status: OrderStatus): Promise<Order | undefined>;
   listByUser(userId: string): Promise<Order[]>;
@@ -135,6 +137,11 @@ export interface CreateWantListInput {
   preset: string;
   title: string;
   notes: string;
+}
+
+export interface NewsletterRepository {
+  /** Returns true when this email was not already on the list. */
+  subscribe(email: string): Promise<boolean>;
 }
 
 export interface WantListRepository {

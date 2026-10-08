@@ -1,4 +1,4 @@
-import type { UpdateOrderFulfillmentInput } from '@akknerds/shared';
+import type { CancelOrderInput, UpdateOrderFulfillmentInput } from '@akknerds/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@akknerds/api-client';
 import { useAuthStore } from '../store/auth';
@@ -54,6 +54,19 @@ export function useAdminUpdateOrder() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: UpdateOrderFulfillmentInput }) =>
       api.adminUpdateOrder(id, input),
+    onSuccess: (_data, { id }) => {
+      void queryClient.invalidateQueries({ queryKey: orderKeys.admin() });
+      void queryClient.invalidateQueries({ queryKey: orderKeys.adminDetail(id) });
+      void queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) });
+    },
+  });
+}
+
+export function useAdminCancelOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: CancelOrderInput }) =>
+      api.adminCancelOrder(id, input),
     onSuccess: (_data, { id }) => {
       void queryClient.invalidateQueries({ queryKey: orderKeys.admin() });
       void queryClient.invalidateQueries({ queryKey: orderKeys.adminDetail(id) });

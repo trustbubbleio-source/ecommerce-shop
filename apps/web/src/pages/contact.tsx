@@ -97,7 +97,7 @@ export function ContactPage() {
                 {SITE.store.country}
               </p>
               <p className="text-muted-foreground mt-2 text-xs">
-                Physical store opens October 15, 2026.
+                Physical store opens October 31, 2026.
               </p>
             </div>
           </div>

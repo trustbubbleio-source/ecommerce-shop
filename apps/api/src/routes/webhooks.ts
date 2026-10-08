@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
 import { clearWelcomeDiscountAfterPurchase } from '../lib/welcome-discount.js';
-import { notifyPaidOrder } from '../lib/order-alert.js';
+import { notifyPaidOrder, notifyRefundedOrder } from '../lib/order-alert.js';
 import type { StripeCheckoutSessionLike } from '../lib/payments.js';
 
 export function webhookRoutes(deps: AppDeps) {
@@ -37,6 +37,25 @@ export function webhookRoutes(deps: AppDeps) {
         if (doc) await deps.orders.setInvoiceUrl(order.id, doc.url);
       }
       if (newlyPaid && order) await notifyPaidOrder(deps.email, deps.env, order);
+    }
+
+    if (event.type === 'charge.refunded') {
+      const charge = event.data.object as {
+        metadata?: { orderId?: string };
+        refunded?: boolean;
+        refunds?: { data?: Array<{ metadata?: { adminCancel?: string } }> };
+      };
+      const orderId = charge.metadata?.orderId;
+      const adminCancel = charge.refunds?.data?.some(
+        (refund) => refund.metadata?.adminCancel === 'true',
+      );
+      if (orderId && charge.refunded === true) {
+        const existing = await deps.orders.get(orderId);
+        if (existing && existing.status !== 'cancelled' && !existing.cancelReason) {
+          const cancelled = await deps.orders.setStatus(orderId, 'cancelled');
+          if (cancelled && !adminCancel) await notifyRefundedOrder(deps.email, deps.env, cancelled);
+        }
+      }
     }
 
     return c.json({ received: true });

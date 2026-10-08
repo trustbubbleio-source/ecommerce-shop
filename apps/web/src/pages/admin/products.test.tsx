@@ -80,5 +80,10 @@ describe('Admin products', () => {
     });
     expect(await screen.findByText('Charizard ex')).toBeInTheDocument();
     expect(screen.getByText('1 matching')).toBeInTheDocument();
+
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Product type' }), 'single-card');
+    await waitFor(() => {
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ category: 'single-card' }));
+    });
   });
 });

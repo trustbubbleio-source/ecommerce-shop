@@ -47,6 +47,7 @@ export type AdminProductSortKey = 'name' | 'category' | 'price' | 'stock' | 'sta
 
 export interface AdminProductsQuery {
   search?: string;
+  category?: ProductCategory;
   limit?: number;
   offset?: number;
   sortKey?: AdminProductSortKey;

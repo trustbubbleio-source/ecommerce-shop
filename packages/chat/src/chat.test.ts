@@ -12,7 +12,7 @@ const ctx = createChatContext({
   partnerEmail: 'partner@onemorerip.cards',
   tradeEmail: 'trade@onemorerip.cards',
   storeLine: 'Hallandsvägen 21, 269 36 Båstad, Sweden',
-  launchDateLabel: 'October 15, 2026',
+  launchDateLabel: 'October 31, 2026',
 });
 
 describe('matchIntent', () => {

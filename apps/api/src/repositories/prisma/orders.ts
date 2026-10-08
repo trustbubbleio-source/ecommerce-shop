@@ -88,6 +88,17 @@ export class PrismaOrderRepository implements OrderRepository {
     return toOrder(updated);
   }
 
+  async cancel(orderId: string, reason: string) {
+    const existing = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!existing) return undefined;
+    if (existing.status === 'fulfilled' || existing.fulfillmentStep === 'delivered') return undefined;
+    const updated = await prisma.order.update({
+      where: { id: orderId },
+      data: { status: 'cancelled', fulfillmentStep: null, cancelReason: reason },
+    });
+    return toOrder(updated);
+  }
+
   async markStatusBySession(sessionId: string, status: OrderStatus) {
     const row = await prisma.order.findUnique({ where: { stripeSessionId: sessionId } });
     if (!row) return undefined;

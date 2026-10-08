@@ -105,6 +105,18 @@ describe('GET /api/admin/products', () => {
     );
     expect(search.total).toBeGreaterThan(0);
     expect(search.products.length).toBeGreaterThan(0);
+
+    const { data: boxes } = await jsonRequest(
+      app,
+      'GET',
+      '/api/admin/products?category=booster-box',
+      undefined,
+      { authorization: `Bearer ${login.token}` },
+    );
+    expect(boxes.products.length).toBeGreaterThan(0);
+    expect(boxes.products.every((product: { category: string }) => product.category === 'booster-box')).toBe(
+      true,
+    );
   });
 });
 

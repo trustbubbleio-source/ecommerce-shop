@@ -79,10 +79,13 @@ export function AccountOrderDetailPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           {cancelled ? (
-            <p className="text-muted-foreground text-sm">
-              This order was cancelled. If you were charged, the refund is processed back to the
-              original payment method.
-            </p>
+            <div className="flex flex-col gap-2 text-sm">
+              <p className="text-muted-foreground">
+                This order was cancelled. If you were charged, the refund is processed back to the
+                original payment method.
+              </p>
+              {order.cancelReason ? <p>{order.cancelReason}</p> : null}
+            </div>
           ) : (
             <OrderTimeline state={timeline} cancelled={cancelled} />
           )}

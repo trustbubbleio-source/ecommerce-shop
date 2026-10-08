@@ -1,4 +1,9 @@
-import { createProductInputSchema, fetchCardImageInputSchema, updateProductInputSchema } from '@akknerds/shared';
+import {
+  PRODUCT_CATEGORIES,
+  createProductInputSchema,
+  fetchCardImageInputSchema,
+  updateProductInputSchema,
+} from '@akknerds/shared';
 import {
   CardFetchError,
   cardImageObjectKey,
@@ -24,6 +29,7 @@ const ADMIN_PRODUCTS_PAGE_SIZE = 10;
 
 const adminProductQuerySchema = z.object({
   search: z.string().optional(),
+  category: z.enum(PRODUCT_CATEGORIES).optional(),
   limit: z.coerce.number().int().min(1).max(50).optional(),
   offset: z.coerce.number().int().min(0).optional(),
   sortKey: z.enum(['name', 'category', 'price', 'stock', 'status']).optional(),
@@ -49,7 +55,7 @@ export function adminRoutes(deps: AppDeps) {
       const offset = q.offset ?? 0;
       const [page, stats] = await Promise.all([
         deps.products.listPage({
-          filter: { search: q.search },
+          filter: { search: q.search, category: q.category },
           adminSort: { key: q.sortKey ?? 'name', dir: q.sortDir ?? 'asc' },
           limit,
           offset,

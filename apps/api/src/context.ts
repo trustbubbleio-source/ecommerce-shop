@@ -9,6 +9,7 @@ import type {
   ProductRepository,
   ProductReviewRepository,
   UserRepository,
+  NewsletterRepository,
   WantListRepository,
 } from './repositories/interfaces.js';
 
@@ -21,6 +22,7 @@ export interface AppDeps {
   favorites: FavoriteRepository;
   reviews: ProductReviewRepository;
   wantList: WantListRepository;
+  newsletter: NewsletterRepository;
   payments: PaymentService;
   storage: StorageService;
   email: EmailService;

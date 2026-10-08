@@ -92,6 +92,88 @@ describe('POST /api/webhooks/stripe', () => {
     );
   });
 
+  it('cancels a fully refunded order and ignores a second refund event', async () => {
+    const sessionId = 'cs_live_refund';
+    let event: { type: string; data: { object: unknown } } = {
+      type: 'checkout.session.completed',
+      data: { object: { id: sessionId } },
+    };
+    const { app, deps } = liveApp({
+      checkout: {
+        sessions: {
+          create: vi.fn().mockResolvedValue({ id: sessionId, url: 'https://stripe.test/pay' }),
+        },
+      },
+      webhooks: { constructEvent: vi.fn().mockImplementation(() => event) },
+    });
+
+    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', {
+      email: 'buyer@example.com',
+      items: [{ productId: 'bb-151', quantity: 1 }],
+    });
+    await jsonRequest(app, 'POST', '/api/webhooks/stripe', {}, { 'stripe-signature': 'sig' });
+    expect((await deps.orders.get(checkout.orderId))?.status).toBe('paid');
+
+    event = {
+      type: 'charge.refunded',
+      data: { object: { metadata: { orderId: checkout.orderId }, refunded: true } },
+    };
+    const { res } = await jsonRequest(
+      app,
+      'POST',
+      '/api/webhooks/stripe',
+      {},
+      { 'stripe-signature': 'sig' },
+    );
+    expect(res.status).toBe(200);
+    expect((await deps.orders.get(checkout.orderId))?.status).toBe('cancelled');
+
+    const again = await jsonRequest(
+      app,
+      'POST',
+      '/api/webhooks/stripe',
+      {},
+      { 'stripe-signature': 'sig' },
+    );
+    expect(again.res.status).toBe(200);
+    expect((await deps.orders.get(checkout.orderId))?.status).toBe('cancelled');
+  });
+
+  it('leaves the order paid when a refund is only partial', async () => {
+    const sessionId = 'cs_live_partial';
+    let orderId = '';
+    const { app, deps } = liveApp({
+      checkout: {
+        sessions: {
+          create: vi.fn().mockResolvedValue({ id: sessionId, url: 'https://stripe.test/pay' }),
+        },
+      },
+      webhooks: {
+        constructEvent: vi.fn().mockImplementation(() => ({
+          type: 'charge.refunded',
+          data: { object: { metadata: { orderId }, refunded: false } },
+        })),
+      },
+    });
+
+    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', {
+      email: 'buyer@example.com',
+      items: [{ productId: 'bb-151', quantity: 1 }],
+    });
+    orderId = checkout.orderId;
+    await deps.orders.setStatus(orderId, 'paid');
+
+    const { res } = await jsonRequest(
+      app,
+      'POST',
+      '/api/webhooks/stripe',
+      {},
+      { 'stripe-signature': 'sig' },
+    );
+    expect(res.status).toBe(200);
+    expect((await deps.orders.get(orderId))?.status).toBe('paid');
+  });
+
   it('rejects a request without a signature header', async () => {
     const { app } = liveApp({
       checkout: { sessions: { create: vi.fn() } },

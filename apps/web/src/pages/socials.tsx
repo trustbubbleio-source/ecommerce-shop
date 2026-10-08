@@ -21,7 +21,7 @@ const SHOP_TO_SOCIAL = [
   {
     icon: Store,
     title: 'Online shop + Båstad store',
-    text: 'Same brand everywhere: browse onemorerip.cards now,  the physical store in Båstad opens October 15, 2026.',
+    text: 'Same brand everywhere: browse onemorerip.cards now,  the physical store in Båstad opens October 31, 2026.',
   },
 ] as const;
 
@@ -282,7 +282,7 @@ export function SocialsPage() {
             <h2 className="text-foreground text-xl font-bold tracking-tight">Got a collab idea?</h2>
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
               Creators, sponsors and wholesalers , we&apos;d love to hear from you. Our physical
-              store in Båstad opens October 15, 2026; until then, reach us online.
+              store in Båstad opens October 31, 2026; until then, reach us online.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

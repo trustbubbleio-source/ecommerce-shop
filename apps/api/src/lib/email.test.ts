@@ -1,6 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
 import { loadEnv } from '../env.js';
-import { EmailService } from './email.js';
+import { EmailService, brandedEmail } from './email.js';
+
+describe('brandedEmail', () => {
+  it('includes the public logo and the action link', () => {
+    const html = brandedEmail({
+      preheader: 'Confirm your email',
+      title: 'Hi Ash,',
+      body: '<p>Thanks for signing up.</p>',
+      actionLabel: 'Confirm email',
+      actionUrl: 'https://www.onemorerip.cards/verify-email?token=abc',
+    });
+    expect(html).toContain('https://www.onemorerip.cards/apple-touch-icon.png');
+    expect(html).toContain('https://www.onemorerip.cards/verify-email?token=abc');
+    expect(html).toContain('Confirm email');
+  });
+});
 
 describe('EmailService', () => {
   it('runs in mock mode without a real Resend key', async () => {
