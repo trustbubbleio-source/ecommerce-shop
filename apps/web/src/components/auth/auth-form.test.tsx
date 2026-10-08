@@ -77,11 +77,11 @@ describe('AuthForm (register)', () => {
     });
     renderWithProviders(<AuthForm mode="register" />, { route: '/register' });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Continue with email' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
     expect(await screen.findByText(/valid email/i)).toBeInTheDocument();
 
     await userEvent.type(screen.getByLabelText('Email'), 'ash@pallet.town');
-    await userEvent.click(screen.getByRole('button', { name: 'Continue with email' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() => expect(registerSpy).toHaveBeenCalledWith({ email: 'ash@pallet.town' }));
     expect(useAuthStore.getState().user).toBeNull();

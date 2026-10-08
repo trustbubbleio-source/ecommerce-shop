@@ -1,0 +1,16 @@
+.hero-series__aura {
+  position: absolute;
+  inset: 22% 8%;
+  z-index: 0;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, var(--glow) 0%, transparent 68%);
+  filter: blur(16px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.hero-series__mark {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 14px 16px rgba(0, 0, 0, 0.55));
+}

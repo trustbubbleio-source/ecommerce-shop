@@ -132,7 +132,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
 
         <Button type="submit" size="lg" block disabled={pending}>
           {pending && <Spinner className="text-primary-foreground" />}
-          {isRegister ? 'Continue with email' : 'Sign in'}
+          {isRegister ? 'Create account' : 'Sign in'}
         </Button>
       </form>
     </div>

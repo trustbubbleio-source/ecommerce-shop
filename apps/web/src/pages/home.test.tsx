@@ -27,4 +27,22 @@ describe('HomePage', () => {
     renderApp('/');
     expect(screen.getAllByRole('link', { name: /Buy all products/i }).length).toBeGreaterThan(0);
   });
+
+  it('links series logos to a prefilled shop filter', () => {
+    vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
+    renderApp('/');
+
+    expect(screen.getByRole('link', { name: 'Shop Scarlet & Violet' })).toHaveAttribute(
+      'href',
+      '/shop?series=Scarlet%20%26%20Violet',
+    );
+    expect(screen.getByRole('link', { name: 'Shop Mega Evolution' })).toHaveAttribute(
+      'href',
+      '/shop?series=Mega%20Evolution',
+    );
+    expect(screen.getByRole('link', { name: 'Shop EX Ruby & Sapphire' })).toHaveAttribute(
+      'href',
+      '/shop?series=EX%20Ruby%20%26%20Sapphire',
+    );
+  });
 });

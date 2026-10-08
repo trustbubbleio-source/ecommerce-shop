@@ -11,6 +11,7 @@ import { Pokeball } from '../components/common/pokeball';
 import { NewsletterSubscribe } from '../components/common/newsletter-subscribe';
 import { SectionHeader } from '../components/common/section';
 import { HeroPackRip } from '../components/home/hero-pack-rip';
+import { HeroSeriesShowcase } from '../components/home/hero-series';
 import { ProductGrid } from '../components/product/product-grid';
 import { PRELAUNCH } from '../config/launch';
 import { CATEGORY_TILES, SITE } from '../config/site';
@@ -68,10 +69,14 @@ function Hero() {
         </div>
 
         <div className="relative flex items-center justify-center">
-          <div className="relative aspect-square w-full max-w-[17rem] sm:max-w-xs lg:max-w-md">
-            <div className="border-border from-foreground/10 shadow-glow absolute inset-0 rounded-3xl border bg-gradient-to-br via-transparent to-transparent" />
-            <HeroPackRip className="absolute inset-0" />
+          {/* Booster rip stays in the tree; the series rail is what visitors see. */}
+          <div className="hidden" aria-hidden="true">
+            <div className="relative aspect-square w-full max-w-[17rem] sm:max-w-xs lg:max-w-md">
+              <div className="border-border from-foreground/10 shadow-glow absolute inset-0 rounded-3xl border bg-gradient-to-br via-transparent to-transparent" />
+              <HeroPackRip className="absolute inset-0" />
+            </div>
           </div>
+          <HeroSeriesShowcase />
         </div>
       </div>
     </section>
