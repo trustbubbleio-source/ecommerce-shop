@@ -70,7 +70,12 @@ export interface NavLink {
   to: string;
 }
 
-/** Category shortcuts nested under Buy in the header dropdown. */
+/** Top-level header entry: plain link or dropdown menu. */
+export type MainNavEntry =
+  | { kind: 'link'; label: string; to: string }
+  | { kind: 'menu'; id: string; label: string; items: NavLink[] };
+
+/** Category shortcuts under Buy in the mobile nav (desktop uses the shop sidebar). */
 export const SHOP_NAV: NavLink[] = [
   { label: 'All products', to: '/shop' },
   { label: 'Booster Boxes', to: '/shop?category=booster-box' },
@@ -78,12 +83,24 @@ export const SHOP_NAV: NavLink[] = [
   { label: 'Graded Slabs', to: '/shop?category=graded-slab' },
 ];
 
-export const MAIN_NAV: NavLink[] = [
-  { label: 'Buy', to: '/shop' },
-  { label: 'Sell', to: '/sell' },
+/** In-store / collector services under Services. */
+export const SERVICES_NAV: NavLink[] = [
+  { label: 'Grading Submission', to: '/services/grading-submission' },
+  { label: 'Card Restoration', to: '/services/card-restoration' },
+];
+
+/** Blog + social profiles under Socials. */
+export const SOCIALS_NAV: NavLink[] = [
   { label: 'Blog', to: '/blog' },
-  { label: 'Socials', to: '/socials' },
-  { label: 'Contact', to: '/contact' },
+  { label: 'Profiles', to: '/socials' },
+];
+
+export const MAIN_NAV: MainNavEntry[] = [
+  { kind: 'menu', id: 'buy', label: 'Buy', items: SHOP_NAV },
+  { kind: 'link', label: 'Sell', to: '/sell' },
+  { kind: 'menu', id: 'services', label: 'Services', items: SERVICES_NAV },
+  { kind: 'menu', id: 'socials', label: 'Socials', items: SOCIALS_NAV },
+  { kind: 'link', label: 'Contact', to: '/contact' },
 ];
 
 export interface CategoryTile {

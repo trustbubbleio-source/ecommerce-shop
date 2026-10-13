@@ -9,11 +9,12 @@ import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
 import type { SendEmailAttachment } from '../lib/email.js';
 import { requireAuth } from '../middleware/auth.js';
+import { rateLimit } from '../middleware/rate-limit.js';
 
 export function sellRoutes(deps: AppDeps) {
   const app = new Hono<AppEnv>();
 
-  app.post('/', requireAuth(), async (c) => {
+  app.post('/', rateLimit(deps.rateLimiter, 'sell'), requireAuth(), async (c) => {
     const user = c.get('user')!;
     const stored = await deps.users.findById(user.sub);
     if (!stored) return c.json({ error: 'Account not found' }, 401);

@@ -164,6 +164,43 @@ export class EmailService {
     });
   }
 
+  async sendRestorationSubmission(input: {
+    email: string;
+    notes: string;
+    packageLabel: string;
+    photoSlots: string[];
+    submissionId: string;
+    attachments?: SendEmailAttachment[];
+  }): Promise<SendEmailResult> {
+    return this.send({
+      to: this.env.email.contactInbox,
+      replyTo: input.email,
+      subject: `[Restoration] Assessment from ${input.email}`,
+      text: [
+        `From: ${input.email}`,
+        `Submission ID: ${input.submissionId}`,
+        `Package interest: ${input.packageLabel}`,
+        `Photos: ${input.photoSlots.join(', ') || 'none'}`,
+        '',
+        input.notes ? `Notes:\n${input.notes}\n` : '',
+        'Review this submission in Admin → Submissions.',
+      ].join('\n'),
+      html: `
+        <p><strong>From:</strong> ${escapeHtml(input.email)}</p>
+        <p><strong>Submission ID:</strong> ${escapeHtml(input.submissionId)}</p>
+        <p><strong>Package interest:</strong> ${escapeHtml(input.packageLabel)}</p>
+        <p><strong>Photos:</strong> ${escapeHtml(input.photoSlots.join(', ') || 'none')}</p>
+        ${
+          input.notes
+            ? `<p><strong>Notes:</strong></p><p style="white-space:pre-wrap">${escapeHtml(input.notes)}</p>`
+            : ''
+        }
+        <p style="color:#666;font-size:13px">Photos are attached when provided. Review in Admin → Submissions.</p>
+      `,
+      attachments: input.attachments,
+    });
+  }
+
   async sendWantListAlert(input: {
     name: string;
     email: string;

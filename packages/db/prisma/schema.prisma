@@ -375,6 +375,27 @@ model Favorite {
   @@map("favorites")
 }
 
+/** Public card restoration photo assessment (no account required). */
+model RestorationSubmission {
+  id               String   @id @default(cuid())
+  email            String
+  notes            String   @default("")
+  /** surface-clean | clean-prep | restore-press | unsure */
+  packageInterest  String   @default("unsure") @map("package_interest")
+  /** JSON: [{ slot: "front"|"back"|"closeup", key: string }] */
+  photos           Json
+  /** new | reviewing | quoted | closed */
+  status           String   @default("new")
+  adminNote        String?  @map("admin_note")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([email])
+  @@map("restoration_submissions")
+}
+
 /** Member sourcing request — what they want us to find / offer. */
 model WantListItem {
   id        String   @id @default(cuid())

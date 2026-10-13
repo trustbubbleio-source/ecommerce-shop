@@ -12,6 +12,10 @@ import type {
   SortKey,
   UpdateProfileInput,
   UserRole,
+  RestorationPackageId,
+  RestorationPhoto,
+  RestorationSubmission,
+  RestorationSubmissionStatus,
   WantListAdminItem,
   WantListItem,
 } from '@akknerds/shared';
@@ -153,4 +157,20 @@ export interface WantListRepository {
     id: string,
     input: { status: string; adminNote?: string | null },
   ): Promise<WantListAdminItem | undefined>;
+}
+
+export interface CreateRestorationSubmissionInput {
+  email: string;
+  notes: string;
+  packageInterest: RestorationPackageId;
+  photos: RestorationPhoto[];
+}
+
+export interface RestorationSubmissionRepository {
+  create(input: CreateRestorationSubmissionInput): Promise<RestorationSubmission>;
+  listAll(): Promise<RestorationSubmission[]>;
+  updateStatus(
+    id: string,
+    input: { status: RestorationSubmissionStatus; adminNote?: string | null },
+  ): Promise<RestorationSubmission | undefined>;
 }

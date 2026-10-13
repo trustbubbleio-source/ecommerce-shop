@@ -17,6 +17,7 @@ import { verifyGoogleIdToken } from '../lib/google-auth.js';
 import { signToken, verifyToken } from '../lib/jwt.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { requireAuth } from '../middleware/auth.js';
+import { rateLimit } from '../middleware/rate-limit.js';
 import {
   displayNameFromEmail,
   isEmailVerified,
@@ -51,7 +52,11 @@ export function authRoutes(deps: AppDeps) {
     }),
   );
 
-  app.post('/register', validate('json', registerInputSchema), async (c) => {
+  app.post(
+    '/register',
+    rateLimit(deps.rateLimiter, 'auth'),
+    validate('json', registerInputSchema),
+    async (c) => {
     const { email } = c.req.valid('json');
     const existing = await deps.users.findByEmail(email);
 
@@ -89,7 +94,8 @@ export function authRoutes(deps: AppDeps) {
     }
 
     return c.json({ ok: true, message: REGISTER_PENDING_MESSAGE }, 201);
-  });
+  },
+  );
 
   app.post('/verify-email', validate('json', verifyEmailInputSchema), async (c) => {
     const { token } = c.req.valid('json');
@@ -106,7 +112,11 @@ export function authRoutes(deps: AppDeps) {
     return c.json(await issueSession(user, deps.env.jwtSecret, !user.passwordHash));
   });
 
-  app.post('/login', validate('json', loginInputSchema), async (c) => {
+  app.post(
+    '/login',
+    rateLimit(deps.rateLimiter, 'auth'),
+    validate('json', loginInputSchema),
+    async (c) => {
     const { email, password } = c.req.valid('json');
     const user = await deps.users.findByEmail(email);
     if (!user || !(await verifyPassword(password, user.passwordHash))) {
@@ -122,9 +132,14 @@ export function authRoutes(deps: AppDeps) {
       );
     }
     return c.json(await issueSession(user, deps.env.jwtSecret));
-  });
+  },
+  );
 
-  app.post('/google', validate('json', googleAuthInputSchema), async (c) => {
+  app.post(
+    '/google',
+    rateLimit(deps.rateLimiter, 'auth'),
+    validate('json', googleAuthInputSchema),
+    async (c) => {
     if (!deps.env.google.enabled) {
       return c.json({ error: 'Google sign-in is not configured.' }, 503);
     }
@@ -156,7 +171,8 @@ export function authRoutes(deps: AppDeps) {
     }
 
     return c.json(await issueSession(user, deps.env.jwtSecret));
-  });
+  },
+  );
 
   app.post('/set-password', requireAuth(), validate('json', setPasswordInputSchema), async (c) => {
     const payload = c.get('user')!;
@@ -192,7 +208,11 @@ export function authRoutes(deps: AppDeps) {
     return c.json({ user: toPublicUser(user) });
   });
 
-  app.post('/forgot-password', validate('json', forgotPasswordInputSchema), async (c) => {
+  app.post(
+    '/forgot-password',
+    rateLimit(deps.rateLimiter, 'authSensitive'),
+    validate('json', forgotPasswordInputSchema),
+    async (c) => {
     const { email } = c.req.valid('json');
     const user = await deps.users.findByEmail(email);
 
@@ -232,9 +252,14 @@ export function authRoutes(deps: AppDeps) {
     }
 
     return c.json({ ok: true, message: FORGOT_OK_MESSAGE });
-  });
+  },
+  );
 
-  app.post('/reset-password', validate('json', resetPasswordInputSchema), async (c) => {
+  app.post(
+    '/reset-password',
+    rateLimit(deps.rateLimiter, 'authSensitive'),
+    validate('json', resetPasswordInputSchema),
+    async (c) => {
     const { token, password } = c.req.valid('json');
     const payload = await verifyToken(token, deps.env.jwtSecret, 'password-reset');
     if (!payload) {
@@ -251,7 +276,8 @@ export function authRoutes(deps: AppDeps) {
       ok: true,
       message: 'Password updated. You can sign in with your new password.',
     });
-  });
+  },
+  );
 
   app.get('/me', requireAuth(), async (c) => {
     const payload = c.get('user')!;

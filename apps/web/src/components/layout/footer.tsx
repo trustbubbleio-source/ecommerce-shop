@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import footerLogo from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
-import { SHOP_NAV, SITE } from '../../config/site';
+import { SERVICES_NAV, SHOP_NAV, SOCIALS_NAV, SITE } from '../../config/site';
 
 const SHOP_LINKS = SHOP_NAV.filter((link) => link.to !== '/shop');
 
@@ -19,9 +19,9 @@ const LEGAL_LINKS = [
 
 const COMPANY_LINKS = [
   { label: 'Sell to us', to: '/sell' },
-  { label: 'Socials', to: '/socials' },
+  ...SERVICES_NAV,
+  ...SOCIALS_NAV,
   { label: 'Looking for partners', to: '/partners' },
-  { label: 'Blog', to: '/blog' },
 ];
 
 export function Footer() {

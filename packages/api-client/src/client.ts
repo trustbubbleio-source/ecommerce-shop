@@ -23,11 +23,13 @@ import type {
   UpdateProductInput,
   UpdateProfileInput,
   UpdateWantListStatusInput,
+  UpdateRestorationStatusInput,
   CancelOrderInput,
   UpdateOrderFulfillmentInput,
   VerifyEmailInput,
   WantListAdminItem,
   WantListItem,
+  RestorationSubmissionAdmin,
 } from '@akknerds/shared';
 import { ApiError } from './error.js';
 import { toQueryString } from './query.js';
@@ -108,6 +110,9 @@ export interface ApiClient {
   contact(input: ContactInput): Promise<{ ok: boolean; message: string }>;
   subscribeNewsletter(input: NewsletterSubscribeInput): Promise<{ ok: boolean; message: string }>;
   submitSellRequest(formData: FormData): Promise<{ ok: boolean; message: string }>;
+  submitRestorationRequest(
+    formData: FormData,
+  ): Promise<{ ok: boolean; message: string; id: string }>;
   listWantList(): Promise<{ items: WantListItem[] }>;
   createWantListItem(input: CreateWantListItemInput): Promise<{ item: WantListItem }>;
   removeWantListItem(id: string): Promise<{ ok: boolean }>;
@@ -116,6 +121,11 @@ export interface ApiClient {
     id: string,
     input: UpdateWantListStatusInput,
   ): Promise<{ item: WantListAdminItem }>;
+  adminListRestorationSubmissions(): Promise<{ items: RestorationSubmissionAdmin[] }>;
+  adminUpdateRestorationSubmission(
+    id: string,
+    input: UpdateRestorationStatusInput,
+  ): Promise<{ item: RestorationSubmissionAdmin }>;
   adminListOrders(): Promise<{ orders: Order[] }>;
   adminGetOrder(id: string): Promise<{ order: Order }>;
   adminUpdateOrder(
@@ -284,6 +294,9 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     submitSellRequest(formData) {
       return uploadRequest('/sell', formData);
     },
+    submitRestorationRequest(formData) {
+      return uploadRequest('/restoration', formData);
+    },
     listWantList() {
       return request('/want-list');
     },
@@ -298,6 +311,15 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     },
     adminUpdateWantListItem(id, input) {
       return request(`/admin/want-list/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify(input),
+      });
+    },
+    adminListRestorationSubmissions() {
+      return request('/admin/restoration');
+    },
+    adminUpdateRestorationSubmission(id, input) {
+      return request(`/admin/restoration/${encodeURIComponent(id)}`, {
         method: 'PATCH',
         body: JSON.stringify(input),
       });

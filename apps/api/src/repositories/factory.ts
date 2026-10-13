@@ -6,6 +6,7 @@ import type {
   ProductReviewRepository,
   UserRepository,
   NewsletterRepository,
+  RestorationSubmissionRepository,
   WantListRepository,
 } from './interfaces.js';
 import { FavoriteRepository as MemoryFavoriteRepository } from './favorites.js';
@@ -14,6 +15,7 @@ import { ProductRepository as MemoryProductRepository } from './products.js';
 import { ProductReviewRepository as MemoryProductReviewRepository } from './reviews.js';
 import { UserRepository as MemoryUserRepository } from './users.js';
 import { MemoryNewsletterRepository } from './newsletter.js';
+import { RestorationSubmissionRepository as MemoryRestorationSubmissionRepository } from './restoration.js';
 import { WantListRepository as MemoryWantListRepository } from './want-list.js';
 import { PrismaFavoriteRepository } from './prisma/favorites.js';
 import { PrismaOrderRepository } from './prisma/orders.js';
@@ -21,6 +23,7 @@ import { PrismaProductRepository } from './prisma/products.js';
 import { PrismaProductReviewRepository } from './prisma/reviews.js';
 import { PrismaUserRepository } from './prisma/users.js';
 import { PrismaNewsletterRepository } from './prisma/newsletter.js';
+import { PrismaRestorationSubmissionRepository } from './prisma/restoration.js';
 import { PrismaWantListRepository } from './prisma/want-list.js';
 
 export interface DataRepositories {
@@ -31,6 +34,7 @@ export interface DataRepositories {
   reviews: ProductReviewRepository;
   wantList: WantListRepository;
   newsletter: NewsletterRepository;
+  restorationSubmissions: RestorationSubmissionRepository;
 }
 
 export function createMemoryRepositories(): DataRepositories {
@@ -44,6 +48,7 @@ export function createMemoryRepositories(): DataRepositories {
     reviews: new MemoryProductReviewRepository(users),
     wantList: new MemoryWantListRepository(users),
     newsletter: new MemoryNewsletterRepository(),
+    restorationSubmissions: new MemoryRestorationSubmissionRepository(),
   };
 }
 
@@ -57,6 +62,7 @@ export function createRepositories(env: Env): DataRepositories {
       reviews: new PrismaProductReviewRepository(),
       wantList: new PrismaWantListRepository(),
       newsletter: new PrismaNewsletterRepository(),
+      restorationSubmissions: new PrismaRestorationSubmissionRepository(),
     };
   }
   return createMemoryRepositories();

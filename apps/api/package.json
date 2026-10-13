@@ -16,6 +16,7 @@
     "@akknerds/card-fetcher": "workspace:*",
     "@akknerds/db": "workspace:*",
     "@akknerds/price-fetcher": "workspace:*",
+    "@akknerds/rate-limit": "workspace:*",
     "@akknerds/shared": "workspace:*",
     "@aws-sdk/client-s3": "^3.758.0",
     "@hono/node-server": "^1.13.7",

@@ -2,11 +2,16 @@ import { newsletterSubscribeInputSchema } from '@akknerds/shared';
 import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
 import { validate } from '../lib/http.js';
+import { rateLimit } from '../middleware/rate-limit.js';
 
 export function newsletterRoutes(deps: AppDeps) {
   const app = new Hono<AppEnv>();
 
-  app.post('/', validate('json', newsletterSubscribeInputSchema), async (c) => {
+  app.post(
+    '/',
+    rateLimit(deps.rateLimiter, 'newsletter'),
+    validate('json', newsletterSubscribeInputSchema),
+    async (c) => {
     const { email } = c.req.valid('json');
     let created = false;
     try {
@@ -29,7 +34,8 @@ export function newsletterRoutes(deps: AppDeps) {
       ok: true,
       message: "You're on the list. Watch your inbox for drops and restocks.",
     });
-  });
+  },
+  );
 
   return app;
 }

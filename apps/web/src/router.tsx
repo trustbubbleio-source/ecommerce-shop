@@ -10,6 +10,7 @@ import { AccountOrdersPage } from './pages/account/orders';
 import { AccountProfilePage } from './pages/account/profile';
 import { AccountSettingsPage } from './pages/account/settings';
 import { AccountWantListPage } from './pages/account/want-list';
+import { AdminSubmissionsPage } from './pages/admin/submissions';
 import { AdminWantListPage } from './pages/admin/want-list';
 import { AdminOrdersPage } from './pages/admin/orders';
 import { AdminOrderDetailPage } from './pages/admin/order-detail';
@@ -38,6 +39,8 @@ import { ReturnsPage } from './pages/returns';
 import { ShippingPage } from './pages/shipping';
 import { ShopPage } from './pages/shop';
 import { SellPage } from './pages/sell';
+import { CardRestorationPage } from './pages/services/card-restoration';
+import { GradingSubmissionPage } from './pages/services/grading-submission';
 import { SocialsPage } from './pages/socials';
 import { TermsPage } from './pages/terms';
 
@@ -81,6 +84,8 @@ export const routes: RouteObject[] = [
       { path: 'socials', element: <SocialsPage /> },
       { path: 'blog', element: <BlogPage /> },
       { path: 'blog/:slug', element: <BlogPostPage /> },
+      { path: 'services/grading-submission', element: <GradingSubmissionPage /> },
+      { path: 'services/card-restoration', element: <CardRestorationPage /> },
       { path: 'faq', element: <FaqPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
@@ -96,6 +101,7 @@ export const routes: RouteObject[] = [
           { path: 'orders', element: <AdminOrdersPage /> },
           { path: 'orders/:orderId', element: <AdminOrderDetailPage /> },
           { path: 'want-list', element: <AdminWantListPage /> },
+          { path: 'submissions', element: <AdminSubmissionsPage /> },
           { path: 'new', element: <AdminNewProductPage /> },
           { path: 'products/:id', element: <AdminEditProductPage /> },
         ],

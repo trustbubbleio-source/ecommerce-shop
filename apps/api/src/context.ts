@@ -1,3 +1,4 @@
+import type { MemoryRateLimiter } from '@akknerds/rate-limit';
 import type { Env } from './env.js';
 import type { EmailService } from './lib/email.js';
 import type { TokenPayload } from './lib/jwt.js';
@@ -10,6 +11,7 @@ import type {
   ProductReviewRepository,
   UserRepository,
   NewsletterRepository,
+  RestorationSubmissionRepository,
   WantListRepository,
 } from './repositories/interfaces.js';
 
@@ -23,9 +25,11 @@ export interface AppDeps {
   reviews: ProductReviewRepository;
   wantList: WantListRepository;
   newsletter: NewsletterRepository;
+  restorationSubmissions: RestorationSubmissionRepository;
   payments: PaymentService;
   storage: StorageService;
   email: EmailService;
+  rateLimiter: MemoryRateLimiter;
 }
 
 /** Hono context variables available to handlers and middleware. */

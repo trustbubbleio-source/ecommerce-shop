@@ -91,6 +91,11 @@ export class StorageService {
     return this.uploadOne(file, key);
   }
 
+  /** Upload a restoration assessment photo under restorations/. */
+  async uploadRestorationImage(file: UploadableFile, key: string): Promise<string> {
+    return this.uploadOne(file, key);
+  }
+
   private async uploadOne(file: UploadableFile, keyOverride?: string): Promise<string> {
     if (!this.client) {
       throw new Error('Object storage is not configured');

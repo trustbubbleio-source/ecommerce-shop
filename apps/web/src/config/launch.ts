@@ -20,6 +20,8 @@ export const PRELAUNCH = {
     'One More Rip opens its online shop and physical store on October 31, 2026. Browse the catalogue now, purchases unlock on launch day.',
   /** S3/CloudFront object key for the storefront photo on the home announcement. */
   storeImage: 'storeImageFront.png',
+  /** S3/CloudFront object key for the looping store video on the home hero. */
+  storeVideo: 'store.MP4',
 } as const;
 
 export function isPrelaunchActive(): boolean {

@@ -1,5 +1,5 @@
 import { Button, cn } from '@akknerds/ui';
-import { ClipboardList, LayoutDashboard, LogOut, Package, Store } from 'lucide-react';
+import { ClipboardList, LayoutDashboard, LogOut, Package, Sparkles, Store } from 'lucide-react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth';
 
@@ -62,6 +62,20 @@ export function AdminLayout() {
               >
                 <ClipboardList className="size-3.5" />
                 Want list
+              </NavLink>
+              <NavLink
+                to="/admin/submissions"
+                className={({ isActive }) =>
+                  cn(
+                    'inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium',
+                    isActive
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )
+                }
+              >
+                <Sparkles className="size-3.5" />
+                Submissions
               </NavLink>
             </nav>
           </div>

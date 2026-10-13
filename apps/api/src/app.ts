@@ -1,3 +1,4 @@
+import { MemoryRateLimiter } from '@akknerds/rate-limit';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { HTTPException } from 'hono/http-exception';
@@ -18,6 +19,10 @@ import { newsletterRoutes } from './routes/newsletter.js';
 import { favoriteRoutes } from './routes/favorites.js';
 import { orderRoutes } from './routes/orders.js';
 import { productRoutes } from './routes/products.js';
+import {
+  adminRestorationRoutes,
+  restorationRoutes,
+} from './routes/restoration.js';
 import { sellRoutes } from './routes/sell.js';
 import { adminWantListRoutes, wantListRoutes } from './routes/want-list.js';
 import { webhookRoutes } from './routes/webhooks.js';
@@ -40,9 +45,11 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
     reviews: overrides.reviews ?? memory.reviews,
     wantList: overrides.wantList ?? memory.wantList,
     newsletter: overrides.newsletter ?? memory.newsletter,
+    restorationSubmissions: overrides.restorationSubmissions ?? memory.restorationSubmissions,
     payments: overrides.payments ?? new PaymentService(env),
     storage: overrides.storage ?? new StorageService(env.storage),
     email: overrides.email ?? new EmailService(env),
+    rateLimiter: overrides.rateLimiter ?? new MemoryRateLimiter(),
   };
 
   const app = new Hono<AppEnv>();
@@ -74,6 +81,8 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
   api.route('/contact', contactRoutes(deps));
   api.route('/newsletter', newsletterRoutes(deps));
   api.route('/sell', sellRoutes(deps));
+  api.route('/restoration', restorationRoutes(deps));
+  api.route('/admin/restoration', adminRestorationRoutes(deps));
   api.route('/want-list', wantListRoutes(deps));
   api.route('/admin/want-list', adminWantListRoutes(deps));
   api.route('/webhooks', webhookRoutes(deps));

@@ -35,6 +35,9 @@ importers:
       '@akknerds/price-fetcher':
         specifier: workspace:*
         version: link:../../packages/price-fetcher
+      '@akknerds/rate-limit':
+        specifier: workspace:*
+        version: link:../../packages/rate-limit
       '@akknerds/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -377,6 +380,18 @@ importers:
       tsx:
         specifier: ^4.19.2
         version: 4.22.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.0)(jsdom@25.0.1)
+
+  packages/rate-limit:
+    devDependencies:
+      '@vitest/coverage-v8':
+        specifier: ^2.1.8
+        version: 2.1.9(vitest@2.1.9(@types/node@22.20.0)(jsdom@25.0.1))
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
