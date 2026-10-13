@@ -35,6 +35,8 @@ export const SITE = {
     country: 'Sweden',
     /** Single-line address for display */
     line: 'Hallandsvägen 21, 269 36 Båstad, Sweden',
+    /** Google Maps place for One More Rip (Open in Maps / home storefront). */
+    mapsUrl: 'https://maps.app.goo.gl/GB5yztXk94jZYEqAA',
     /** Approx. pin for Contact map (Hallandsvägen / Malen, Båstad). */
     lat: 56.4294,
     lng: 12.8478,

@@ -3,9 +3,6 @@ import { useEffect, useRef } from 'react';
 import { SITE } from '../../config/site';
 import { CARTO_ATTRIBUTION, cartoDarkTileUrl } from '../../lib/carto-tiles';
 
-const MAPS_QUERY = encodeURIComponent(SITE.store.line);
-const MAPS_LINK = `https://www.google.com/maps/search/?api=1&query=${MAPS_QUERY}`;
-
 /**
  * Dark interactive map (Leaflet + Carto dark tiles). Loaded only when mounted
  * so Leaflet stays out of the main shop bundle.
@@ -80,7 +77,7 @@ export function StoreMap() {
         {SITE.store.city}, Sweden
       </div>
       <a
-        href={MAPS_LINK}
+        href={SITE.store.mapsUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="text-muted-foreground hover:text-foreground border-border relative z-10 flex items-center justify-center gap-1.5 border-t bg-card/80 px-3 py-2.5 text-xs font-medium backdrop-blur-sm"

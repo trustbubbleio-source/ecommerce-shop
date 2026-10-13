@@ -59,7 +59,13 @@ function LaunchAnnouncement() {
           </div>
 
           {storeImage && (
-            <div className="group relative min-h-[18rem] overflow-hidden sm:min-h-[22rem] lg:min-h-full">
+            <a
+              href={SITE.store.mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative block min-h-[18rem] overflow-hidden sm:min-h-[22rem] lg:min-h-full"
+              aria-label={`Open ${SITE.name} in Google Maps`}
+            >
               <img
                 src={storeImage}
                 alt={`${SITE.name} storefront in ${SITE.store.city}`}
@@ -77,8 +83,11 @@ function LaunchAnnouncement() {
                 <p className="text-lg font-bold text-white drop-shadow-sm">
                   {SITE.store.city}, Sweden
                 </p>
+                <p className="mt-1 text-xs font-medium text-white/75 underline-offset-2 group-hover:underline">
+                  Open in Google Maps
+                </p>
               </div>
-            </div>
+            </a>
           )}
         </div>
       </div>
