@@ -1,18 +1,30 @@
 import { Button } from '@akknerds/ui';
 import { resolveAssetUrl } from '@akknerds/shared';
 import { ArrowRight } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Pokeball } from '../common/pokeball';
 import { PRELAUNCH } from '../../config/launch';
 
+/** Slightly under 1 so the store loop feels calmer without looking “slow-mo”. */
+const HERO_PLAYBACK_RATE = 0.9;
+
 /** Full-bleed looping store video hero for the home page. */
 export function HeroVideo() {
   const videoUrl = resolveAssetUrl(PRELAUNCH.storeVideo, import.meta.env.VITE_ASSET_CDN_URL);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.playbackRate = HERO_PLAYBACK_RATE;
+  }, [videoUrl]);
 
   return (
     <section className="border-border relative isolate overflow-hidden border-b">
       {videoUrl ? (
         <video
+          ref={videoRef}
           className="absolute inset-0 size-full object-cover"
           autoPlay
           muted
@@ -20,6 +32,9 @@ export function HeroVideo() {
           playsInline
           preload="metadata"
           aria-hidden="true"
+          onLoadedMetadata={(e) => {
+            e.currentTarget.playbackRate = HERO_PLAYBACK_RATE;
+          }}
         >
           <source src={videoUrl} type="video/mp4" />
         </video>

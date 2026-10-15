@@ -25,4 +25,12 @@ describe('ChatWidget', () => {
       expect(screen.getByText(/dispatched the same day/i)).toBeInTheDocument();
     });
   });
+
+  it('hides on login, register, and contact routes', () => {
+    for (const route of ['/login', '/register', '/contact'] as const) {
+      const { unmount } = renderWithProviders(<ChatWidget />, { route });
+      expect(screen.queryByRole('button', { name: 'Open chat help' })).not.toBeInTheDocument();
+      unmount();
+    }
+  });
 });

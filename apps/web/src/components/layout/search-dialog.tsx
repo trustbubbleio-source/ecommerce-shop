@@ -9,6 +9,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { CATEGORY_TILES } from '../../config/site';
+import { useBodyScrollLock } from '../../hooks/use-body-scroll-lock';
 import { useFormatMoney } from '../../hooks/use-format-money';
 import { useProducts } from '../../hooks/use-products';
 
@@ -85,14 +86,13 @@ export function SearchDialog() {
     { enabled: open && canSearch },
   );
 
+  useBodyScrollLock(open);
+
   useEffect(() => {
     if (!open) {
       setQuery('');
       return;
     }
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
 
     const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 0);
 
@@ -106,7 +106,6 @@ export function SearchDialog() {
 
     window.addEventListener('keydown', onKeyDown, true);
     return () => {
-      document.body.style.overflow = previousOverflow;
       window.clearTimeout(focusTimer);
       window.removeEventListener('keydown', onKeyDown, true);
       triggerRef.current?.focus();

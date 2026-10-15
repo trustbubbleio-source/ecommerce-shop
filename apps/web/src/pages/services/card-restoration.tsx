@@ -177,7 +177,11 @@ export function CardRestorationPage() {
                 decoding="async"
               />
               <div
-                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent lg:bg-gradient-to-l lg:from-transparent lg:via-black/15 lg:to-black/35"
+                className="pointer-events-none absolute inset-0 bg-black/25"
+                aria-hidden
+              />
+              <div
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent lg:bg-gradient-to-l lg:from-transparent lg:via-black/20 lg:to-black/40"
                 aria-hidden
               />
               <figcaption className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
