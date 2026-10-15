@@ -17,8 +17,8 @@ describe('toProductWhere', () => {
     });
     expect(where).toEqual({
       AND: [
-        { category: 'booster-box' },
-        { series: 'Scarlet & Violet' },
+        { category: 'booster_box' },
+        { series: 'scarlet_and_violet' },
         { stock: { gt: 0 } },
         { language: 'english' },
         { price: { gte: 1000, lte: 20000 } },

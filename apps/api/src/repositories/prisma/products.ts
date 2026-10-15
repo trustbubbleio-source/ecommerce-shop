@@ -1,4 +1,4 @@
-import { fromProduct, prisma, toProduct } from '@akknerds/db';
+import { fromPrismaCategory, fromProduct, prisma, toProduct } from '@akknerds/db';
 import {
   PRODUCT_CATEGORIES,
   PRODUCT_SERIES,
@@ -123,7 +123,10 @@ export class PrismaProductRepository implements ProductRepository {
         _max: { price: true },
       }),
     ]);
-    const countByCategory = new Map(grouped.map((row) => [row.category, row._count._all]));
+    // groupBy returns Prisma enum keys (booster_box); shop meta needs domain kebab-case.
+    const countByCategory = new Map(
+      grouped.map((row) => [fromPrismaCategory(row.category), row._count._all]),
+    );
     const categories = PRODUCT_CATEGORIES.map((value) => ({
       value,
       count: countByCategory.get(value) ?? 0,

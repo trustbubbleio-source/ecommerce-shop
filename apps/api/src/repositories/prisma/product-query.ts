@@ -1,3 +1,9 @@
+import {
+  toPrismaCategory,
+  toPrismaCondition,
+  toPrismaLanguage,
+  toPrismaSeries,
+} from '@akknerds/db';
 import type { SortKey } from '@akknerds/shared';
 import type { Prisma } from '@prisma/client';
 import type { AdminProductSortKey, ListOptions } from '../interfaces.js';
@@ -11,19 +17,20 @@ export function toProductWhere(
   const and: Prisma.ProductWhereInput[] = [];
 
   if (filter.category && filter.category !== 'all') {
-    and.push({ category: filter.category });
+    // Domain uses kebab-case; Prisma client expects enum member keys (booster_box).
+    and.push({ category: toPrismaCategory(filter.category) });
   }
   if (filter.series) {
-    and.push({ series: filter.series as Prisma.EnumProductSeriesFilter['equals'] });
+    and.push({ series: toPrismaSeries(filter.series) });
   }
   if (filter.inStockOnly) {
     and.push({ stock: { gt: 0 } });
   }
   if (filter.language) {
-    and.push({ language: filter.language });
+    and.push({ language: toPrismaLanguage(filter.language) });
   }
   if (filter.condition) {
-    and.push({ condition: filter.condition });
+    and.push({ condition: toPrismaCondition(filter.condition) });
   }
   if (typeof filter.minPrice === 'number' || typeof filter.maxPrice === 'number') {
     and.push({
