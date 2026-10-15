@@ -55,7 +55,7 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 | H6 | **`GET /api/health` discloses modes** | ✅ Fixed in code | Public `{ status: "ok" }`; `/health/details` admin-only. | Was: mock/misconfig leak. | Deploy. |
 | H7 | **Missing security headers** | ✅ Partial (API) | API: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`. | WWW still needs HSTS/CSP via Railway/CDN. | Add HSTS/CSP on web edge. |
 | H8 | **Eager JS ships all routes including admin** | ✅ Fixed in code | Admin / legal / account / services lazy-loaded via `React.lazy`. | — | Deploy web. |
-| H9 | **Home hero video cost** | ✅ Fixed in code | Reduced-motion → poster; play only when in view; `preload="none"`. | — | Deploy web. |
+| H9 | **Home hero video cost** | ⏪ Reverted | Autoplay loop restored (in-view/poster change hid video on prod). | — | Revisit reduced-motion later without breaking autoplay. |
 | H10 | **Full catalog loaded then filtered in memory** | ✅ Fixed in code | Prisma `listPage` uses WHERE/ORDER/LIMIT; search via SQL ILIKE; list indexes added. | — | Deploy (migration runs on API preDeploy). |
 
 ---

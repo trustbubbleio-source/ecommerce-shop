@@ -1,89 +1,28 @@
 import { Button } from '@akknerds/ui';
 import { resolveAssetUrl } from '@akknerds/shared';
 import { ArrowRight } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Pokeball } from '../common/pokeball';
 import { PRELAUNCH } from '../../config/launch';
 
-function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    if (typeof window.matchMedia !== 'function') return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (!mq || typeof mq.matches !== 'boolean') return;
-    const onChange = () => setReduced(mq.matches);
-    onChange();
-    mq.addEventListener?.('change', onChange);
-    return () => mq.removeEventListener?.('change', onChange);
-  }, []);
-
-  return reduced;
-}
-
 /** Full-bleed looping store video hero for the home page. */
 export function HeroVideo() {
   const videoUrl = resolveAssetUrl(PRELAUNCH.storeVideo, import.meta.env.VITE_ASSET_CDN_URL);
-  const posterUrl = resolveAssetUrl(PRELAUNCH.storeImage, import.meta.env.VITE_ASSET_CDN_URL);
-  const reducedMotion = usePrefersReducedMotion();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [inView, setInView] = useState(false);
-
-  useEffect(() => {
-    const el = videoRef.current;
-    if (!el || reducedMotion || !videoUrl) return;
-
-    if (typeof IntersectionObserver === 'undefined') {
-      setInView(true);
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      ([entry]) => setInView(Boolean(entry?.isIntersecting)),
-      { rootMargin: '80px', threshold: 0.15 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [reducedMotion, videoUrl]);
-
-  useEffect(() => {
-    const el = videoRef.current;
-    if (!el || reducedMotion) return;
-    if (inView) {
-      void el.play().catch(() => {});
-    } else {
-      try {
-        el.pause();
-      } catch {
-        /* jsdom lacks HTMLMediaElement.pause */
-      }
-    }
-  }, [inView, reducedMotion]);
-
-  const showVideo = Boolean(videoUrl) && !reducedMotion;
 
   return (
     <section className="border-border relative isolate overflow-hidden border-b">
-      {showVideo ? (
+      {videoUrl ? (
         <video
-          ref={videoRef}
           className="absolute inset-0 size-full object-cover"
+          autoPlay
           muted
           loop
           playsInline
-          preload="none"
-          poster={posterUrl || undefined}
+          preload="metadata"
           aria-hidden="true"
         >
-          <source src={videoUrl!} type="video/mp4" />
+          <source src={videoUrl} type="video/mp4" />
         </video>
-      ) : posterUrl ? (
-        <div
-          className="absolute inset-0 size-full bg-cover bg-center"
-          style={{ backgroundImage: `url(${posterUrl})` }}
-          aria-hidden="true"
-        />
       ) : (
         <div className="bg-secondary absolute inset-0" aria-hidden="true" />
       )}
