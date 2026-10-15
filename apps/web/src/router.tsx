@@ -14,13 +14,14 @@ import { NotFoundPage } from './pages/not-found';
 import { RegisterPage } from './pages/register';
 import { ShopPage } from './pages/shop';
 
-function lazyNamed<T extends Record<string, ComponentType>>(
-  loader: () => Promise<T>,
-  exportName: keyof T & string,
-) {
+function lazyNamed(loader: () => Promise<Record<string, unknown>>, exportName: string) {
   const Page = lazy(async () => {
     const mod = await loader();
-    return { default: mod[exportName] };
+    const Comp = mod[exportName];
+    if (typeof Comp !== 'function' && (typeof Comp !== 'object' || Comp === null)) {
+      throw new Error(`Missing page export "${exportName}"`);
+    }
+    return { default: Comp as ComponentType };
   });
   return (
     <Suspense
