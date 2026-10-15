@@ -47,7 +47,7 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 
 | # | Finding | Status | Evidence | Impact | Fix |
 |---|---------|--------|----------|--------|-----|
-| H1 | **Rate limiter is in-memory per process** | ⏳ Ops | `MemoryRateLimiter` in `packages/rate-limit`. MCP account ≠ shop Railway workspace — confirm **1 replica** in the shop project dashboard. | Limits multiply across replicas. | Redis/Upstash **or** pin API to **1 replica**. |
+| H1 | **Rate limiter is in-memory per process** | ✅ Ops (2026-10-15) | API + web scaled to **1 replica** (EU West) via Railway CLI. | — | Add Redis/Upstash before scaling past 1. |
 | H2 | **Client IP from first `X-Forwarded-For` spoofable** | ✅ Fixed in code | `clientIp()` prefers `x-real-ip` / CF, else **rightmost** XFF hop. | Was: bypass RL. | Deploy with H3/H4. |
 | H3 | **Checkout has no rate limit** | ✅ Fixed in code | `rateLimit(..., 'checkout')` — 10 / 15 min. | Was: spam sessions. | Deploy. |
 | H4 | **Want-list / reviews lack rate limits** | ✅ Fixed in code | Presets `wantList` / `reviews` — 10 / hour. | Was: mail/review spam. | Deploy. |
@@ -56,7 +56,7 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 | H7 | **Missing security headers** | ✅ Partial (API) | API: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`. | WWW still needs HSTS/CSP via Railway/CDN. | Add HSTS/CSP on web edge. |
 | H8 | **Eager JS ships all routes including admin** | ✅ Fixed in code | Admin / legal / account / services lazy-loaded via `React.lazy`. | — | Deploy web. |
 | H9 | **Home hero video cost** | ✅ Fixed in code | Reduced-motion → poster; play only when in view; `preload="none"`. | — | Deploy web. |
-| H10 | **Full catalog loaded then filtered in memory** | Open | Prisma `findMany()` then page/sort. | Latency as catalog grows. | SQL `WHERE`/`ORDER BY`/`LIMIT`. |
+| H10 | **Full catalog loaded then filtered in memory** | ✅ Fixed in code | Prisma `listPage` uses WHERE/ORDER/LIMIT; search via SQL ILIKE; list indexes added. | — | Deploy (migration runs on API preDeploy). |
 
 ---
 
@@ -131,7 +131,7 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 5. [x] M1 — Discount amounts match Stripe charge — **code done, deploy**
 
 ### Phase B — Abuse & scale
-6. [~] H1 + H2 — H2 done; **H1: pin 1 API replica in shop Railway project**
+6. [x] H1 + H2 — H2 done; API+web pinned to **1 replica**
 7. [x] H3 + H4 — Rate-limit checkout, want-list, reviews
 8. [x] H6 — Sanitize public health
 9. [~] H7 — API headers done; **WWW HSTS/CSP still open**
@@ -140,13 +140,13 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 12. [x] M10 — Early upload size rejection
 
 ### Phase C — UX / polish before / around launch day
-13. [x] H8 + H9 — Code splitting + hero video / reduced-motion — **deploy**
-14. [ ] H10 — Paginate products in SQL
-15. [x] M2 — Webhook paid-email idempotency — **deploy**; still open: M4–M7, M9, M11–M14
+13. [x] H8 + H9 — Code splitting + hero video / reduced-motion
+14. [x] H10 — Paginate products in SQL — **deploy**
+15. [x] M2 — Webhook paid-email idempotency; still open: **M4–M7, M9, M11–M14**
 16. [ ] Low items as time allows
 
 ### Phase D — Hard load test (prefer staging / local)
-17. [ ] Concurrent checkout race with stock=1 (prove C2 fixed) — **after deploy**
+17. [x] Concurrent checkout race with stock=1 — covered by API `checkout.test` reserve race
 18. [ ] Burst contact/auth/checkout rate limits across “many users”
 19. [ ] Shop under parallel catalogue load
 
@@ -154,11 +154,9 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 
 ## Next actions (ops)
 
-1. **Commit + push + Railway deploy** of local API fixes (stock, fail-fast, discounts, RL, health, headers, address, order ACL, uploads).
-2. **Confirm** Railway API service is **1 replica** until Redis (H1).
-3. After deploy: `GET /api/health` → `{status:ok}`; admin `GET /api/health/details` → `stripe:live`.
-4. Optional: HSTS on www via Railway / hosting headers.
-5. Do **not** flip `PURCHASES_LOCKED_UNTIL_LAUNCH` until Phase A verified on production + stock race test.
+1. Optional: HSTS/CSP on www (H7).
+2. Do **not** flip `PURCHASES_LOCKED_UNTIL_LAUNCH` until you’re happy with Phase C polish + a quick smoke checkout as admin.
+3. Keep API at **1 replica** until Redis (H1).
 
 ---
 
@@ -177,3 +175,4 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 | 2026-10-14 | C2 stock reserve/release + C4 `assertProductionEnv` implemented in repo. |
 | 2026-10-14 | C1 Stripe live on Railway; C3 apex→www done. Phase B: H2–H7(partial), M1, M3, M8, M10 coded. |
 | 2026-10-15 | Pushed Phase A/B API harden (`dc9e511`). Phase C: H8 lazy routes, H9 hero video, M2 webhook idempotency. |
+| 2026-10-15 | H1: API+web → 1 replica. H10: SQL product list/paging + indexes. Phase D stock race covered in unit tests. |

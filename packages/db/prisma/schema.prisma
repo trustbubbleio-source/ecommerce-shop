@@ -339,6 +339,12 @@ model Product {
   @@index([category])
   @@index([series])
   @@index([featured])
+  @@index([price])
+  @@index([stock])
+  @@index([releaseDate])
+  @@index([rating])
+  @@index([language])
+  @@index([condition])
   @@map("products")
 }
 

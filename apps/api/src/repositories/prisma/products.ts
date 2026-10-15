@@ -17,6 +17,11 @@ import type {
   StockAdjustment,
 } from '../interfaces.js';
 import { pageProducts } from '../product-page.js';
+import {
+  needsInMemoryProductPage,
+  toProductOrderBy,
+  toProductWhere,
+} from './product-query.js';
 
 export class PrismaProductRepository implements ProductRepository {
   private async loadProducts(): Promise<Product[]> {
@@ -24,8 +29,56 @@ export class PrismaProductRepository implements ProductRepository {
     return rows.map(toProduct);
   }
 
+  /**
+   * IDs matching the shared search haystack (name/set/series/artist/tags/id/card#).
+   * Returns `null` when there is no search term.
+   */
+  private async searchProductIds(search: string | undefined): Promise<string[] | null> {
+    const q = search?.trim();
+    if (!q) return null;
+    const pattern = `%${q}%`;
+    const rows = await prisma.$queryRaw<{ id: string }[]>`
+      SELECT id FROM products
+      WHERE name ILIKE ${pattern}
+         OR slug ILIKE ${pattern}
+         OR id ILIKE ${pattern}
+         OR COALESCE(artist, '') ILIKE ${pattern}
+         OR COALESCE(card_number, '') ILIKE ${pattern}
+         OR description ILIKE ${pattern}
+         OR set_name::text ILIKE ${pattern}
+         OR series::text ILIKE ${pattern}
+         OR array_to_string(tags, ' ') ILIKE ${pattern}
+    `;
+    return rows.map((row) => row.id);
+  }
+
   async listPage(options: ListOptions = {}): Promise<ProductPage> {
-    return pageProducts(await this.loadProducts(), options);
+    // Admin "status" sort is a composite key — keep shared in-memory behaviour.
+    if (needsInMemoryProductPage(options)) {
+      return pageProducts(await this.loadProducts(), options);
+    }
+
+    const searchIds = await this.searchProductIds(options.filter?.search);
+    if (searchIds && searchIds.length === 0) {
+      return { products: [], total: 0 };
+    }
+
+    const where = toProductWhere(options, searchIds);
+    const orderBy = toProductOrderBy(options);
+    const offset = Math.max(0, options.offset ?? 0);
+    const take = typeof options.limit === 'number' ? Math.max(0, options.limit) : undefined;
+
+    const [total, rows] = await Promise.all([
+      prisma.product.count({ where }),
+      prisma.product.findMany({
+        where,
+        orderBy,
+        skip: offset,
+        ...(take !== undefined ? { take } : {}),
+      }),
+    ]);
+
+    return { products: rows.map(toProduct), total };
   }
 
   async list(options: ListOptions = {}): Promise<Product[]> {
@@ -41,24 +94,48 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async catalogStats() {
-    return computeCatalogStats(await this.loadProducts());
+    const rows = await prisma.$queryRaw<
+      Array<{ listings: bigint; units: bigint; value: bigint }>
+    >`
+      SELECT
+        COUNT(*)::bigint AS listings,
+        COALESCE(SUM(GREATEST(stock, 0)), 0)::bigint AS units,
+        COALESCE(SUM(price * GREATEST(stock, 0)), 0)::bigint AS value
+      FROM products
+    `;
+    const row = rows[0];
+    if (!row) return computeCatalogStats([]);
+    return {
+      listings: Number(row.listings),
+      unitsInStock: Number(row.units),
+      inventoryValueCents: Number(row.value),
+    };
   }
 
   async meta(): Promise<CatalogMeta> {
-    const products = await this.loadProducts();
+    const [grouped, priceAgg] = await Promise.all([
+      prisma.product.groupBy({
+        by: ['category'],
+        _count: { _all: true },
+      }),
+      prisma.product.aggregate({
+        _min: { price: true },
+        _max: { price: true },
+      }),
+    ]);
+    const countByCategory = new Map(grouped.map((row) => [row.category, row._count._all]));
     const categories = PRODUCT_CATEGORIES.map((value) => ({
       value,
-      count: products.filter((p) => p.category === value).length,
+      count: countByCategory.get(value) ?? 0,
     })).filter((c) => c.count > 0);
 
-    const prices = products.map((p) => p.price);
     return {
       categories,
       series: PRODUCT_SERIES,
       sets: PRODUCT_SETS,
       priceRange: {
-        min: prices.length ? Math.min(...prices) : 0,
-        max: prices.length ? Math.max(...prices) : 0,
+        min: priceAgg._min.price ?? 0,
+        max: priceAgg._max.price ?? 0,
       },
     };
   }
