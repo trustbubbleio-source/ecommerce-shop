@@ -1,3 +1,4 @@
+import { resolveAssetUrl } from '@akknerds/shared';
 import { Button } from '@akknerds/ui';
 import {
   ArrowRight,
@@ -15,6 +16,9 @@ import { Link } from 'react-router-dom';
 import { PageHeader } from '../../components/common/page-header';
 import { RestorationAssessmentForm } from '../../components/services/restoration-assessment-form';
 import { SITE } from '../../config/site';
+
+/** S3 object key — Angel cleaning a card in the workshop. */
+const WORKSHOP_CLEANING_IMAGE = 'angel-cleaning-iomg.jpg';
 
 const PACKAGES: {
   icon: typeof Droplets;
@@ -119,6 +123,11 @@ const STEPS = [
 ] as const;
 
 export function CardRestorationPage() {
+  const workshopPhoto = resolveAssetUrl(
+    WORKSHOP_CLEANING_IMAGE,
+    import.meta.env.VITE_ASSET_CDN_URL,
+  );
+
   return (
     <div className="container max-w-5xl py-8">
       <PageHeader
@@ -127,34 +136,64 @@ export function CardRestorationPage() {
       />
 
       <section className="border-border bg-card mb-12 overflow-hidden rounded-2xl border">
-        <div className="from-foreground/[0.05] relative bg-gradient-to-br via-transparent to-transparent px-6 py-10 sm:px-10 sm:py-12">
-          <div
-            className="bg-grid-faint pointer-events-none absolute inset-0 opacity-20 [background-size:28px_28px]"
-            aria-hidden
-          />
-          <div className="relative">
-            <p className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-[0.18em]">
-              Cleaning · Prep · Restoration
-            </p>
-            <h2 className="text-foreground max-w-2xl text-2xl font-extrabold tracking-tight sm:text-3xl">
-              Honest card care. No miracle grades, just better presentation.
-            </h2>
-            <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-relaxed sm:text-base">
-              We clean and restore by hand with a conservation mindset: improve what is safely
-              improvable, leave permanent damage alone, and tell you the difference up front. Photo
-              assessment is free; every card is quoted individually.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <a href="#assessment">
-                  Start photo assessment <ArrowRight />
-                </a>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/services/grading-submission">Grading submission</Link>
-              </Button>
+        <div className="relative grid lg:grid-cols-2">
+          <div className="from-foreground/[0.05] relative flex flex-col justify-center bg-gradient-to-br via-transparent to-transparent px-6 py-10 sm:px-10 sm:py-12">
+            <div
+              className="bg-grid-faint pointer-events-none absolute inset-0 opacity-20 [background-size:28px_28px]"
+              aria-hidden
+            />
+            <div className="relative">
+              <p className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-[0.18em]">
+                Cleaning · Prep · Restoration
+              </p>
+              <h2 className="text-foreground max-w-xl text-2xl font-extrabold tracking-tight sm:text-3xl">
+                Honest card care. No miracle grades, just better presentation.
+              </h2>
+              <p className="text-muted-foreground mt-4 max-w-xl text-sm leading-relaxed sm:text-base">
+                We clean and restore by hand with a conservation mindset: improve what is safely
+                improvable, leave permanent damage alone, and tell you the difference up front.
+                Photo assessment is free; every card is quoted individually.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button asChild size="lg">
+                  <a href="#assessment">
+                    Start photo assessment <ArrowRight />
+                  </a>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/services/grading-submission">Grading submission</Link>
+                </Button>
+              </div>
             </div>
           </div>
+
+          {workshopPhoto ? (
+            <figure className="relative min-h-[16rem] sm:min-h-[20rem] lg:min-h-full">
+              <img
+                src={workshopPhoto}
+                alt={`Hand cleaning a Pokémon card at the ${SITE.name} workshop in ${SITE.store.city}`}
+                className="absolute inset-0 size-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+              <div
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent lg:bg-gradient-to-l lg:from-transparent lg:via-black/15 lg:to-black/35"
+                aria-hidden
+              />
+              <figcaption className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+                  In the workshop
+                </p>
+                <p className="text-lg font-bold text-white drop-shadow-sm">
+                  Real hands. Careful work.
+                </p>
+                <p className="mt-1 max-w-sm text-sm text-white/80">
+                  Angel cleaning a card at our {SITE.store.city} store — the same careful process we
+                  use on every mail-in and drop-off.
+                </p>
+              </figcaption>
+            </figure>
+          ) : null}
         </div>
       </section>
 
