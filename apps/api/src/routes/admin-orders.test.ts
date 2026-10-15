@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { hashPassword } from '../lib/password.js';
 import { PaymentService, type StripeLike } from '../lib/payments.js';
-import { jsonRequest, makeApp, testEnv } from '../test/helpers.js';
+import { jsonRequest, makeApp, TEST_SHIPPING_ADDRESS, testEnv } from '../test/helpers.js';
 
 const adminCreds = { name: 'Admin', email: 'admin@test.local', password: 'adminpass123' };
 
@@ -34,7 +34,11 @@ describe('GET /api/admin/orders', () => {
       app,
       'POST',
       '/api/checkout',
-      { email: 'buyer@example.com', items: [{ productId: 'bb-151', quantity: 1 }] },
+      {
+        email: 'buyer@example.com',
+        items: [{ productId: 'bb-151', quantity: 1 }],
+        shippingAddress: TEST_SHIPPING_ADDRESS,
+      },
       { authorization: `Bearer ${token}` },
     );
     expect(checkout.res.status).toBe(201);
@@ -58,7 +62,11 @@ describe('GET /api/admin/orders', () => {
       app,
       'POST',
       '/api/checkout',
-      { email: 'buyer@example.com', items: [{ productId: 'bb-151', quantity: 1 }] },
+      {
+        email: 'buyer@example.com',
+        items: [{ productId: 'bb-151', quantity: 1 }],
+        shippingAddress: TEST_SHIPPING_ADDRESS,
+      },
       { authorization: `Bearer ${token}` },
     );
     const orderId = checkout.data.orderId as string;
@@ -104,6 +112,8 @@ describe('GET /api/admin/orders', () => {
       total: 1000,
       currency: 'eur',
     });
+    // Mirror checkout: stock is reserved when the order is created.
+    await deps.products.reserveStock([{ productId: 'bb-151', quantity: 1 }]);
 
     const { res, data } = await jsonRequest(
       app,
@@ -136,6 +146,7 @@ describe('GET /api/admin/orders', () => {
     const checkout = await jsonRequest(app, 'POST', '/api/checkout', {
       email: 'buyer@example.com',
       items: [{ productId: 'bb-151', quantity: 1 }],
+      shippingAddress: TEST_SHIPPING_ADDRESS,
     });
     const orderId = checkout.data.orderId as string;
 
@@ -160,6 +171,7 @@ describe('GET /api/admin/orders', () => {
     const checkout = await jsonRequest(app, 'POST', '/api/checkout', {
       email: 'buyer@example.com',
       items: [{ productId: 'bb-151', quantity: 1 }],
+      shippingAddress: TEST_SHIPPING_ADDRESS,
     });
     const orderId = checkout.data.orderId as string;
     await jsonRequest(
@@ -192,6 +204,7 @@ describe('GET /api/admin/orders', () => {
           retrieve: vi.fn().mockResolvedValue({ id: 'cs_live_cancel', payment_intent: 'pi_1' }),
         },
       },
+      coupons: { create: vi.fn().mockResolvedValue({ id: 'coup_test' }) },
       webhooks: { constructEvent: vi.fn() },
       refunds: { create: refund },
     } satisfies StripeLike);
@@ -201,6 +214,7 @@ describe('GET /api/admin/orders', () => {
     const checkout = await jsonRequest(app, 'POST', '/api/checkout', {
       email: 'buyer@example.com',
       items: [{ productId: 'bb-151', quantity: 1 }],
+      shippingAddress: TEST_SHIPPING_ADDRESS,
     });
     const orderId = checkout.data.orderId as string;
     await deps.orders.setStatus(orderId, 'paid');

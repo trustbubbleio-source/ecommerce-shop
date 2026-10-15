@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
+import { cancelOrderAndReleaseStock } from '../lib/inventory.js';
 import { clearWelcomeDiscountAfterPurchase } from '../lib/welcome-discount.js';
 import { notifyPaidOrder, notifyRefundedOrder } from '../lib/order-alert.js';
 import type { StripeCheckoutSessionLike } from '../lib/payments.js';
@@ -39,6 +40,19 @@ export function webhookRoutes(deps: AppDeps) {
       if (newlyPaid && order) await notifyPaidOrder(deps.email, deps.env, order);
     }
 
+    // Abandoned / expired Checkout — free reserved stock.
+    if (event.type === 'checkout.session.expired') {
+      const session = event.data.object as StripeCheckoutSessionLike;
+      const existing = await deps.orders.getByStripeSession(session.id);
+      if (existing?.status === 'pending') {
+        await cancelOrderAndReleaseStock(
+          deps,
+          existing.id,
+          'Stripe Checkout session expired before payment.',
+        );
+      }
+    }
+
     if (event.type === 'charge.refunded') {
       const charge = event.data.object as {
         metadata?: { orderId?: string };
@@ -52,8 +66,14 @@ export function webhookRoutes(deps: AppDeps) {
       if (orderId && charge.refunded === true) {
         const existing = await deps.orders.get(orderId);
         if (existing && existing.status !== 'cancelled' && !existing.cancelReason) {
-          const cancelled = await deps.orders.setStatus(orderId, 'cancelled');
-          if (cancelled && !adminCancel) await notifyRefundedOrder(deps.email, deps.env, cancelled);
+          const result = await cancelOrderAndReleaseStock(
+            deps,
+            orderId,
+            'Refunded via Stripe.',
+          );
+          if (result?.order && !adminCancel) {
+            await notifyRefundedOrder(deps.email, deps.env, result.order);
+          }
         }
       }
     }

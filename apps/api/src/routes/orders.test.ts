@@ -1,13 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 import { PaymentService } from '../lib/payments.js';
-import { jsonRequest, makeApp, registerAndLogin, testEnv } from '../test/helpers.js';
+import { jsonRequest, makeApp, registerAndLogin, TEST_SHIPPING_ADDRESS, testEnv } from '../test/helpers.js';
 
 async function placeOrder(app: ReturnType<typeof makeApp>['app'], token?: string) {
   const { data } = await jsonRequest(
     app,
     'POST',
     '/api/checkout',
-    { email: 'buyer@example.com', items: [{ productId: 'bb-151', quantity: 1 }] },
+    {
+      email: 'buyer@example.com',
+      items: [{ productId: 'bb-151', quantity: 1 }],
+      shippingAddress: TEST_SHIPPING_ADDRESS,
+    },
     token ? { authorization: `Bearer ${token}` } : {},
   );
   return data.orderId as string;
@@ -37,6 +41,14 @@ describe('GET /api/orders/:id', () => {
       authorization: `Bearer ${otherToken}`,
     });
     expect(res.status).toBe(403);
+  });
+
+  it('requires auth to read an account-linked order', async () => {
+    const created = makeApp();
+    const ownerToken = await registerAndLogin(created, 'owner2@a.com');
+    const orderId = await placeOrder(created.app, ownerToken);
+    const { res } = await jsonRequest(created.app, 'GET', `/api/orders/${orderId}`);
+    expect(res.status).toBe(401);
   });
 });
 
@@ -75,6 +87,8 @@ describe('GET /api/orders', () => {
           }),
         },
       },
+      // Welcome discount on new accounts needs a coupon when Stripe is live.
+      coupons: { create: vi.fn().mockResolvedValue({ id: 'coup_welcome' }) },
       webhooks: { constructEvent: vi.fn() },
     });
     const created = makeApp({ env, payments });

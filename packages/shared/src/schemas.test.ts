@@ -88,9 +88,28 @@ describe('addressSchema', () => {
   });
 });
 
+const shippingAddress = {
+  fullName: 'Ash Ketchum',
+  line1: '1 Pallet Lane',
+  city: 'Pallet Town',
+  postalCode: '00001',
+  country: 'Sweden',
+};
+
 describe('checkoutInputSchema', () => {
   it('requires at least one item', () => {
-    expect(checkoutInputSchema.safeParse({ items: [], email: 'a@b.com' }).success).toBe(false);
+    expect(
+      checkoutInputSchema.safeParse({ items: [], email: 'a@b.com', shippingAddress }).success,
+    ).toBe(false);
+  });
+
+  it('requires a shipping address', () => {
+    expect(
+      checkoutInputSchema.safeParse({
+        items: [{ productId: 'bb-151', quantity: 2 }],
+        email: 'buyer@example.com',
+      }).success,
+    ).toBe(false);
   });
 
   it('accepts a valid checkout payload', () => {
@@ -98,6 +117,7 @@ describe('checkoutInputSchema', () => {
       checkoutInputSchema.safeParse({
         items: [{ productId: 'bb-151', quantity: 2 }],
         email: 'buyer@example.com',
+        shippingAddress,
       }).success,
     ).toBe(true);
   });
@@ -107,6 +127,7 @@ describe('checkoutInputSchema', () => {
       checkoutInputSchema.safeParse({
         items: [{ productId: 'bb-151', quantity: 100 }],
         email: 'buyer@example.com',
+        shippingAddress,
       }).success,
     ).toBe(false);
   });

@@ -1,7 +1,7 @@
 import type { Order } from '@akknerds/shared';
 import { describe, expect, it, vi } from 'vitest';
 import { loadEnv } from '../env.js';
-import { PaymentService, type StripeLike } from './payments.js';
+import { orderDiscountCents, PaymentService, type StripeLike } from './payments.js';
 
 function makeOrder(overrides: Partial<Order> = {}): Order {
   return {
@@ -82,6 +82,25 @@ describe('PaymentService (live mode, injected client)', () => {
     });
     await service.createCheckout(makeOrder({ shipping: 0 }));
     expect(create.mock.calls[0]![0].line_items).toHaveLength(1);
+  });
+
+  it('creates a one-time Stripe coupon when the order total is discounted', async () => {
+    const createSession = vi.fn().mockResolvedValue({ id: 'cs', url: 'https://stripe.test/pay' });
+    const createCoupon = vi.fn().mockResolvedValue({ id: 'coup_10off' });
+    const service = new PaymentService(env, {
+      checkout: { sessions: { create: createSession } },
+      coupons: { create: createCoupon },
+      webhooks: { constructEvent: vi.fn() },
+    });
+    const order = makeOrder({ subtotal: 5000, shipping: 599, total: 5039 }); // 10% off goods+ship
+    expect(orderDiscountCents(order)).toBe(560);
+
+    await service.createCheckout(order);
+    expect(createCoupon).toHaveBeenCalledWith(
+      expect.objectContaining({ amount_off: 560, currency: 'eur', duration: 'once' }),
+    );
+    expect(createSession.mock.calls[0]![0].discounts).toEqual([{ coupon: 'coup_10off' }]);
+    expect(createSession.mock.calls[0]![0].metadata.discountCents).toBe('560');
   });
 
   it('throws when Stripe returns no URL', async () => {

@@ -3,6 +3,15 @@ import { type Env, loadEnv } from '../env.js';
 import type { AppDeps } from '../context.js';
 import { hashPassword } from '../lib/password.js';
 
+/** Valid ship-to used by checkout API tests (address is required). */
+export const TEST_SHIPPING_ADDRESS = {
+  fullName: 'Ash Ketchum',
+  line1: '1 Pallet Lane',
+  city: 'Pallet Town',
+  postalCode: '00001',
+  country: 'Sweden',
+} as const;
+
 /** A deterministic test env (mock payments, fixed JWT secret). */
 export function testEnv(overrides: Partial<NodeJS.ProcessEnv> = {}): Env {
   return loadEnv({

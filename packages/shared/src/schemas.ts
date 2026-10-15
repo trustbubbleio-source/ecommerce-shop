@@ -119,7 +119,8 @@ export const cartLineSchema = z.object({
 export const checkoutInputSchema = z.object({
   items: z.array(cartLineSchema).min(1, 'Your cart is empty'),
   email: z.string().trim().email('A valid email is required'),
-  shippingAddress: addressSchema.optional(),
+  /** Required for physical fulfilment — never trust a client that omits ship-to. */
+  shippingAddress: addressSchema,
   /** Preferred charge/display currency. Catalog is EUR; SEK is converted server-side. */
   currency: z.enum(['eur', 'sek']).optional(),
 });

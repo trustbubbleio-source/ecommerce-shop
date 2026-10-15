@@ -8,8 +8,12 @@ import {
 import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
 import type { SendEmailAttachment } from '../lib/email.js';
+import { rejectIfContentLengthTooLarge } from '../lib/http.js';
 import { requireAuth } from '../middleware/auth.js';
 import { rateLimit } from '../middleware/rate-limit.js';
+
+/** Multipart ceiling: photo budget + JSON payload headroom. */
+const SELL_MAX_REQUEST_BYTES = SELL_MAX_TOTAL_IMAGE_BYTES + 1024 * 1024;
 
 export function sellRoutes(deps: AppDeps) {
   const app = new Hono<AppEnv>();
@@ -23,6 +27,13 @@ export function sellRoutes(deps: AppDeps) {
     if (!contentType.includes('multipart/form-data')) {
       return c.json({ error: 'Sell requests must be multipart/form-data' }, 400);
     }
+
+    const tooLarge = rejectIfContentLengthTooLarge(
+      c,
+      SELL_MAX_REQUEST_BYTES,
+      'Upload too large (max 26 MB).',
+    );
+    if (tooLarge) return tooLarge;
 
     let body: unknown;
     try {
@@ -59,6 +70,12 @@ export function sellRoutes(deps: AppDeps) {
       if (!raw) continue;
       if (!(raw instanceof File)) {
         return c.json({ error: `photo_${index} must be an image file` }, 400);
+      }
+      if (raw.size === 0) {
+        return c.json({ error: `photo_${index} is empty` }, 400);
+      }
+      if (raw.size > SELL_MAX_IMAGE_BYTES) {
+        return c.json({ error: `Each photo must be under 5 MB (card ${index + 1})` }, 400);
       }
 
       const buffer = Buffer.from(await raw.arrayBuffer());

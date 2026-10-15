@@ -8,7 +8,8 @@ import { loadEnv } from './env.js';
 import { EmailService } from './lib/email.js';
 import { PaymentService } from './lib/payments.js';
 import { StorageService } from './lib/storage.js';
-import { authOptional } from './middleware/auth.js';
+import { requireAdmin } from './middleware/admin.js';
+import { authOptional, requireAuth } from './middleware/auth.js';
 import { createMemoryRepositories } from './repositories/factory.js';
 import { authRoutes } from './routes/auth.js';
 import { adminRoutes } from './routes/admin.js';
@@ -58,10 +59,20 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
     app.use('*', logger());
   }
   app.use('*', cors({ origin: env.webOrigins, credentials: true }));
+  app.use('*', async (c, next) => {
+    await next();
+    c.header('X-Content-Type-Options', 'nosniff');
+    c.header('X-Frame-Options', 'DENY');
+    c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+    c.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  });
   app.use('*', authOptional(env));
 
   const api = new Hono<AppEnv>();
-  api.get('/health', (c) =>
+  /** Public probe for Railway / uptime — no mode disclosure. */
+  api.get('/health', (c) => c.json({ status: 'ok' }));
+  /** Detailed modes for operators only. */
+  api.get('/health/details', requireAuth(), requireAdmin(deps), (c) =>
     c.json({
       status: 'ok',
       stripe: deps.payments.enabled ? 'live' : 'mock',

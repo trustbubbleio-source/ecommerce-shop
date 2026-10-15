@@ -1,13 +1,46 @@
 import { describe, expect, it } from 'vitest';
+import { hashPassword } from './lib/password.js';
 import { jsonRequest, makeApp } from './test/helpers.js';
 
 describe('app', () => {
-  it('reports health with the payment mode', async () => {
+  it('public health only reports ok (no mode disclosure)', async () => {
     const { app } = makeApp();
     const { res, data } = await jsonRequest(app, 'GET', '/api/health');
     expect(res.status).toBe(200);
+    expect(data).toEqual({ status: 'ok' });
+  });
+
+  it('health details require admin auth', async () => {
+    const { app, deps } = makeApp();
+    const anon = await jsonRequest(app, 'GET', '/api/health/details');
+    expect(anon.res.status).toBe(401);
+
+    const passwordHash = await hashPassword('adminpass123');
+    await deps.users.create({
+      name: 'Admin',
+      email: 'admin@test.local',
+      passwordHash,
+      role: 'admin',
+      emailVerifiedAt: new Date().toISOString(),
+    });
+    const { data: login } = await jsonRequest(app, 'POST', '/api/auth/login', {
+      email: 'admin@test.local',
+      password: 'adminpass123',
+    });
+    const { res, data } = await jsonRequest(app, 'GET', '/api/health/details', undefined, {
+      authorization: `Bearer ${login.token}`,
+    });
+    expect(res.status).toBe(200);
     expect(data.status).toBe('ok');
     expect(data.stripe).toBe('mock');
+  });
+
+  it('sets basic security headers', async () => {
+    const { app } = makeApp();
+    const res = await app.request('/api/health');
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(res.headers.get('x-frame-options')).toBe('DENY');
+    expect(res.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin');
   });
 
   it('returns JSON 404 for unknown routes', async () => {

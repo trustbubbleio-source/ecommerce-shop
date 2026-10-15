@@ -4,9 +4,10 @@ import { makeApp } from '../test/helpers.js';
 import { clientIp } from './rate-limit.js';
 
 describe('clientIp', () => {
-  it('prefers x-forwarded-for then x-real-ip', () => {
-    expect(clientIp(new Headers({ 'x-forwarded-for': '1.1.1.1, 2.2.2.2' }))).toBe('1.1.1.1');
+  it('prefers x-real-ip, then rightmost x-forwarded-for hop', () => {
     expect(clientIp(new Headers({ 'x-real-ip': '3.3.3.3' }))).toBe('3.3.3.3');
+    expect(clientIp(new Headers({ 'x-forwarded-for': '1.1.1.1, 2.2.2.2' }))).toBe('2.2.2.2');
+    expect(clientIp(new Headers({ 'cf-connecting-ip': '4.4.4.4' }))).toBe('4.4.4.4');
     expect(clientIp(new Headers())).toBe('unknown');
   });
 });

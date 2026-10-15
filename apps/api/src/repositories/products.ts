@@ -13,6 +13,8 @@ import type {
   ListOptions,
   ProductPage,
   ProductRepository as IProductRepository,
+  ReserveStockResult,
+  StockAdjustment,
 } from './interfaces.js';
 import { pageProducts } from './product-page.js';
 
@@ -25,7 +27,12 @@ export class ProductRepository implements IProductRepository {
   private readonly products: Product[];
 
   constructor(seed: Product[] = PRODUCTS) {
-    this.products = [...seed];
+    // Deep-ish clone so stock mutations in tests / checkout never leak into PRODUCTS.
+    this.products = seed.map((product) => ({
+      ...product,
+      images: [...product.images],
+      tags: [...product.tags],
+    }));
   }
 
   async listPage(options: ListOptions = {}): Promise<ProductPage> {
@@ -86,5 +93,26 @@ export class ProductRepository implements IProductRepository {
     product.rating = stats.rating;
     product.reviewCount = stats.reviewCount;
     return product;
+  }
+
+  async reserveStock(lines: StockAdjustment[]): Promise<ReserveStockResult> {
+    for (const line of lines) {
+      const product = this.products.find((p) => p.id === line.productId);
+      if (!product || product.stock < line.quantity) {
+        return { ok: false, productId: line.productId };
+      }
+    }
+    for (const line of lines) {
+      const product = this.products.find((p) => p.id === line.productId)!;
+      product.stock -= line.quantity;
+    }
+    return { ok: true };
+  }
+
+  async releaseStock(lines: StockAdjustment[]): Promise<void> {
+    for (const line of lines) {
+      const product = this.products.find((p) => p.id === line.productId);
+      if (product) product.stock += line.quantity;
+    }
   }
 }

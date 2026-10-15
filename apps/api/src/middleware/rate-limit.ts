@@ -7,17 +7,28 @@ import {
 import type { MiddlewareHandler } from 'hono';
 import type { AppEnv } from '../context.js';
 
-/** Best-effort client IP (proxy-aware). */
+/**
+ * Client IP behind a trusted reverse proxy (Railway).
+ * Prefer platform headers; for X-Forwarded-For take the *rightmost* hop
+ * (the address the proxy observed), not the leftmost (client-spoofable).
+ */
 export function clientIp(headers: Headers, fallback = 'unknown'): string {
-  const forwarded = headers.get('x-forwarded-for');
-  if (forwarded) {
-    const first = forwarded.split(',')[0]?.trim();
-    if (first) return first.slice(0, 128);
-  }
   const realIp = headers.get('x-real-ip')?.trim();
   if (realIp) return realIp.slice(0, 128);
+
   const cf = headers.get('cf-connecting-ip')?.trim();
   if (cf) return cf.slice(0, 128);
+
+  const forwarded = headers.get('x-forwarded-for');
+  if (forwarded) {
+    const parts = forwarded
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean);
+    const last = parts.at(-1);
+    if (last) return last.slice(0, 128);
+  }
+
   return fallback;
 }
 

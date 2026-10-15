@@ -6,6 +6,7 @@ import type { AppDeps, AppEnv } from '../context.js';
 import { validate } from '../lib/http.js';
 import { aggregateRatings } from '../lib/review-stats.js';
 import { requireAuth } from '../middleware/auth.js';
+import { rateLimit } from '../middleware/rate-limit.js';
 
 const SORT_KEYS = [
   'featured',
@@ -91,6 +92,7 @@ export function productRoutes(deps: AppDeps) {
   app.post(
     '/:idOrSlug/reviews',
     requireAuth(),
+    rateLimit(deps.rateLimiter, 'reviews'),
     validate('json', createProductReviewInputSchema),
     async (c) => {
       const product = await deps.products.getByIdOrSlug(c.req.param('idOrSlug'));

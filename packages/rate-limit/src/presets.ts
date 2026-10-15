@@ -17,6 +17,12 @@ export const RATE_LIMIT_PRESETS = {
   auth: { limit: 20, windowMs: 15 * 60_000 } satisfies RateLimitRule,
   /** Password reset emails (stricter). */
   authSensitive: { limit: 5, windowMs: 15 * 60_000 } satisfies RateLimitRule,
+  /** Guest/auth checkout (Stripe session + stock reserve). */
+  checkout: { limit: 10, windowMs: 15 * 60_000 } satisfies RateLimitRule,
+  /** Authenticated want-list creates (emails staff). */
+  wantList: { limit: 10, windowMs: 60 * 60_000 } satisfies RateLimitRule,
+  /** Product review creates. */
+  reviews: { limit: 10, windowMs: 60 * 60_000 } satisfies RateLimitRule,
 } as const;
 
 export type RateLimitPreset = keyof typeof RATE_LIMIT_PRESETS;

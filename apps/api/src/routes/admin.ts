@@ -20,7 +20,7 @@ import {
 import { Hono } from 'hono';
 import { z } from 'zod';
 import type { AppDeps, AppEnv } from '../context.js';
-import { validate } from '../lib/http.js';
+import { rejectIfContentLengthTooLarge, validate } from '../lib/http.js';
 import type { UploadableFile } from '../lib/storage.js';
 import { requireAdmin } from '../middleware/admin.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -78,6 +78,10 @@ export function adminRoutes(deps: AppDeps) {
       return c.json({ error: 'Object storage is not configured' }, 503);
     }
 
+    // 12 images × 5 MB + multipart overhead
+    const tooLarge = rejectIfContentLengthTooLarge(c, 12 * 5 * 1024 * 1024 + 1024 * 1024);
+    if (tooLarge) return tooLarge;
+
     const body = await c.req.parseBody({ all: true });
     const files = collectFiles(body.images);
     if (files.length === 0) {
@@ -85,6 +89,11 @@ export function adminRoutes(deps: AppDeps) {
     }
     if (files.length > 12) {
       return c.json({ error: 'You can upload up to 12 images at once' }, 400);
+    }
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        return c.json({ error: 'Each image must be under 5 MB' }, 400);
+      }
     }
 
     const uploadables: UploadableFile[] = await Promise.all(

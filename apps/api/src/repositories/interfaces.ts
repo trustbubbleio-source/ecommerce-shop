@@ -98,6 +98,15 @@ export interface CatalogMeta {
   priceRange: { min: number; max: number };
 }
 
+export interface StockAdjustment {
+  productId: string;
+  quantity: number;
+}
+
+export type ReserveStockResult =
+  | { ok: true }
+  | { ok: false; productId: string };
+
 export interface ProductRepository {
   list(options?: ListOptions): Promise<Product[]>;
   listPage(options?: ListOptions): Promise<ProductPage>;
@@ -111,6 +120,13 @@ export interface ProductRepository {
     productId: string,
     stats: { rating: number; reviewCount: number },
   ): Promise<Product | undefined>;
+  /**
+   * Atomically reserve units for checkout (decrement). Fails if any line
+   * would go below zero — no partial reservation is kept.
+   */
+  reserveStock(lines: StockAdjustment[]): Promise<ReserveStockResult>;
+  /** Put reserved units back (increment) after cancel / abandon / failed checkout. */
+  releaseStock(lines: StockAdjustment[]): Promise<void>;
 }
 
 export interface FavoriteRepository {

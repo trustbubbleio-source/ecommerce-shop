@@ -85,7 +85,17 @@ describe('api client', () => {
     const fetchMock = mockFetch({ ok: true });
     const api = makeClient();
     await api.register({ email: 'a@b.com' });
-    await api.checkout({ email: 'a@b.com', items: [{ productId: 'x', quantity: 1 }] });
+    await api.checkout({
+      email: 'a@b.com',
+      items: [{ productId: 'x', quantity: 1 }],
+      shippingAddress: {
+        fullName: 'A',
+        line1: '1 St',
+        city: 'Town',
+        postalCode: '1',
+        country: 'SE',
+      },
+    });
     await api.getOrder('ord_1');
     await api.myOrders();
     const urls = fetchMock.mock.calls.map((c) => c[0]);

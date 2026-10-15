@@ -15,10 +15,12 @@ import { Hono } from 'hono';
 import { nanoid } from 'nanoid';
 import type { AppDeps, AppEnv } from '../context.js';
 import type { SendEmailAttachment } from '../lib/email.js';
-import { validate } from '../lib/http.js';
+import { rejectIfContentLengthTooLarge, validate } from '../lib/http.js';
 import { requireAdmin } from '../middleware/admin.js';
 import { requireAuth } from '../middleware/auth.js';
 import { rateLimit } from '../middleware/rate-limit.js';
+
+const RESTORATION_MAX_REQUEST_BYTES = RESTORATION_MAX_TOTAL_IMAGE_BYTES + 1024 * 1024;
 
 function resolvePhotoUrl(deps: AppDeps, key: string): string {
   if (key.startsWith('http://') || key.startsWith('https://') || key.startsWith('data:')) {
@@ -48,6 +50,13 @@ export function restorationRoutes(deps: AppDeps) {
     if (!contentType.includes('multipart/form-data')) {
       return c.json({ error: 'Restoration submissions must be multipart/form-data' }, 400);
     }
+
+    const tooLarge = rejectIfContentLengthTooLarge(
+      c,
+      RESTORATION_MAX_REQUEST_BYTES,
+      'Upload too large (max 16 MB).',
+    );
+    if (tooLarge) return tooLarge;
 
     let body: unknown;
     try {
@@ -83,6 +92,12 @@ export function restorationRoutes(deps: AppDeps) {
       if (!raw) continue;
       if (!(raw instanceof File)) {
         return c.json({ error: `photo_${slot} must be an image file` }, 400);
+      }
+      if (raw.size === 0) {
+        return c.json({ error: `${slot} photo is empty` }, 400);
+      }
+      if (raw.size > RESTORATION_MAX_IMAGE_BYTES) {
+        return c.json({ error: `Each photo must be under 5 MB (${slot})` }, 400);
       }
 
       const buffer = Buffer.from(await raw.arrayBuffer());

@@ -79,6 +79,7 @@ export class OrderRepository implements IOrderRepository {
   async cancel(orderId: string, reason: string): Promise<Order | undefined> {
     const order = this.byId.get(orderId);
     if (!order) return undefined;
+    if (order.status === 'cancelled') return undefined;
     if (order.status === 'fulfilled' || order.fulfillmentStep === 'delivered') return undefined;
     order.status = 'cancelled';
     order.fulfillmentStep = undefined;

@@ -30,16 +30,21 @@ export function orderRoutes(deps: AppDeps) {
     });
   });
 
-  // Single order lookup. The order id is an unguessable capability token, so
-  // guests can view their confirmation; authenticated owners are still checked.
+  // Guest orders (no userId): id is an unguessable capability token for the
+  // success page. Account-linked orders require the owning session.
   app.get('/:id', async (c) => {
     const order = await deps.orders.get(c.req.param('id'));
     if (!order) {
       return c.json({ error: 'Order not found' }, 404);
     }
-    const user = c.get('user');
-    if (order.userId && user && order.userId !== user.sub) {
-      return c.json({ error: 'You do not have access to this order' }, 403);
+    if (order.userId) {
+      const user = c.get('user');
+      if (!user) {
+        return c.json({ error: 'Authentication required' }, 401);
+      }
+      if (order.userId !== user.sub) {
+        return c.json({ error: 'You do not have access to this order' }, 403);
+      }
     }
     return c.json({ order: await withInvoiceUrl(deps, order) });
   });

@@ -2,13 +2,14 @@ import { serve } from '@hono/node-server';
 import { disconnectDb } from '@akknerds/db';
 import { config } from 'dotenv';
 import { createApp } from './app.js';
-import { loadEnv } from './env.js';
+import { assertProductionEnv, loadEnv } from './env.js';
 import { createRepositories } from './repositories/factory.js';
 
 // Load env from a repo-root .env or a local apps/api/.env if present (optional).
 config({ path: ['../../.env', '.env'] });
 
 const env = loadEnv();
+assertProductionEnv(env);
 const repos = createRepositories(env);
 const { app } = createApp({ env, ...repos });
 

@@ -8,7 +8,14 @@ import {
   type Product,
 } from '@akknerds/shared';
 import { newProductFromInput, applyProductInput } from '../../lib/product-factory.js';
-import type { CatalogMeta, ListOptions, ProductPage, ProductRepository } from '../interfaces.js';
+import type {
+  CatalogMeta,
+  ListOptions,
+  ProductPage,
+  ProductRepository,
+  ReserveStockResult,
+  StockAdjustment,
+} from '../interfaces.js';
 import { pageProducts } from '../product-page.js';
 
 export class PrismaProductRepository implements ProductRepository {
@@ -79,5 +86,41 @@ export class PrismaProductRepository implements ProductRepository {
       data: { rating: stats.rating, reviewCount: stats.reviewCount },
     });
     return toProduct(row);
+  }
+
+  async reserveStock(lines: StockAdjustment[]): Promise<ReserveStockResult> {
+    if (lines.length === 0) return { ok: true };
+    try {
+      await prisma.$transaction(async (tx) => {
+        for (const line of lines) {
+          const result = await tx.product.updateMany({
+            where: { id: line.productId, stock: { gte: line.quantity } },
+            data: { stock: { decrement: line.quantity } },
+          });
+          if (result.count !== 1) {
+            throw new Error(`INSUFFICIENT:${line.productId}`);
+          }
+        }
+      });
+      return { ok: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (message.startsWith('INSUFFICIENT:')) {
+        return { ok: false, productId: message.slice('INSUFFICIENT:'.length) };
+      }
+      throw error;
+    }
+  }
+
+  async releaseStock(lines: StockAdjustment[]): Promise<void> {
+    if (lines.length === 0) return;
+    await prisma.$transaction(async (tx) => {
+      for (const line of lines) {
+        await tx.product.updateMany({
+          where: { id: line.productId },
+          data: { stock: { increment: line.quantity } },
+        });
+      }
+    });
   }
 }

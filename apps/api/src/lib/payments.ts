@@ -36,6 +36,9 @@ export interface StripeLike {
       ): Promise<StripeCheckoutSessionLike>;
     };
   };
+  coupons?: {
+    create(params: Stripe.CouponCreateParams): Promise<{ id: string }>;
+  };
   invoices?: {
     retrieve(id: string): Promise<StripeInvoiceLike>;
   };
@@ -49,6 +52,11 @@ export interface StripeLike {
   refunds?: {
     create(params: Stripe.RefundCreateParams): Promise<{ id: string }>;
   };
+}
+
+/** Cents discounted off subtotal+shipping (matches `priceCart` ledger). */
+export function orderDiscountCents(order: Pick<Order, 'subtotal' | 'shipping' | 'total'>): number {
+  return Math.max(0, order.subtotal + order.shipping - order.total);
 }
 
 export interface CheckoutResult {
@@ -129,13 +137,33 @@ export class PaymentService {
       });
     }
 
+    const discountCents = orderDiscountCents(order);
+    const discounts: Stripe.Checkout.SessionCreateParams.Discount[] = [];
+    if (discountCents > 0) {
+      if (!this.client.coupons?.create) {
+        throw new Error('Stripe discounts require coupons.create on the Stripe client');
+      }
+      const coupon = await this.client.coupons.create({
+        amount_off: discountCents,
+        currency: order.currency,
+        duration: 'once',
+        name: `Order ${order.id}`.slice(0, 40),
+        max_redemptions: 1,
+      });
+      discounts.push({ coupon: coupon.id });
+    }
+
     const session = await this.client.checkout.sessions.create({
       mode: 'payment',
       line_items: lineItems,
+      ...(discounts.length > 0 ? { discounts } : {}),
       customer_email: order.email,
       success_url: `${this.env.checkoutSuccessUrl}?order_id=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: this.env.checkoutCancelUrl,
-      metadata: { orderId: order.id },
+      metadata: {
+        orderId: order.id,
+        ...(discountCents > 0 ? { discountCents: String(discountCents) } : {}),
+      },
       payment_intent_data: { metadata: { orderId: order.id } },
       invoice_creation: {
         enabled: true,

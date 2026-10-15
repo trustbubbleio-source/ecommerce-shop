@@ -2,6 +2,7 @@ import { cancelOrderInputSchema, updateOrderFulfillmentSchema } from '@akknerds/
 import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
 import { validate } from '../lib/http.js';
+import { cancelOrderAndReleaseStock } from '../lib/inventory.js';
 import { notifyCancelledOrder } from '../lib/order-alert.js';
 import { requireAdmin } from '../middleware/admin.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -75,10 +76,10 @@ export function adminOrderRoutes(deps: AppDeps) {
         }
       }
 
-      const order = await deps.orders.cancel(existing.id, reason);
-      if (!order) return c.json({ error: 'Order not found' }, 404);
-      const emailed = await notifyCancelledOrder(deps.email, deps.env, order, { refunded });
-      return c.json({ order, emailed });
+      const result = await cancelOrderAndReleaseStock(deps, existing.id, reason);
+      if (!result) return c.json({ error: 'Order not found' }, 404);
+      const emailed = await notifyCancelledOrder(deps.email, deps.env, result.order, { refunded });
+      return c.json({ order: result.order, emailed });
     },
   );
 

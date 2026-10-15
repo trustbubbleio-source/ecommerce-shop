@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import { PaymentService, type StripeLike } from '../lib/payments.js';
-import { jsonRequest, makeApp, testEnv } from '../test/helpers.js';
+import { jsonRequest, makeApp, TEST_SHIPPING_ADDRESS, testEnv } from '../test/helpers.js';
+
+const checkoutPayload = {
+  email: 'buyer@example.com',
+  items: [{ productId: 'bb-151', quantity: 1 }],
+  shippingAddress: TEST_SHIPPING_ADDRESS,
+};
 
 function liveApp(client: StripeLike) {
   const env = testEnv({ STRIPE_SECRET_KEY: 'sk_test_real', STRIPE_WEBHOOK_SECRET: 'whsec_real' });
@@ -34,10 +40,7 @@ describe('POST /api/webhooks/stripe', () => {
       },
     });
 
-    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', {
-      email: 'buyer@example.com',
-      items: [{ productId: 'bb-151', quantity: 1 }],
-    });
+    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', checkoutPayload);
     expect((await deps.orders.get(checkout.orderId))?.status).toBe('pending');
 
     const { res } = await jsonRequest(
@@ -74,10 +77,7 @@ describe('POST /api/webhooks/stripe', () => {
       },
     });
 
-    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', {
-      email: 'buyer@example.com',
-      items: [{ productId: 'bb-151', quantity: 1 }],
-    });
+    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', checkoutPayload);
 
     await jsonRequest(
       app,
@@ -107,10 +107,7 @@ describe('POST /api/webhooks/stripe', () => {
       webhooks: { constructEvent: vi.fn().mockImplementation(() => event) },
     });
 
-    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', {
-      email: 'buyer@example.com',
-      items: [{ productId: 'bb-151', quantity: 1 }],
-    });
+    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', checkoutPayload);
     await jsonRequest(app, 'POST', '/api/webhooks/stripe', {}, { 'stripe-signature': 'sig' });
     expect((await deps.orders.get(checkout.orderId))?.status).toBe('paid');
 
@@ -156,10 +153,7 @@ describe('POST /api/webhooks/stripe', () => {
       },
     });
 
-    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', {
-      email: 'buyer@example.com',
-      items: [{ productId: 'bb-151', quantity: 1 }],
-    });
+    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', checkoutPayload);
     orderId = checkout.orderId;
     await deps.orders.setStatus(orderId, 'paid');
 
