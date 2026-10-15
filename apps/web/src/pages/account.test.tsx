@@ -68,7 +68,7 @@ describe('Account pages', () => {
     renderApp('/account');
 
     expect(await screen.findByText(/Hi, Ash/)).toBeInTheDocument();
-    expect(screen.getByDisplayValue(user.name)).toBeInTheDocument();
+    expect(await screen.findByDisplayValue(user.name)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Orders' })).toHaveAttribute('href', '/account/orders');
   });
 

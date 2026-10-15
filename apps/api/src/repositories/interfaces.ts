@@ -68,6 +68,11 @@ export interface OrderRepository {
   /** Marks the order cancelled and stores the customer-facing reason. */
   cancel(orderId: string, reason: string): Promise<Order | undefined>;
   markStatusBySession(sessionId: string, status: OrderStatus): Promise<Order | undefined>;
+  /**
+   * Atomically pending → paid by Stripe session.
+   * Returns the order only when this call performed the transition (idempotent for emails).
+   */
+  markPaidBySession(sessionId: string): Promise<Order | undefined>;
   setStatus(orderId: string, status: OrderStatus): Promise<Order | undefined>;
   listByUser(userId: string): Promise<Order[]>;
   /** True if the user has a paid/fulfilled order containing the product. */

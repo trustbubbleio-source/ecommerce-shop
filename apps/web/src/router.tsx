@@ -1,48 +1,39 @@
+import { Spinner } from '@akknerds/ui';
+import { lazy, Suspense, type ComponentType } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { AdminGuard } from './components/admin/admin-guard';
 import { AdminLayout } from './components/layout/admin-layout';
 import { RootLayout } from './components/layout/root-layout';
-import { AccountDiscountPage } from './pages/account/discount';
-import { AccountFavoritesPage } from './pages/account/favorites';
-import { AccountLayout } from './pages/account/layout';
-import { AccountOrderDetailPage } from './pages/account/order-detail';
-import { AccountOrdersPage } from './pages/account/orders';
-import { AccountProfilePage } from './pages/account/profile';
-import { AccountSettingsPage } from './pages/account/settings';
-import { AccountWantListPage } from './pages/account/want-list';
-import { AdminSubmissionsPage } from './pages/admin/submissions';
-import { AdminWantListPage } from './pages/admin/want-list';
-import { AdminOrdersPage } from './pages/admin/orders';
-import { AdminOrderDetailPage } from './pages/admin/order-detail';
-import { BlogPage } from './pages/blog';
-import { BlogPostPage } from './pages/blog-post';
-import { AdminEditProductPage } from './pages/admin/edit-product';
-import { AdminProductsPage } from './pages/admin/products';
-import { AdminNewProductPage } from './pages/admin/new-product';
+/** Eager: first-paint routes (home + shop + cart/checkout + auth). */
 import { CartPage } from './pages/cart';
 import { CheckoutPage } from './pages/checkout';
 import { CheckoutSuccessPage } from './pages/checkout-success';
-import { ContactPage } from './pages/contact';
-import { CookiesPage } from './pages/cookies';
-import { FaqPage } from './pages/faq';
 import { HomePage } from './pages/home';
 import { LoginPage } from './pages/login';
 import { NotFoundPage } from './pages/not-found';
-import { PartnersPage } from './pages/partners';
-import { PrivacyPage } from './pages/privacy';
-import { ProductDetailPage } from './pages/product-detail';
 import { RegisterPage } from './pages/register';
-import { ForgotPasswordPage } from './pages/forgot-password';
-import { ResetPasswordPage } from './pages/reset-password';
-import { VerifyEmailPage } from './pages/verify-email';
-import { ReturnsPage } from './pages/returns';
-import { ShippingPage } from './pages/shipping';
 import { ShopPage } from './pages/shop';
-import { SellPage } from './pages/sell';
-import { CardRestorationPage } from './pages/services/card-restoration';
-import { GradingSubmissionPage } from './pages/services/grading-submission';
-import { SocialsPage } from './pages/socials';
-import { TermsPage } from './pages/terms';
+
+function lazyNamed<T extends Record<string, ComponentType>>(
+  loader: () => Promise<T>,
+  exportName: keyof T & string,
+) {
+  const Page = lazy(async () => {
+    const mod = await loader();
+    return { default: mod[exportName] };
+  });
+  return (
+    <Suspense
+      fallback={
+        <div className="container flex justify-center py-24">
+          <Spinner className="size-8" label="Loading page" />
+        </div>
+      }
+    >
+      <Page />
+    </Suspense>
+  );
+}
 
 export const routes: RouteObject[] = [
   {
@@ -51,42 +42,93 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <HomePage /> },
       { path: 'shop', element: <ShopPage /> },
-      { path: 'sell', element: <SellPage /> },
-      { path: 'product/:slug', element: <ProductDetailPage /> },
+      { path: 'sell', element: lazyNamed(() => import('./pages/sell'), 'SellPage') },
+      {
+        path: 'product/:slug',
+        element: lazyNamed(() => import('./pages/product-detail'), 'ProductDetailPage'),
+      },
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'checkout/success', element: <CheckoutSuccessPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
-      { path: 'forgot-password', element: <ForgotPasswordPage /> },
-      { path: 'reset-password', element: <ResetPasswordPage /> },
-      { path: 'verify-email', element: <VerifyEmailPage /> },
+      {
+        path: 'forgot-password',
+        element: lazyNamed(() => import('./pages/forgot-password'), 'ForgotPasswordPage'),
+      },
+      {
+        path: 'reset-password',
+        element: lazyNamed(() => import('./pages/reset-password'), 'ResetPasswordPage'),
+      },
+      {
+        path: 'verify-email',
+        element: lazyNamed(() => import('./pages/verify-email'), 'VerifyEmailPage'),
+      },
       {
         path: 'account',
-        element: <AccountLayout />,
+        element: lazyNamed(() => import('./pages/account/layout'), 'AccountLayout'),
         children: [
-          { index: true, element: <AccountProfilePage /> },
-          { path: 'orders', element: <AccountOrdersPage /> },
-          { path: 'orders/:orderId', element: <AccountOrderDetailPage /> },
-          { path: 'favorites', element: <AccountFavoritesPage /> },
-          { path: 'want-list', element: <AccountWantListPage /> },
-          { path: 'discount', element: <AccountDiscountPage /> },
-          { path: 'settings', element: <AccountSettingsPage /> },
+          {
+            index: true,
+            element: lazyNamed(() => import('./pages/account/profile'), 'AccountProfilePage'),
+          },
+          {
+            path: 'orders',
+            element: lazyNamed(() => import('./pages/account/orders'), 'AccountOrdersPage'),
+          },
+          {
+            path: 'orders/:orderId',
+            element: lazyNamed(
+              () => import('./pages/account/order-detail'),
+              'AccountOrderDetailPage',
+            ),
+          },
+          {
+            path: 'favorites',
+            element: lazyNamed(() => import('./pages/account/favorites'), 'AccountFavoritesPage'),
+          },
+          {
+            path: 'want-list',
+            element: lazyNamed(() => import('./pages/account/want-list'), 'AccountWantListPage'),
+          },
+          {
+            path: 'discount',
+            element: lazyNamed(() => import('./pages/account/discount'), 'AccountDiscountPage'),
+          },
+          {
+            path: 'settings',
+            element: lazyNamed(() => import('./pages/account/settings'), 'AccountSettingsPage'),
+          },
         ],
       },
-      { path: 'contact', element: <ContactPage /> },
-      { path: 'shipping', element: <ShippingPage /> },
-      { path: 'returns', element: <ReturnsPage /> },
-      { path: 'terms', element: <TermsPage /> },
-      { path: 'privacy', element: <PrivacyPage /> },
-      { path: 'cookies', element: <CookiesPage /> },
-      { path: 'partners', element: <PartnersPage /> },
-      { path: 'socials', element: <SocialsPage /> },
-      { path: 'blog', element: <BlogPage /> },
-      { path: 'blog/:slug', element: <BlogPostPage /> },
-      { path: 'services/grading-submission', element: <GradingSubmissionPage /> },
-      { path: 'services/card-restoration', element: <CardRestorationPage /> },
-      { path: 'faq', element: <FaqPage /> },
+      { path: 'contact', element: lazyNamed(() => import('./pages/contact'), 'ContactPage') },
+      { path: 'shipping', element: lazyNamed(() => import('./pages/shipping'), 'ShippingPage') },
+      { path: 'returns', element: lazyNamed(() => import('./pages/returns'), 'ReturnsPage') },
+      { path: 'terms', element: lazyNamed(() => import('./pages/terms'), 'TermsPage') },
+      { path: 'privacy', element: lazyNamed(() => import('./pages/privacy'), 'PrivacyPage') },
+      { path: 'cookies', element: lazyNamed(() => import('./pages/cookies'), 'CookiesPage') },
+      { path: 'partners', element: lazyNamed(() => import('./pages/partners'), 'PartnersPage') },
+      { path: 'socials', element: lazyNamed(() => import('./pages/socials'), 'SocialsPage') },
+      { path: 'blog', element: lazyNamed(() => import('./pages/blog'), 'BlogPage') },
+      {
+        path: 'blog/:slug',
+        element: lazyNamed(() => import('./pages/blog-post'), 'BlogPostPage'),
+      },
+      {
+        path: 'services/grading-submission',
+        element: lazyNamed(
+          () => import('./pages/services/grading-submission'),
+          'GradingSubmissionPage',
+        ),
+      },
+      {
+        path: 'services/card-restoration',
+        element: lazyNamed(
+          () => import('./pages/services/card-restoration'),
+          'CardRestorationPage',
+        ),
+      },
+      { path: 'faq', element: lazyNamed(() => import('./pages/faq'), 'FaqPage') },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
@@ -97,13 +139,34 @@ export const routes: RouteObject[] = [
       {
         element: <AdminGuard />,
         children: [
-          { index: true, element: <AdminProductsPage /> },
-          { path: 'orders', element: <AdminOrdersPage /> },
-          { path: 'orders/:orderId', element: <AdminOrderDetailPage /> },
-          { path: 'want-list', element: <AdminWantListPage /> },
-          { path: 'submissions', element: <AdminSubmissionsPage /> },
-          { path: 'new', element: <AdminNewProductPage /> },
-          { path: 'products/:id', element: <AdminEditProductPage /> },
+          {
+            index: true,
+            element: lazyNamed(() => import('./pages/admin/products'), 'AdminProductsPage'),
+          },
+          {
+            path: 'orders',
+            element: lazyNamed(() => import('./pages/admin/orders'), 'AdminOrdersPage'),
+          },
+          {
+            path: 'orders/:orderId',
+            element: lazyNamed(() => import('./pages/admin/order-detail'), 'AdminOrderDetailPage'),
+          },
+          {
+            path: 'want-list',
+            element: lazyNamed(() => import('./pages/admin/want-list'), 'AdminWantListPage'),
+          },
+          {
+            path: 'submissions',
+            element: lazyNamed(() => import('./pages/admin/submissions'), 'AdminSubmissionsPage'),
+          },
+          {
+            path: 'new',
+            element: lazyNamed(() => import('./pages/admin/new-product'), 'AdminNewProductPage'),
+          },
+          {
+            path: 'products/:id',
+            element: lazyNamed(() => import('./pages/admin/edit-product'), 'AdminEditProductPage'),
+          },
         ],
       },
     ],

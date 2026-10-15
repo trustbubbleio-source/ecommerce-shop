@@ -29,15 +29,22 @@ export function webhookRoutes(deps: AppDeps) {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as StripeCheckoutSessionLike;
-      const existing = await deps.orders.getByStripeSession(session.id);
-      const newlyPaid = existing?.status !== 'paid' && existing?.status !== 'fulfilled';
-      const order = await deps.orders.markStatusBySession(session.id, 'paid');
-      await clearWelcomeDiscountAfterPurchase(deps, order?.userId);
-      if (order && !order.invoiceUrl) {
-        const doc = await deps.payments.resolveInvoiceDocument(session.id, session);
-        if (doc) await deps.orders.setInvoiceUrl(order.id, doc.url);
+      // Atomic pending→paid so concurrent webhook deliveries only email once.
+      const newlyPaid = await deps.orders.markPaidBySession(session.id);
+      if (newlyPaid) {
+        await clearWelcomeDiscountAfterPurchase(deps, newlyPaid.userId);
+        if (!newlyPaid.invoiceUrl) {
+          const doc = await deps.payments.resolveInvoiceDocument(session.id, session);
+          if (doc) await deps.orders.setInvoiceUrl(newlyPaid.id, doc.url);
+        }
+        await notifyPaidOrder(deps.email, deps.env, newlyPaid);
+      } else {
+        const existing = await deps.orders.getByStripeSession(session.id);
+        if (existing && !existing.invoiceUrl) {
+          const doc = await deps.payments.resolveInvoiceDocument(session.id, session);
+          if (doc) await deps.orders.setInvoiceUrl(existing.id, doc.url);
+        }
       }
-      if (newlyPaid && order) await notifyPaidOrder(deps.email, deps.env, order);
     }
 
     // Abandoned / expired Checkout — free reserved stock.

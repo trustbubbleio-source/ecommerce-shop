@@ -12,18 +12,17 @@ afterEach(() => {
   localStorage.clear();
 });
 
-if (!window.matchMedia) {
-  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  }));
-}
+// jsdom's matchMedia is incomplete / missing — always stub for a11y media queries.
+window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+  matches: false,
+  media: query,
+  onchange: null,
+  addListener: vi.fn(),
+  removeListener: vi.fn(),
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  dispatchEvent: vi.fn(),
+}));
 
 window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
 window.HTMLElement.prototype.scrollIntoView = vi.fn();
@@ -33,6 +32,15 @@ globalThis.ResizeObserver ||= class {
   unobserve() {}
   disconnect() {}
 };
+
+globalThis.IntersectionObserver ||= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() {
+    return [];
+  }
+} as unknown as typeof IntersectionObserver;
 window.HTMLElement.prototype.hasPointerCapture ||= () => false;
 window.HTMLElement.prototype.setPointerCapture ||= () => {};
 window.HTMLElement.prototype.releasePointerCapture ||= () => {};

@@ -47,15 +47,15 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 
 | # | Finding | Status | Evidence | Impact | Fix |
 |---|---------|--------|----------|--------|-----|
-| H1 | **Rate limiter is in-memory per process** | ⏳ Open | `MemoryRateLimiter` in `packages/rate-limit`. | Limits multiply across replicas. | Redis/Upstash **or** pin API to **1 replica** until then. |
+| H1 | **Rate limiter is in-memory per process** | ⏳ Ops | `MemoryRateLimiter` in `packages/rate-limit`. MCP account ≠ shop Railway workspace — confirm **1 replica** in the shop project dashboard. | Limits multiply across replicas. | Redis/Upstash **or** pin API to **1 replica**. |
 | H2 | **Client IP from first `X-Forwarded-For` spoofable** | ✅ Fixed in code | `clientIp()` prefers `x-real-ip` / CF, else **rightmost** XFF hop. | Was: bypass RL. | Deploy with H3/H4. |
 | H3 | **Checkout has no rate limit** | ✅ Fixed in code | `rateLimit(..., 'checkout')` — 10 / 15 min. | Was: spam sessions. | Deploy. |
 | H4 | **Want-list / reviews lack rate limits** | ✅ Fixed in code | Presets `wantList` / `reviews` — 10 / hour. | Was: mail/review spam. | Deploy. |
 | H5 | **No inventory hold between checkout and pay** | ✅ Fixed with C2 | Soft-reserve at session create; release on cancel/expire/refund. | — | Deploy C2. |
 | H6 | **`GET /api/health` discloses modes** | ✅ Fixed in code | Public `{ status: "ok" }`; `/health/details` admin-only. | Was: mock/misconfig leak. | Deploy. |
 | H7 | **Missing security headers** | ✅ Partial (API) | API: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`. | WWW still needs HSTS/CSP via Railway/CDN. | Add HSTS/CSP on web edge. |
-| H8 | **Eager JS ships all routes including admin** | Open | `router.tsx` static-imports. | Larger bundle. | `React.lazy` / route split. |
-| H9 | **Home hero video cost** | Open | `hero-video.tsx` autoplay/loop. | Bandwidth / a11y. | Reduced-motion + compress. |
+| H8 | **Eager JS ships all routes including admin** | ✅ Fixed in code | Admin / legal / account / services lazy-loaded via `React.lazy`. | — | Deploy web. |
+| H9 | **Home hero video cost** | ✅ Fixed in code | Reduced-motion → poster; play only when in view; `preload="none"`. | — | Deploy web. |
 | H10 | **Full catalog loaded then filtered in memory** | Open | Prisma `findMany()` then page/sort. | Latency as catalog grows. | SQL `WHERE`/`ORDER BY`/`LIMIT`. |
 
 ---
@@ -65,7 +65,7 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 | # | Finding | Status | Evidence | Impact | Fix |
 |---|---------|--------|----------|--------|-----|
 | M1 | **Discount vs Stripe amount mismatch** | ✅ Fixed in code | `orderDiscountCents` → one-time Stripe coupon on session. | Was: overcharge with profile discount. | Deploy. |
-| M2 | **Webhook paid-email race** | Open | `newlyPaid` before mark; no event-id store. | Duplicate emails. | Idempotent update + event IDs. |
+| M2 | **Webhook paid-email race** | ✅ Fixed in code | `markPaidBySession` atomic pending→paid; emails only on transition. | — | Deploy API. |
 | M3 | **Guest order GET is a capability URL** | ✅ Fixed in code | Account-linked orders require owning auth; guests only for `userId`-less orders. | Was: leaked `ord_*` on owned orders. | Deploy. |
 | M4 | **Overlays block UI** | Open | Cookie + 10% popup stacking. | Click friction. | One overlay at a time. |
 | M5 | **Shop/home treat API failure as empty catalogue** | Open | No `isError` branch. | Outages look like no stock. | Error + retry CTA. |
@@ -131,18 +131,18 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 5. [x] M1 — Discount amounts match Stripe charge — **code done, deploy**
 
 ### Phase B — Abuse & scale
-6. [~] H1 + H2 — H2 done; **H1: pin 1 API replica or Redis**
-7. [x] H3 + H4 — Rate-limit checkout, want-list, reviews — **deploy**
-8. [x] H6 — Sanitize public health — **deploy**
+6. [~] H1 + H2 — H2 done; **H1: pin 1 API replica in shop Railway project**
+7. [x] H3 + H4 — Rate-limit checkout, want-list, reviews
+8. [x] H6 — Sanitize public health
 9. [~] H7 — API headers done; **WWW HSTS/CSP still open**
-10. [x] M3 — Tighten order GET ACL — **deploy**
-11. [x] M8 — Require shipping address on API — **deploy**
-12. [x] M10 — Early upload size rejection — **deploy**
+10. [x] M3 — Tighten order GET ACL
+11. [x] M8 — Require shipping address on API
+12. [x] M10 — Early upload size rejection
 
 ### Phase C — UX / polish before / around launch day
-13. [ ] H8 + H9 — Code splitting + hero video / reduced-motion
+13. [x] H8 + H9 — Code splitting + hero video / reduced-motion — **deploy**
 14. [ ] H10 — Paginate products in SQL
-15. [ ] M2, M4–M7, M9, M11–M14 — Webhook idempotency, overlays, errors, ratings, encoding, copy, grading nav
+15. [x] M2 — Webhook paid-email idempotency — **deploy**; still open: M4–M7, M9, M11–M14
 16. [ ] Low items as time allows
 
 ### Phase D — Hard load test (prefer staging / local)
@@ -175,4 +175,5 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 |------|------|
 | 2026-10-14 | Initial findings from production probes + code audits. |
 | 2026-10-14 | C2 stock reserve/release + C4 `assertProductionEnv` implemented in repo. |
-| 2026-10-14 | C1 Stripe live on Railway; C3 apex→www done. Phase B: H2–H7(partial), M1, M3, M8, M10 coded. **Deploy still required.** |
+| 2026-10-14 | C1 Stripe live on Railway; C3 apex→www done. Phase B: H2–H7(partial), M1, M3, M8, M10 coded. |
+| 2026-10-15 | Pushed Phase A/B API harden (`dc9e511`). Phase C: H8 lazy routes, H9 hero video, M2 webhook idempotency. |

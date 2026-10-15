@@ -93,6 +93,14 @@ export class OrderRepository implements IOrderRepository {
     return this.setStatus(orderId, status);
   }
 
+  async markPaidBySession(sessionId: string): Promise<Order | undefined> {
+    const orderId = this.bySession.get(sessionId);
+    if (!orderId) return undefined;
+    const order = this.byId.get(orderId);
+    if (!order || order.status !== 'pending') return undefined;
+    return applyStatus(order, 'paid');
+  }
+
   async setStatus(orderId: string, status: OrderStatus): Promise<Order | undefined> {
     const order = this.byId.get(orderId);
     if (!order) return undefined;

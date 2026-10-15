@@ -168,6 +168,38 @@ describe('POST /api/webhooks/stripe', () => {
     expect((await deps.orders.get(orderId))?.status).toBe('paid');
   });
 
+  it('only sends paid emails once when checkout.session.completed is delivered twice', async () => {
+    const sessionId = 'cs_live_idempotent';
+    const sendOrderConfirmation = vi.fn().mockResolvedValue(undefined);
+    const sendPaidOrderAlert = vi.fn().mockResolvedValue(undefined);
+    const { app, deps } = liveApp({
+      checkout: {
+        sessions: {
+          create: vi.fn().mockResolvedValue({ id: sessionId, url: 'https://stripe.test/pay' }),
+        },
+      },
+      webhooks: {
+        constructEvent: vi.fn().mockReturnValue({
+          type: 'checkout.session.completed',
+          data: { object: { id: sessionId } },
+        }),
+      },
+    });
+    deps.email.sendOrderConfirmation = sendOrderConfirmation;
+    deps.email.sendPaidOrderAlert = sendPaidOrderAlert;
+
+    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', checkoutPayload);
+    expect((await deps.orders.get(checkout.orderId))?.status).toBe('pending');
+
+    for (let i = 0; i < 2; i++) {
+      await jsonRequest(app, 'POST', '/api/webhooks/stripe', {}, { 'stripe-signature': 'sig' });
+    }
+
+    expect((await deps.orders.get(checkout.orderId))?.status).toBe('paid');
+    expect(sendOrderConfirmation).toHaveBeenCalledTimes(1);
+    expect(sendPaidOrderAlert).toHaveBeenCalledTimes(1);
+  });
+
   it('rejects a request without a signature header', async () => {
     const { app } = liveApp({
       checkout: { sessions: { create: vi.fn() } },

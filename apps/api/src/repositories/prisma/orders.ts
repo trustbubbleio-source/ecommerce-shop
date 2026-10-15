@@ -115,6 +115,20 @@ export class PrismaOrderRepository implements OrderRepository {
     return toOrder(updated);
   }
 
+  async markPaidBySession(sessionId: string) {
+    const packing = defaultFulfillmentStep('paid');
+    const result = await prisma.order.updateMany({
+      where: { stripeSessionId: sessionId, status: 'pending' },
+      data: {
+        status: 'paid',
+        ...(packing ? { fulfillmentStep: packing } : {}),
+      },
+    });
+    if (result.count !== 1) return undefined;
+    const updated = await prisma.order.findUnique({ where: { stripeSessionId: sessionId } });
+    return updated ? toOrder(updated) : undefined;
+  }
+
   async setStatus(orderId: string, status: OrderStatus) {
     const existing = await prisma.order.findUnique({ where: { id: orderId } });
     if (!existing) return undefined;
