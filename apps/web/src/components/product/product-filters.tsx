@@ -140,16 +140,6 @@ export function ProductFiltersPanel({ meta, value, onChange, onReset }: ProductF
 
       <Separator />
 
-      <label className="flex cursor-pointer items-center gap-3 text-sm">
-        <input
-          type="checkbox"
-          checked={value.inStock}
-          onChange={(e) => onChange({ inStock: e.target.checked })}
-          className="border-input bg-background accent-foreground size-4 rounded"
-        />
-        <span className="text-foreground font-medium">In stock only</span>
-      </label>
-
       <FilterChips
         legend="Language"
         value={value.language}

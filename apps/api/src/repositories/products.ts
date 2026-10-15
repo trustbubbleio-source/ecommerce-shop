@@ -53,12 +53,13 @@ export class ProductRepository implements IProductRepository {
   }
 
   async meta(): Promise<CatalogMeta> {
+    const inStock = this.products.filter((p) => p.stock > 0);
     const categories = PRODUCT_CATEGORIES.map((value) => ({
       value,
-      count: this.products.filter((p) => p.category === value).length,
+      count: inStock.filter((p) => p.category === value).length,
     })).filter((c) => c.count > 0);
 
-    const prices = this.products.map((p) => p.price);
+    const prices = inStock.map((p) => p.price);
     return {
       categories,
       series: PRODUCT_SERIES,

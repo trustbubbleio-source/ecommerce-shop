@@ -113,12 +113,15 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async meta(): Promise<CatalogMeta> {
+    const inStock = { stock: { gt: 0 } } as const;
     const [grouped, priceAgg] = await Promise.all([
       prisma.product.groupBy({
         by: ['category'],
+        where: inStock,
         _count: { _all: true },
       }),
       prisma.product.aggregate({
+        where: inStock,
         _min: { price: true },
         _max: { price: true },
       }),

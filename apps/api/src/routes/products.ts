@@ -46,7 +46,8 @@ export function productRoutes(deps: AppDeps) {
       search: q.search,
       minPrice: q.minPrice,
       maxPrice: q.maxPrice,
-      inStockOnly: q.inStock,
+      // Public catalogue only shows sellable stock (admin list still includes OOS).
+      inStockOnly: true,
       language: q.language,
       condition: q.condition,
     };

@@ -135,7 +135,7 @@ describe('ProductFiltersPanel', () => {
     renderWithProviders(
       <ProductFiltersPanel
         meta={meta}
-        value={{ category: 'all', series: '', search: '', inStock: false, language: '', condition: '', sort: 'featured' }}
+        value={{ category: 'all', series: '', search: '', language: '', condition: '', sort: 'featured' }}
         onChange={onChange}
         onReset={vi.fn()}
       />,
@@ -144,18 +144,17 @@ describe('ProductFiltersPanel', () => {
     expect(onChange).toHaveBeenCalledWith({ category: 'booster-box' });
   });
 
-  it('toggles in-stock and selects series', async () => {
+  it('selects series', async () => {
     const onChange = vi.fn();
     renderWithProviders(
       <ProductFiltersPanel
         meta={meta}
-        value={{ category: 'all', series: '', search: '', inStock: false, language: '', condition: '', sort: 'featured' }}
+        value={{ category: 'all', series: '', search: '', language: '', condition: '', sort: 'featured' }}
         onChange={onChange}
         onReset={vi.fn()}
       />,
     );
-    await userEvent.click(screen.getByRole('checkbox'));
-    expect(onChange).toHaveBeenCalledWith({ inStock: true });
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     await userEvent.selectOptions(screen.getByLabelText('Series'), 'Sword & Shield');
     expect(onChange).toHaveBeenCalledWith({ series: 'Sword & Shield' });
   });
@@ -165,7 +164,7 @@ describe('ProductFiltersPanel', () => {
     renderWithProviders(
       <ProductFiltersPanel
         meta={meta}
-        value={{ category: 'all', series: '', search: '', inStock: false, language: '', condition: '', sort: 'featured' }}
+        value={{ category: 'all', series: '', search: '', language: '', condition: '', sort: 'featured' }}
         onChange={onChange}
         onReset={vi.fn()}
       />,
@@ -181,7 +180,7 @@ describe('ProductFiltersPanel', () => {
     const { rerender } = renderWithProviders(
       <ProductFiltersPanel
         meta={meta}
-        value={{ category: 'all', series: '', search: '', inStock: false, language: '', condition: '', sort: 'featured' }}
+        value={{ category: 'all', series: '', search: '', language: '', condition: '', sort: 'featured' }}
         onChange={vi.fn()}
         onReset={onReset}
       />,
@@ -194,7 +193,6 @@ describe('ProductFiltersPanel', () => {
           category: 'single-card',
           series: '',
           search: '',
-          inStock: false,
           language: '',
           condition: '',
           sort: 'featured',

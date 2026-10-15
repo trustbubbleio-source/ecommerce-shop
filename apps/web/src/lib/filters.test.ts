@@ -14,13 +14,12 @@ describe('parseFilters', () => {
 
   it('parses valid params', () => {
     const params = new URLSearchParams(
-      'category=booster-box&series=151&search=x&inStock=true&sort=price-asc',
+      'category=booster-box&series=151&search=x&sort=price-asc',
     );
     expect(parseFilters(params)).toEqual({
       category: 'booster-box',
       series: '151',
       search: 'x',
-      inStock: true,
       language: '',
       condition: '',
       sort: 'price-asc',
@@ -32,6 +31,10 @@ describe('parseFilters', () => {
     const result = parseFilters(params);
     expect(result.category).toBe('all');
     expect(result.sort).toBe('featured');
+  });
+
+  it('ignores legacy inStock query params', () => {
+    expect(parseFilters(new URLSearchParams('inStock=true'))).toEqual(DEFAULT_FILTERS);
   });
 });
 
@@ -45,7 +48,6 @@ describe('filtersToParams', () => {
       category: 'single-card',
       series: '151',
       search: 'pikachu',
-      inStock: true,
       language: 'japanese',
       condition: 'near-mint',
       sort: 'rating',
@@ -53,7 +55,7 @@ describe('filtersToParams', () => {
     expect(params.get('category')).toBe('single-card');
     expect(params.get('series')).toBe('151');
     expect(params.get('search')).toBe('pikachu');
-    expect(params.get('inStock')).toBe('true');
+    expect(params.get('inStock')).toBeNull();
     expect(params.get('language')).toBe('japanese');
     expect(params.get('condition')).toBe('near-mint');
     expect(params.get('sort')).toBe('rating');
@@ -64,7 +66,6 @@ describe('filtersToParams', () => {
       category: 'bundle' as const,
       series: 'One More Rip Exclusive',
       search: '',
-      inStock: true,
       language: 'english' as const,
       condition: '' as const,
       sort: 'newest' as const,
@@ -74,12 +75,12 @@ describe('filtersToParams', () => {
 });
 
 describe('toProductsQuery', () => {
-  it('maps filters to an api query, dropping falsy optionals', () => {
+  it('always requests in-stock products for the storefront', () => {
     expect(toProductsQuery(DEFAULT_FILTERS)).toEqual({
       category: 'all',
       series: undefined,
       search: undefined,
-      inStock: undefined,
+      inStock: true,
       language: undefined,
       condition: undefined,
       sort: 'featured',
@@ -90,6 +91,6 @@ describe('toProductsQuery', () => {
 describe('isDefaultFilters', () => {
   it('detects the default state', () => {
     expect(isDefaultFilters(DEFAULT_FILTERS)).toBe(true);
-    expect(isDefaultFilters({ ...DEFAULT_FILTERS, inStock: true })).toBe(false);
+    expect(isDefaultFilters({ ...DEFAULT_FILTERS, category: 'bundle' })).toBe(false);
   });
 });
