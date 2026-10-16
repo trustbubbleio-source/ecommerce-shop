@@ -67,15 +67,15 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 | M1 | **Discount vs Stripe amount mismatch** | ✅ Fixed in code | `orderDiscountCents` → one-time Stripe coupon on session. | Was: overcharge with profile discount. | Deploy. |
 | M2 | **Webhook paid-email race** | ✅ Fixed in code | `markPaidBySession` atomic pending→paid; emails only on transition. | — | Deploy API. |
 | M3 | **Guest order GET is a capability URL** | ✅ Fixed in code | Account-linked orders require owning auth; guests only for `userId`-less orders. | Was: leaked `ord_*` on owned orders. | Deploy. |
-| M4 | **Overlays block UI** | Open | Cookie + 10% popup stacking. | Click friction. | One overlay at a time. |
+| M4 | **Overlays block UI** | ✅ Fixed | Signup prompt waits for cookie ack. | Was: stacked overlays. | Deploy web. |
 | M5 | **Shop/home treat API failure as empty catalogue** | ✅ Fixed | `ProductGrid` error + retry on shop/home. | Was: outages looked like no stock. | Deploy web. |
 | M6 | **Fake / synthetic ratings on some products** | Open | e.g. rating/reviewCount from seed. | Marketing/legal risk. | Zero out or hide stars. |
 | M7 | **Encoding corruption in product names** | ✅ Verified + guarded | Prod DB scan: 0 corrupted rows. `repairMojibakeText` on product map. | Was: `PokAcmon`/mojibake risk. | Deploy API. |
 | M8 | **`shippingAddress` optional on API** | ✅ Fixed in code | `checkoutInputSchema` requires `addressSchema`. | Was: API bypass. | Deploy. |
 | M9 | **Register email enumeration** | Open | Verified email → 409. | Account discovery. | Uniform response. |
 | M10 | **Uploads buffer full body before size check** | ✅ Fixed in code | Content-Length reject + `File.size` before `arrayBuffer` on sell/restoration/admin. | Was: memory spike. | Deploy. |
-| M11 | **Free-shipping copy ignores SEK** | Open | Trust strip “Free over €75”. | Confusing for SEK. | Currency-aware copy. |
-| M12 | **“Buy now” while purchases locked** | Open | Category cards. | Misleading CTA. | “Browse” until launch. |
+| M11 | **Free-shipping copy ignores SEK** | ✅ Fixed | Trust strip uses `formatMoney(FREE_SHIPPING_THRESHOLD)`. | Was: hardcoded €75. | Deploy web. |
+| M12 | **“Buy now” while purchases locked** | ✅ Fixed | Category CTAs show “Browse” during prelaunch. | Was: misleading Buy now. | Deploy web. |
 | M13 | **Grading Submission is a stub** | Open | `/services/grading-submission`. | Dead-end. | Hide until ready. |
 | M14 | **Shop loading mojibake** | ✅ Fixed | Shop now uses `Loading…`. | Was: `Loadingâ€¦`. | Deploy web. |
 
@@ -142,8 +142,9 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 ### Phase C — UX / polish before / around launch day
 13. [x] H8 + H9 — Code splitting + hero video / reduced-motion
 14. [x] H10 — Paginate products in SQL — **deploy**
-15. [x] M2 — Webhook paid-email idempotency; still open: **M4, M6, M9, M11–M13**
+15. [x] M2 — Webhook paid-email idempotency; still open: **M6, M9, M13** (M6/M13 deferred by choice)
 15b. [x] M5 + M7 + M14 — catalogue error/retry, encoding guard, loading ellipsis
+15c. [x] M4 + M11 + M12 — overlay stacking, currency free-shipping copy, Browse CTA
 16. [ ] Low items as time allows
 
 ### Phase D — Hard load test (prefer staging / local)
@@ -178,3 +179,4 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 | 2026-10-15 | Pushed Phase A/B API harden (`dc9e511`). Phase C: H8 lazy routes, H9 hero video, M2 webhook idempotency. |
 | 2026-10-15 | H1: API+web → 1 replica. H10: SQL product list/paging + indexes. Phase D stock race covered in unit tests. |
 | 2026-10-16 | M5 catalogue error+retry; M14 shop Loading…; M7 prod encoding scan clean + repairMojibakeText guard. |
+| 2026-10-16 | M4 cookie→signup overlay gate; M11 currency free-shipping strip; M12 Browse CTA while locked. |

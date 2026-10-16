@@ -3,11 +3,14 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuthStore } from '../../store/auth';
+import { COOKIE_ACK_EVENT, COOKIE_NOTICE_KEY } from './cookie-notice';
 import { SignupPromptModal } from './signup-prompt-modal';
 
 beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
   localStorage.clear();
+  // Cookie banner must be acknowledged before the signup prompt may open.
+  localStorage.setItem(COOKIE_NOTICE_KEY, 'acknowledged');
   useAuthStore.setState({ token: null, user: null, mustSetPassword: false });
 });
 
@@ -89,5 +92,27 @@ describe('SignupPromptModal', () => {
     await click.click(screen.getByRole('button', { name: 'Not now' }));
     expect(localStorage.getItem('omr-signup-prompt')).toBe('1');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('does not open while the cookie notice is still pending', async () => {
+    localStorage.removeItem(COOKIE_NOTICE_KEY);
+    renderModal();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15_000);
+    });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('opens after the cookie notice is acknowledged', async () => {
+    localStorage.removeItem(COOKIE_NOTICE_KEY);
+    renderModal();
+
+    await act(async () => {
+      localStorage.setItem(COOKIE_NOTICE_KEY, 'acknowledged');
+      window.dispatchEvent(new Event(COOKIE_ACK_EVENT));
+      await vi.advanceTimersByTimeAsync(15_000);
+    });
+
+    expect(screen.getByRole('heading', { name: /Receive 10% off/i })).toBeInTheDocument();
   });
 });

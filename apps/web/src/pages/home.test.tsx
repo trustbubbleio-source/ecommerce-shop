@@ -28,6 +28,13 @@ describe('HomePage', () => {
     expect(screen.getAllByRole('link', { name: /All products/i }).length).toBeGreaterThan(0);
   });
 
+  it('shows currency-aware free shipping copy on the trust strip', () => {
+    vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
+    renderApp('/');
+    expect(screen.getByText(/Free over .+ Ships in 24h/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Free over €75/)).not.toBeInTheDocument();
+  });
+
   it('shows a retry CTA when featured products fail to load', async () => {
     vi.spyOn(api, 'listProducts').mockRejectedValue(new Error('network down'));
     renderApp('/');

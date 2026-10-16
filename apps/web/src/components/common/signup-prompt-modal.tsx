@@ -15,6 +15,7 @@ import logo from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
 import star from '../../assets/rarity/1.png';
 import { SITE } from '../../config/site';
 import { useAuthStore } from '../../store/auth';
+import { COOKIE_ACK_EVENT, isCookieNoticePending } from './cookie-notice';
 
 const STORAGE_KEY = 'omr-signup-prompt';
 const DELAY_MS = 15_000;
@@ -69,13 +70,36 @@ export function SignupPromptModal() {
       return;
     }
 
-    const id = window.setTimeout(() => {
-      if (!useAuthStore.getState().user && !wasDismissed()) {
-        setOpen(true);
-      }
-    }, DELAY_MS);
+    // Don't stack on top of the cookie banner — wait until it's acknowledged.
+    let cancelled = false;
+    let timeoutId: number | undefined;
 
-    return () => window.clearTimeout(id);
+    const scheduleOpen = () => {
+      if (cancelled || isCookieNoticePending()) return;
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => {
+        if (
+          cancelled ||
+          useAuthStore.getState().user ||
+          wasDismissed() ||
+          isCookieNoticePending()
+        ) {
+          return;
+        }
+        setOpen(true);
+      }, DELAY_MS);
+    };
+
+    if (!isCookieNoticePending()) {
+      scheduleOpen();
+    }
+
+    window.addEventListener(COOKIE_ACK_EVENT, scheduleOpen);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+      window.removeEventListener(COOKIE_ACK_EVENT, scheduleOpen);
+    };
   }, [user, location.pathname]);
 
   const dismiss = () => {

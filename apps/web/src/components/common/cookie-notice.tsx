@@ -2,7 +2,17 @@ import { Button } from '@akknerds/ui';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const STORAGE_KEY = 'omr-cookie-notice';
+export const COOKIE_NOTICE_KEY = 'omr-cookie-notice';
+export const COOKIE_ACK_EVENT = 'omr-cookie-acknowledged';
+
+/** True until the visitor acknowledges the cookie banner. */
+export function isCookieNoticePending(): boolean {
+  try {
+    return !localStorage.getItem(COOKIE_NOTICE_KEY);
+  } catch {
+    return true;
+  }
+}
 
 /**
  * EU/Swedish ePrivacy-style notice for a shop that currently uses
@@ -13,20 +23,17 @@ export function CookieNotice() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    try {
-      if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
-    } catch {
-      setVisible(true);
-    }
+    setVisible(isCookieNoticePending());
   }, []);
 
   const dismiss = () => {
     try {
-      localStorage.setItem(STORAGE_KEY, 'acknowledged');
+      localStorage.setItem(COOKIE_NOTICE_KEY, 'acknowledged');
     } catch {
       /* ignore private mode */
     }
     setVisible(false);
+    window.dispatchEvent(new Event(COOKIE_ACK_EVENT));
   };
 
   if (!visible) return null;

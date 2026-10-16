@@ -1,4 +1,5 @@
 import {
+  FREE_SHIPPING_THRESHOLD,
   primaryProductImage,
   resolveAssetUrl,
   type Product,
@@ -11,15 +12,10 @@ import { SectionHeader } from '../components/common/section';
 // import { HeroClassic } from '../components/home/hero-classic'; // previous header — swap with HeroVideo to restore
 import { HeroVideo } from '../components/home/hero-video';
 import { ProductGrid } from '../components/product/product-grid';
-import { PRELAUNCH } from '../config/launch';
+import { PRELAUNCH, isPrelaunchActive } from '../config/launch';
 import { CATEGORY_TILES, SITE } from '../config/site';
+import { useFormatMoney } from '../hooks/use-format-money';
 import { useProducts } from '../hooks/use-products';
-
-const VALUE_PROPS = [
-  { icon: ShieldCheck, title: '100% Authentic', text: 'Factory-sealed, never resealed.' },
-  { icon: Truck, title: 'Fast, tracked shipping', text: 'Free over €75. Ships in 24h.' },
-  { icon: Sparkles, title: 'Graded singles', text: 'Hand-checked, Near Mint or better.' },
-];
 
 function LaunchAnnouncement() {
   if (!PRELAUNCH.active) return null;
@@ -106,6 +102,7 @@ function pickCategoryImage(
 
 function Categories() {
   const catalog = useProducts({ limit: 60 });
+  const categoryCta = isPrelaunchActive() ? 'Browse' : 'Buy now';
 
   return (
     <section className="container py-12">
@@ -138,7 +135,7 @@ function Categories() {
                 <h3 className="text-foreground font-bold">{tile.label}</h3>
                 <p className="text-muted-foreground mt-1 text-sm">{tile.blurb}</p>
                 <span className="text-primary mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold">
-                  Buy now{' '}
+                  {categoryCta}{' '}
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </div>
@@ -151,10 +148,22 @@ function Categories() {
 }
 
 function ValueProps() {
+  const formatMoney = useFormatMoney();
+  const freeShippingLabel = formatMoney(FREE_SHIPPING_THRESHOLD);
+  const props = [
+    { icon: ShieldCheck, title: '100% Authentic', text: 'Factory-sealed, never resealed.' },
+    {
+      icon: Truck,
+      title: 'Fast, tracked shipping',
+      text: `Free over ${freeShippingLabel}. Ships in 24h.`,
+    },
+    { icon: Sparkles, title: 'Graded singles', text: 'Hand-checked, Near Mint or better.' },
+  ] as const;
+
   return (
     <section className="border-border bg-card/30 border-y">
       <div className="container grid gap-6 py-8 sm:grid-cols-3">
-        {VALUE_PROPS.map(({ icon: Icon, title, text }) => (
+        {props.map(({ icon: Icon, title, text }) => (
           <div key={title} className="flex items-center gap-3">
             <span className="bg-secondary text-foreground grid size-11 shrink-0 place-items-center rounded-lg">
               <Icon className="size-5" />
