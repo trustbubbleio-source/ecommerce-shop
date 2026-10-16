@@ -1,6 +1,6 @@
 import type { Product } from '@akknerds/shared';
-import { Skeleton } from '@akknerds/ui';
-import { PackageOpen } from 'lucide-react';
+import { Button, Skeleton } from '@akknerds/ui';
+import { AlertCircle, PackageOpen } from 'lucide-react';
 import { EmptyState } from '../common/empty-state';
 import { ProductCard } from './product-card';
 
@@ -20,10 +20,18 @@ function ProductCardSkeleton() {
 interface ProductGridProps {
   products?: Product[];
   isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   skeletonCount?: number;
 }
 
-export function ProductGrid({ products, isLoading, skeletonCount = 8 }: ProductGridProps) {
+export function ProductGrid({
+  products,
+  isLoading,
+  isError,
+  onRetry,
+  skeletonCount = 8,
+}: ProductGridProps) {
   if (isLoading) {
     return (
       <div
@@ -34,6 +42,23 @@ export function ProductGrid({ products, isLoading, skeletonCount = 8 }: ProductG
           <ProductCardSkeleton key={i} />
         ))}
       </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <EmptyState
+        icon={<AlertCircle />}
+        title="Couldn't load products"
+        description="Something went wrong talking to the shop. Check your connection and try again."
+        action={
+          onRetry ? (
+            <Button type="button" variant="outline" onClick={onRetry}>
+              Try again
+            </Button>
+          ) : undefined
+        }
+      />
     );
   }
 

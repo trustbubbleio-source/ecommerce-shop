@@ -191,6 +191,8 @@ export function HomePage() {
         <ProductGrid
           products={featured.data?.products}
           isLoading={featured.isLoading}
+          isError={featured.isError}
+          onRetry={() => void featured.refetch()}
           skeletonCount={8}
         />
       </section>
@@ -206,6 +208,8 @@ export function HomePage() {
         <ProductGrid
           products={fresh.data?.products}
           isLoading={fresh.isLoading}
+          isError={fresh.isError}
+          onRetry={() => void fresh.refetch()}
           skeletonCount={4}
         />
       </section>

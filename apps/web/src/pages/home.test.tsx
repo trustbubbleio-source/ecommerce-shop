@@ -28,6 +28,14 @@ describe('HomePage', () => {
     expect(screen.getAllByRole('link', { name: /All products/i }).length).toBeGreaterThan(0);
   });
 
+  it('shows a retry CTA when featured products fail to load', async () => {
+    vi.spyOn(api, 'listProducts').mockRejectedValue(new Error('network down'));
+    renderApp('/');
+
+    expect(await screen.findAllByText("Couldn't load products")).not.toHaveLength(0);
+    expect(screen.getAllByRole('button', { name: /try again/i }).length).toBeGreaterThan(0);
+  });
+
   // Series showcase lives on the previous <Hero />; re-enable when that header is restored.
   it.skip('links series logos to a prefilled shop filter', () => {
     vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });

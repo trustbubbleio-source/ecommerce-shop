@@ -6,7 +6,7 @@ import type {
   OrderStatus,
   Product,
 } from '@akknerds/shared';
-import { BASE_CURRENCY, primaryProductImage } from '@akknerds/shared';
+import { BASE_CURRENCY, primaryProductImage, repairMojibakeText } from '@akknerds/shared';
 import type { Order as DbOrder, Product as DbProduct } from '@prisma/client';
 import {
   fromPrismaCategory,
@@ -34,8 +34,8 @@ export function toProduct(row: DbProduct): Product {
   return {
     id: row.id,
     slug: row.slug,
-    name: row.name,
-    description: row.description,
+    name: repairMojibakeText(row.name),
+    description: repairMojibakeText(row.description),
     category: fromPrismaCategory(row.category),
     set: fromPrismaSet(row.setName),
     series: fromPrismaSeries(row.series),
@@ -69,8 +69,8 @@ export function fromProduct(product: Product) {
   return {
     id: product.id,
     slug: product.slug,
-    name: product.name,
-    description: product.description,
+    name: repairMojibakeText(product.name),
+    description: repairMojibakeText(product.description),
     category: toPrismaCategory(product.category),
     setName: toPrismaSet(product.set),
     series: toPrismaSeries(product.series),

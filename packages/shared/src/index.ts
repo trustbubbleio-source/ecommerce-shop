@@ -16,3 +16,4 @@ export * from './restoration.js';
 export * from './want-list.js';
 export * from './fulfillment.js';
 export * from './launch.js';
+export * from './text-encoding.js';

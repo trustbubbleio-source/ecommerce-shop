@@ -45,6 +45,7 @@ export function ShopPage() {
   const total = products.data?.pages[0]?.total ?? 0;
   const loaded = flatProducts.length;
   const isInitialLoading = products.isLoading && !products.data;
+  const isCatalogError = products.isError && !products.data;
 
   return (
     <div className="container py-8">
@@ -113,17 +114,21 @@ export function ShopPage() {
 
           <p className="text-muted-foreground text-sm" aria-live="polite">
             {isInitialLoading
-              ? 'Loadingâ€¦'
-              : total === 0
-                ? '0 products'
-                : loaded < total
-                  ? `Showing ${loaded} of ${total} products`
-                  : `${total} product${total === 1 ? '' : 's'}`}
+              ? 'Loading…'
+              : isCatalogError
+                ? "Couldn't load products"
+                : total === 0
+                  ? '0 products'
+                  : loaded < total
+                    ? `Showing ${loaded} of ${total} products`
+                    : `${total} product${total === 1 ? '' : 's'}`}
           </p>
 
           <ProductGrid
             products={flatProducts}
             isLoading={isInitialLoading}
+            isError={isCatalogError}
+            onRetry={() => void products.refetch()}
             skeletonCount={8}
           />
 
@@ -139,7 +144,7 @@ export function ShopPage() {
               >
                 {products.isFetchingNextPage ? (
                   <>
-                    <Spinner /> Loadingâ€¦
+                    <Spinner /> Loading…
                   </>
                 ) : (
                   'Load more'

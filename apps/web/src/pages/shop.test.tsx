@@ -44,6 +44,26 @@ describe('ShopPage', () => {
     expect(await screen.findByText('No products found')).toBeInTheDocument();
   });
 
+  it('shows an error state with retry when the catalogue fails', async () => {
+    stubCatalog();
+    const spy = vi.spyOn(api, 'listProducts').mockRejectedValue(new Error('network down'));
+    renderApp('/shop');
+
+    expect(await screen.findByRole('heading', { name: "Couldn't load products" })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+    expect(screen.queryByText('No products found')).not.toBeInTheDocument();
+
+    spy.mockResolvedValue({
+      products: [makeProduct()],
+      total: 1,
+      hasMore: false,
+      limit: SHOP_PAGE_SIZE,
+      offset: 0,
+    });
+    await userEvent.click(screen.getByRole('button', { name: /try again/i }));
+    expect(await screen.findByText('1 product')).toBeInTheDocument();
+  });
+
   it('passes the search term to the api', async () => {
     stubCatalog();
     const spy = vi.spyOn(api, 'listProducts').mockResolvedValue({
