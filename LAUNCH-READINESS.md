@@ -53,7 +53,7 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 | H4 | **Want-list / reviews lack rate limits** | ✅ Fixed in code | Presets `wantList` / `reviews` — 10 / hour. | Was: mail/review spam. | Deploy. |
 | H5 | **No inventory hold between checkout and pay** | ✅ Fixed with C2 | Soft-reserve at session create; release on cancel/expire/refund. | — | Deploy C2. |
 | H6 | **`GET /api/health` discloses modes** | ✅ Fixed in code | Public `{ status: "ok" }`; `/health/details` admin-only. | Was: mock/misconfig leak. | Deploy. |
-| H7 | **Missing security headers** | ✅ Partial (API) | API: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`. | WWW still needs HSTS/CSP via Railway/CDN. | Add HSTS/CSP on web edge. |
+| H7 | **Missing security headers** | ✅ Fixed | API headers + web `server.mjs` HSTS/CSP/COOP. | Was: www lacked HSTS/CSP. | Deploy web (Node static server). |
 | H8 | **Eager JS ships all routes including admin** | ✅ Fixed in code | Admin / legal / account / services lazy-loaded via `React.lazy`. | — | Deploy web. |
 | H9 | **Home hero video cost** | ⏪ Reverted | Autoplay loop restored (in-view/poster change hid video on prod). | — | Revisit reduced-motion later without breaking autoplay. |
 | H10 | **Full catalog loaded then filtered in memory** | ✅ Fixed in code | Prisma `listPage` uses WHERE/ORDER/LIMIT; search via SQL ILIKE; list indexes added. | — | Deploy (migration runs on API preDeploy). |
@@ -72,7 +72,7 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 | M6 | **Fake / synthetic ratings on some products** | Open | e.g. rating/reviewCount from seed. | Marketing/legal risk. | Zero out or hide stars. |
 | M7 | **Encoding corruption in product names** | ✅ Verified + guarded | Prod DB scan: 0 corrupted rows. `repairMojibakeText` on product map. | Was: `PokAcmon`/mojibake risk. | Deploy API. |
 | M8 | **`shippingAddress` optional on API** | ✅ Fixed in code | `checkoutInputSchema` requires `addressSchema`. | Was: API bypass. | Deploy. |
-| M9 | **Register email enumeration** | Open | Verified email → 409. | Account discovery. | Uniform response. |
+| M9 | **Register email enumeration** | ✅ Fixed | Verified email now returns same 201 as new signup. | Was: 409 revealed accounts. | Deploy API. |
 | M10 | **Uploads buffer full body before size check** | ✅ Fixed in code | Content-Length reject + `File.size` before `arrayBuffer` on sell/restoration/admin. | Was: memory spike. | Deploy. |
 | M11 | **Free-shipping copy ignores SEK** | ✅ Fixed | Trust strip uses `formatMoney(FREE_SHIPPING_THRESHOLD)`. | Was: hardcoded €75. | Deploy web. |
 | M12 | **“Buy now” while purchases locked** | ✅ Fixed | Category CTAs show “Browse” during prelaunch. | Was: misleading Buy now. | Deploy web. |
@@ -134,7 +134,7 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 6. [x] H1 + H2 — H2 done; API+web pinned to **1 replica**
 7. [x] H3 + H4 — Rate-limit checkout, want-list, reviews
 8. [x] H6 — Sanitize public health
-9. [~] H7 — API headers done; **WWW HSTS/CSP still open**
+9. [x] H7 — API + www HSTS/CSP via web `server.mjs`
 10. [x] M3 — Tighten order GET ACL
 11. [x] M8 — Require shipping address on API
 12. [x] M10 — Early upload size rejection
@@ -142,9 +142,10 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 ### Phase C — UX / polish before / around launch day
 13. [x] H8 + H9 — Code splitting + hero video / reduced-motion
 14. [x] H10 — Paginate products in SQL — **deploy**
-15. [x] M2 — Webhook paid-email idempotency; still open: **M6, M9, M13** (M6/M13 deferred by choice)
+15. [x] M2 — Webhook paid-email idempotency; still open: **M6, M13** (deferred by choice)
 15b. [x] M5 + M7 + M14 — catalogue error/retry, encoding guard, loading ellipsis
 15c. [x] M4 + M11 + M12 — overlay stacking, currency free-shipping copy, Browse CTA
+15d. [x] M9 register enumeration + H7 www HSTS/CSP
 16. [ ] Low items as time allows
 
 ### Phase D — Hard load test (prefer staging / local)
@@ -156,9 +157,8 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 
 ## Next actions (ops)
 
-1. Optional: HSTS/CSP on www (H7).
-2. Do **not** flip `PURCHASES_LOCKED_UNTIL_LAUNCH` until you’re happy with Phase C polish + a quick smoke checkout as admin.
-3. Keep API at **1 replica** until Redis (H1).
+1. Do **not** flip `PURCHASES_LOCKED_UNTIL_LAUNCH` until you’re happy with remaining polish + a quick smoke checkout as admin.
+2. Keep API at **1 replica** until Redis (H1).
 
 ---
 
@@ -180,3 +180,4 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 | 2026-10-15 | H1: API+web → 1 replica. H10: SQL product list/paging + indexes. Phase D stock race covered in unit tests. |
 | 2026-10-16 | M5 catalogue error+retry; M14 shop Loading…; M7 prod encoding scan clean + repairMojibakeText guard. |
 | 2026-10-16 | M4 cookie→signup overlay gate; M11 currency free-shipping strip; M12 Browse CTA while locked. |
+| 2026-10-16 | M9 uniform register response; H7 www Node static server with HSTS/CSP. |

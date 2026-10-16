@@ -1,3 +1,6 @@
 [build]
 builder = "RAILPACK"
 buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @akknerds/web build"
+
+[deploy]
+startCommand = "pnpm --filter @akknerds/web start"

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "deploy": {
+    "startCommand": "pnpm --filter @akknerds/web start",
+    "healthcheckPath": "/healthz"
+  }
+}

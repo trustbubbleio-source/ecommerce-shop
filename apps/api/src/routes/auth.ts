@@ -60,20 +60,19 @@ export function authRoutes(deps: AppDeps) {
     const { email } = c.req.valid('json');
     const existing = await deps.users.findByEmail(email);
 
-    let user = existing;
-    if (existing) {
-      if (isEmailVerified(existing)) {
-        return c.json({ error: 'An account with this email already exists' }, 409);
-      }
-      // Pending signup — just resend the confirmation email.
-      user = existing;
-    } else {
-      user = await deps.users.create({
+    // Uniform response for new, pending, and already-verified emails so callers
+    // cannot enumerate accounts (same pattern as forgot-password).
+    if (existing && isEmailVerified(existing)) {
+      return c.json({ ok: true, message: REGISTER_PENDING_MESSAGE }, 201);
+    }
+
+    const user =
+      existing ??
+      (await deps.users.create({
         email,
         name: displayNameFromEmail(email),
         passwordHash: null,
-      });
-    }
+      }));
 
     const verifyTokenJwt = await signToken(
       { sub: user.id, email: user.email, purpose: 'email-verification' },

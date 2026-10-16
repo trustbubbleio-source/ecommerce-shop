@@ -46,15 +46,21 @@ describe('POST /api/auth/register', () => {
     expect(email.sendEmailVerification).toHaveBeenCalledOnce();
   });
 
-  it('rejects a duplicate verified email', async () => {
-    const { app, session } = await registerAndConfirm();
+  it('returns a uniform success for an already-verified email (no enumeration)', async () => {
+    const email = mockEmail();
+    const { app, session } = await registerAndConfirm(email);
     await jsonRequest(app, 'POST', '/api/auth/set-password', { password: credentials.password }, {
       authorization: `Bearer ${session.token}`,
     });
-    const { res } = await jsonRequest(app, 'POST', '/api/auth/register', {
+    email.sendEmailVerification.mockClear();
+
+    const { res, data } = await jsonRequest(app, 'POST', '/api/auth/register', {
       email: credentials.email,
     });
-    expect(res.status).toBe(409);
+    expect(res.status).toBe(201);
+    expect(data.ok).toBe(true);
+    expect(data.message).toMatch(/check your inbox/i);
+    expect(email.sendEmailVerification).not.toHaveBeenCalled();
   });
 
   it('validates the payload', async () => {
