@@ -71,6 +71,24 @@ describe('cart store', () => {
     useCartStore.getState().clear();
     expect(useCartStore.getState().items).toHaveLength(0);
   });
+
+  it('reconciles price/stock and drops missing products', () => {
+    useCartStore.getState().add(product({ id: 'keep', price: 1000, stock: 5 }), 3);
+    useCartStore.getState().add(product({ id: 'gone', price: 500, stock: 2 }), 1);
+
+    useCartStore.getState().reconcile(
+      new Map([
+        ['keep', product({ id: 'keep', price: 1500, stock: 2 })],
+        ['gone', null],
+      ]),
+    );
+
+    const items = useCartStore.getState().items;
+    expect(items).toHaveLength(1);
+    expect(items[0]!.product.id).toBe('keep');
+    expect(items[0]!.product.price).toBe(1500);
+    expect(items[0]!.quantity).toBe(2);
+  });
 });
 
 describe('cart selectors', () => {

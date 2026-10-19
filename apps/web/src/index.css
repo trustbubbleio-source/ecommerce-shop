@@ -8,6 +8,11 @@
       radial-gradient(50rem 50rem at -10% 10%, hsl(0 0% 100% / 0.04), transparent 55%);
     background-attachment: fixed;
   }
+
+  /* Keep sticky header from covering focused/scrolled-to form controls (L4). */
+  :where(input, textarea, select, button, [role='button']) {
+    scroll-margin-top: 5.5rem;
+  }
 }
 
 @layer utilities {

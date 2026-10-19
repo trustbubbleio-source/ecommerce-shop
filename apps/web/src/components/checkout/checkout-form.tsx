@@ -27,7 +27,7 @@ const EMPTY: FormValues = {
   country: '',
 };
 
-export function CheckoutForm() {
+export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) {
   const user = useAuthStore((s) => s.user);
   const items = useCartStore((s) => s.items);
   const currency = useCurrencyStore((s) => s.currency);
@@ -192,7 +192,12 @@ export function CheckoutForm() {
         )}
       </Field>
 
-      <Button type="submit" size="lg" block disabled={checkout.isPending || items.length === 0}>
+      <Button
+        type="submit"
+        size="lg"
+        block
+        disabled={disabled || checkout.isPending || items.length === 0}
+      >
         {checkout.isPending ? <Spinner className="text-primary-foreground" /> : <Lock />}
         Pay securely
       </Button>

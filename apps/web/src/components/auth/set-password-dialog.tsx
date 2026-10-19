@@ -61,7 +61,7 @@ export function SetPasswordDialog() {
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-          <Field label="Password" error={error} hint="At least 8 characters" required>
+          <Field label="Password" error={error} hint="At least 8 characters, with a letter and a number" required>
             {(props) => (
               <Input
                 {...props}

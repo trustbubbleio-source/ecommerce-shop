@@ -6,12 +6,14 @@ import { CartSummary } from '../components/cart/cart-summary';
 import { EmptyState } from '../components/common/empty-state';
 import { PageHeader } from '../components/common/page-header';
 import { PRELAUNCH, usePurchaseLocked } from '../config/launch';
+import { useReconcileCart } from '../hooks/use-reconcile-cart';
 import { useCartStore } from '../store/cart';
 
 export function CartPage() {
   const items = useCartStore((s) => s.items);
   const clear = useCartStore((s) => s.clear);
   const prelaunch = usePurchaseLocked();
+  const reconcileStatus = useReconcileCart();
 
   if (items.length === 0) {
     return (
@@ -55,10 +57,17 @@ export function CartPage() {
             <CardTitle>Order summary</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            {reconcileStatus === 'loading' && (
+              <p className="text-muted-foreground text-xs">Updating prices and stock…</p>
+            )}
             <CartSummary items={items} />
             {prelaunch ? (
               <Button block size="lg" disabled>
                 {PRELAUNCH.buttonLabel}
+              </Button>
+            ) : reconcileStatus === 'loading' ? (
+              <Button block size="lg" disabled>
+                Updating cart…
               </Button>
             ) : (
               <Button asChild block size="lg">

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { detectSellImageMime, isSellCsvFile, isSellImageMimeType } from './sell-upload.js';
+import {
+  detectProductImageMime,
+  detectSellImageMime,
+  isSellCsvFile,
+  isSellImageMimeType,
+} from './sell-upload.js';
 
 describe('sell upload guards', () => {
   it('accepts only jpeg/png/webp mime types', () => {
@@ -23,6 +28,10 @@ describe('sell upload guards', () => {
       ),
     ).toBe('image/webp');
     expect(detectSellImageMime(new Uint8Array([0x00, 0x01, 0x02]))).toBeNull();
+    // GIF allowed for product/admin uploads, not sell.
+    const gif = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]);
+    expect(detectProductImageMime(gif)).toBe('image/gif');
+    expect(detectSellImageMime(gif)).toBeNull();
   });
 
   it('only allows .csv files for import', () => {

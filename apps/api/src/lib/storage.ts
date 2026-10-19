@@ -1,9 +1,9 @@
+import { detectProductImageMime } from '@akknerds/shared';
 import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { nanoid } from 'nanoid';
 import type { StorageEnv } from '../env.js';
 
 const MAX_BYTES = 5 * 1024 * 1024;
-const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
 const EXT_BY_TYPE: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -100,14 +100,16 @@ export class StorageService {
     if (!this.client) {
       throw new Error('Object storage is not configured');
     }
-    if (!ALLOWED_TYPES.has(file.type)) {
+    // Trust magic bytes, not the client-provided Content-Type (L9).
+    const contentType = detectProductImageMime(file.buffer);
+    if (!contentType) {
       throw new Error(`Unsupported file type: ${file.type || 'unknown'}`);
     }
     if (file.buffer.byteLength > MAX_BYTES) {
       throw new Error(`File ${file.name} exceeds the 5 MB limit`);
     }
 
-    const ext = EXT_BY_TYPE[file.type] ?? 'bin';
+    const ext = EXT_BY_TYPE[contentType] ?? 'bin';
     const key = keyOverride ?? `products/${nanoid(16)}.${ext}`;
 
     await this.client.send(
@@ -115,7 +117,7 @@ export class StorageService {
         Bucket: this.env.bucket,
         Key: key,
         Body: file.buffer,
-        ContentType: file.type,
+        ContentType: contentType,
         CacheControl: 'public, max-age=31536000, immutable',
       }),
     );

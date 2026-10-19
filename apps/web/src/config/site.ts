@@ -94,7 +94,7 @@ export const SERVICES_NAV: NavLink[] = [
 /** Blog + social profiles under Socials. */
 export const SOCIALS_NAV: NavLink[] = [
   { label: 'Blog', to: '/blog' },
-  { label: 'Profiles', to: '/socials' },
+  { label: 'Socials', to: '/socials' },
 ];
 
 export const MAIN_NAV: MainNavEntry[] = [

@@ -6,11 +6,13 @@ import { PageHeader } from '../components/common/page-header';
 import { ProductArt } from '../components/product/product-art';
 import { usePurchaseLocked } from '../config/launch';
 import { useFormatMoney } from '../hooks/use-format-money';
+import { useReconcileCart } from '../hooks/use-reconcile-cart';
 import { useCartStore } from '../store/cart';
 
 export function CheckoutPage() {
   const formatMoney = useFormatMoney();
   const items = useCartStore((s) => s.items);
+  const reconcileStatus = useReconcileCart();
 
   const purchaseLocked = usePurchaseLocked();
 
@@ -27,7 +29,7 @@ export function CheckoutPage() {
             <CardTitle>Shipping & contact</CardTitle>
           </CardHeader>
           <CardContent>
-            <CheckoutForm />
+            <CheckoutForm disabled={reconcileStatus === 'loading'} />
           </CardContent>
         </Card>
 
@@ -36,6 +38,9 @@ export function CheckoutPage() {
             <CardTitle>Order summary</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            {reconcileStatus === 'loading' && (
+              <p className="text-muted-foreground text-xs">Updating prices and stock…</p>
+            )}
             <ul className="flex flex-col gap-3">
               {items.map((item) => (
                 <li key={item.product.id} className="flex items-center gap-3">

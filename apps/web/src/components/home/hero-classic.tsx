@@ -24,7 +24,8 @@ export function HeroClassic() {
             <Pokeball className="size-4" /> {PRELAUNCH.homeEyebrow2}
           </span>
           <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-            Just one more <span className="text-gradient">rip</span>.<br />
+            Just one more <span className="text-gradient">rip.</span>
+            <br />
             You know the feeling.
           </h1>
           <p className="text-muted-foreground max-w-md text-lg">

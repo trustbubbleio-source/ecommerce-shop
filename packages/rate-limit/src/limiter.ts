@@ -19,11 +19,21 @@ export interface RateLimitResult {
  */
 export class MemoryRateLimiter {
   private readonly hits = new Map<string, number[]>();
+  private checks = 0;
+  /** Drop keys with no hits newer than this (covers all current presets). */
+  private readonly idleTtlMs: number;
 
-  constructor(private readonly now: () => number = () => Date.now()) {}
+  constructor(
+    private readonly now: () => number = () => Date.now(),
+    idleTtlMs = 60 * 60 * 1000,
+  ) {
+    this.idleTtlMs = idleTtlMs;
+  }
 
   check(key: string, rule: RateLimitRule): RateLimitResult {
     const now = this.now();
+    this.maybeGc(now);
+
     const windowStart = now - rule.windowMs;
     const recent = (this.hits.get(key) ?? []).filter((ts) => ts > windowStart);
 
@@ -52,5 +62,22 @@ export class MemoryRateLimiter {
   /** Drop all counters (tests / process recycle). */
   reset(): void {
     this.hits.clear();
+    this.checks = 0;
+  }
+
+  /** Test helper — current key count after GC opportunities. */
+  size(): number {
+    return this.hits.size;
+  }
+
+  private maybeGc(now: number): void {
+    this.checks += 1;
+    if (this.checks % 64 !== 0) return;
+    const cutoff = now - this.idleTtlMs;
+    for (const [key, timestamps] of this.hits) {
+      const recent = timestamps.filter((ts) => ts > cutoff);
+      if (recent.length === 0) this.hits.delete(key);
+      else this.hits.set(key, recent);
+    }
   }
 }

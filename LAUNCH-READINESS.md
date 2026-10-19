@@ -83,18 +83,18 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 
 ## Low
 
-| # | Finding | Evidence | Impact | Fix |
-|---|---------|----------|--------|-----|
-| L1 | Footer “Profiles” vs header “Socials” | Both → `/socials`. | Mild inconsistency. | Align labels. |
-| L2 | Copy polish | Space before period in hero; `Båstad , Sweden`; restoration “monday–friday”. | Polish. | Trim / capitalize. |
-| L3 | Auth pages lack unique title / page `h1` | Shared document title; login/register use `h3`. | SEO / a11y. | Per-route `<title>` + `h1`. |
-| L4 | Sticky header can intercept form clicks after scroll | ~64px sticky header over submit. | Occasional miss-clicks. | `scroll-margin-top` on form controls. |
-| L5 | Contact success still allows another submit | Form remains; button only gated by `isPending`. | Accidental doubles (API RL mitigates). | Hide/disable form after success. |
-| L6 | Cart UI can show stale price/stock | Zustand snapshots; API re-prices at checkout. | Confusing UI totals (payment still correct). | Revalidate cart before checkout summary. |
-| L7 | Weak password policy | Min 8 chars, no complexity. | Stuffing risk. | Stronger rules for admin; optional breach check. |
-| L8 | JWT 7d, no server-side revocation | Logout is client-only. | Stolen token until expiry. | Shorter TTL / version claim / revoke on password reset. |
-| L9 | Admin image upload trusts client Content-Type | Sell/restoration use magic bytes; admin path does not. | Weaker if admin JWT stolen. | Reuse magic-byte detection. |
-| L10 | Rate-limiter Map never GC’s idle keys | In-memory Map grows with unique IPs. | Memory creep (esp. with spoofed IPs). | TTL eviction or Redis TTLs. |
+| # | Finding | Status | Evidence | Impact | Fix |
+|---|---------|--------|----------|--------|-----|
+| L1 | Footer “Profiles” vs header “Socials” | ✅ Fixed | `SOCIALS_NAV` label → `Socials`. | Mild inconsistency. | Deploy web. |
+| L2 | Copy polish | ✅ Fixed | Hero period in gradient span; socials spacing; restoration keeps `supportHours` casing. | Polish. | Deploy web. |
+| L3 | Auth pages lack unique title / page `h1` | ✅ Fixed | `usePageTitle` + `<h1>` on login/register/forgot/reset. | SEO / a11y. | Deploy web. |
+| L4 | Sticky header can intercept form clicks after scroll | ✅ Fixed | Global `scroll-margin-top: 5.5rem` on form controls. | Occasional miss-clicks. | Deploy web. |
+| L5 | Contact success still allows another submit | ✅ Fixed | Form replaced by success + optional “Write again”. | Accidental doubles. | Deploy web. |
+| L6 | Cart UI can show stale price/stock | ✅ Fixed | `reconcile` + `useReconcileCart` on cart/checkout. | Confusing UI totals. | Deploy web. |
+| L7 | Weak password policy | ✅ Fixed | Shared `passwordSchema`: 8+ with letter + digit. | Stuffing risk. | Deploy API+web. |
+| L8 | JWT 7d, no server-side revocation | Open (post-launch) | Logout is client-only. | Stolen token until expiry. | Shorter TTL / version claim / revoke on password reset. |
+| L9 | Admin image upload trusts client Content-Type | ✅ Fixed | `StorageService` uses `detectProductImageMime` magic bytes. | Weaker if admin JWT stolen. | Deploy API. |
+| L10 | Rate-limiter Map never GC’s idle keys | ✅ Fixed | Opportunistic idle-key GC every 64 checks. | Memory creep. | Deploy API. |
 
 ---
 
@@ -222,3 +222,4 @@ Live crawl of `https://www.onemorerip.cards` + guest checkout API probe.
 | 2026-10-19 | Phase D: local RL bursts OK; mild prod shop load 25/25 + meta 10/10. |
 | 2026-10-19 | Browser prod smoke: shop/search/lock/headers OK; leftover product `$75` copy + footer spacing. |
 | 2026-10-19 | Fixed product free-shipping currency copy + footer copyright whitespace. |
+| 2026-10-19 | Fixed L1–L7, L9–L10 (skip L8 JWT revoke until post-launch). |

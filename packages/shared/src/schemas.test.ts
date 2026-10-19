@@ -60,12 +60,15 @@ describe('forgotPasswordInputSchema', () => {
 });
 
 describe('resetPasswordInputSchema', () => {
-  it('requires token and a long enough password', () => {
+  it('requires token and a letter+digit password of at least 8 chars', () => {
     expect(
       resetPasswordInputSchema.safeParse({ token: 'abc', password: 'short' }).success,
     ).toBe(false);
     expect(
       resetPasswordInputSchema.safeParse({ token: 'abc', password: 'longenough' }).success,
+    ).toBe(false);
+    expect(
+      resetPasswordInputSchema.safeParse({ token: 'abc', password: 'longenough1' }).success,
     ).toBe(true);
   });
 });

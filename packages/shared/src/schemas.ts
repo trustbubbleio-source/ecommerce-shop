@@ -138,12 +138,17 @@ export const forgotPasswordInputSchema = z.object({
   email: z.string().trim().toLowerCase().email('A valid email is required'),
 });
 
+/** Shared password rule for set/reset — min 8, letter + digit (L7). */
+export const passwordSchema = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .max(100, 'Password is too long')
+  .regex(/[A-Za-z]/, 'Password must include a letter')
+  .regex(/[0-9]/, 'Password must include a number');
+
 export const resetPasswordInputSchema = z.object({
   token: z.string().min(1, 'Reset token is required'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(100, 'Password is too long'),
+  password: passwordSchema,
 });
 
 export const verifyEmailInputSchema = z.object({
@@ -151,10 +156,7 @@ export const verifyEmailInputSchema = z.object({
 });
 
 export const setPasswordInputSchema = z.object({
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(100, 'Password is too long'),
+  password: passwordSchema,
 });
 
 export const updateProfileInputSchema = z.object({

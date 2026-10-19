@@ -37,4 +37,22 @@ describe('MemoryRateLimiter', () => {
     limiter.reset();
     expect(limiter.check('x', rule).allowed).toBe(true);
   });
+
+  it('GCs idle keys after the idle TTL', () => {
+    let now = 1_000;
+    const limiter = new MemoryRateLimiter(() => now, 1_000);
+    const rule = { limit: 5, windowMs: 500 };
+
+    expect(limiter.check('stale', rule).allowed).toBe(true);
+    expect(limiter.size()).toBe(1);
+
+    now = 3_000;
+    // 63 more checks → the 64th overall triggers GC and drops idle `stale`.
+    for (let i = 0; i < 63; i++) {
+      expect(limiter.check(`noise-${i}`, rule).allowed).toBe(true);
+    }
+    expect(limiter.check('fresh', rule).allowed).toBe(true);
+    // 63 noise keys + fresh; stale was pruned.
+    expect(limiter.size()).toBe(64);
+  });
 });

@@ -1,10 +1,12 @@
 import { resetPasswordInputSchema } from '@akknerds/shared';
-import { Button, Card, CardContent, CardHeader, CardTitle, Field, Input, Spinner, useToast } from '@akknerds/ui';
+import { Button, Card, CardContent, CardHeader, Field, Input, Spinner, useToast } from '@akknerds/ui';
 import { type FormEvent, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ApiError, api } from '@akknerds/api-client';
+import { usePageTitle } from '../hooks/use-page-title';
 
 export function ResetPasswordPage() {
+  usePageTitle('Reset password');
   const [params] = useSearchParams();
   const token = useMemo(() => params.get('token')?.trim() ?? '', [params]);
   const navigate = useNavigate();
@@ -54,7 +56,7 @@ export function ResetPasswordPage() {
     <div className="container flex justify-center py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Choose a new password</CardTitle>
+          <h1 className="text-2xl font-semibold leading-tight">Choose a new password</h1>
           <p className="text-muted-foreground text-sm">
             Pick a new password for your One More Rip account.
           </p>
@@ -70,7 +72,12 @@ export function ResetPasswordPage() {
             </p>
           ) : (
             <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-              <Field label="New password" error={errors.password} hint="At least 8 characters" required>
+              <Field
+                label="New password"
+                error={errors.password}
+                hint="At least 8 characters, with a letter and a number"
+                required
+              >
                 {(props) => (
                   <Input
                     {...props}

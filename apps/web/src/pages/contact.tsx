@@ -105,53 +105,66 @@ export function ContactPage() {
           <StoreMap />
         </aside>
 
-        <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-          {done && (
+        {done ? (
+          <div className="flex flex-col gap-4">
             <Alert variant="success">
               Thanks for reaching out! We'll reply within one business day.
             </Alert>
-          )}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Name" error={errors.name} required>
-              {(props) => <Input {...props} value={values.name} onChange={set('name')} />}
+            <p className="text-muted-foreground text-sm">
+              Need to send another message?{' '}
+              <button
+                type="button"
+                className="text-foreground font-medium hover:underline"
+                onClick={() => setDone(false)}
+              >
+                Write again
+              </button>
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Name" error={errors.name} required>
+                {(props) => <Input {...props} value={values.name} onChange={set('name')} />}
+              </Field>
+              <Field label="Email" error={errors.email} required>
+                {(props) => (
+                  <Input {...props} type="email" value={values.email} onChange={set('email')} />
+                )}
+              </Field>
+            </div>
+            <Field label="Subject" error={errors.subject} required>
+              {(props) => <Input {...props} value={values.subject} onChange={set('subject')} />}
             </Field>
-            <Field label="Email" error={errors.email} required>
+            <Field label="Message" error={errors.message} required>
               {(props) => (
-                <Input {...props} type="email" value={values.email} onChange={set('email')} />
+                <Textarea
+                  {...props}
+                  rows={6}
+                  value={values.message}
+                  onChange={set('message')}
+                  placeholder="How can we help?"
+                />
               )}
             </Field>
-          </div>
-          <Field label="Subject" error={errors.subject} required>
-            {(props) => <Input {...props} value={values.subject} onChange={set('subject')} />}
-          </Field>
-          <Field label="Message" error={errors.message} required>
-            {(props) => (
-              <Textarea
-                {...props}
-                rows={6}
-                value={values.message}
-                onChange={set('message')}
-                placeholder="How can we help?"
-              />
-            )}
-          </Field>
-          <Button type="submit" size="lg" disabled={contact.isPending} className="self-start">
-            {contact.isPending ? <Spinner className="text-primary-foreground" /> : <Send />}
-            Send message
-          </Button>
-          <p className="text-muted-foreground text-xs leading-relaxed">
-            By contacting us you agree that we may use your details to respond to your enquiry. Read
-            our{' '}
-            <Link to="/privacy" className="text-foreground font-medium hover:underline">
-              Privacy Policy
-            </Link>
-            . Interested in wholesale, sponsorship, or a collab? See{' '}
-            <Link to="/partners" className="text-foreground font-medium hover:underline">
-              Looking for partners
-            </Link>
-            .
-          </p>
-        </form>
+            <Button type="submit" size="lg" disabled={contact.isPending} className="self-start">
+              {contact.isPending ? <Spinner className="text-primary-foreground" /> : <Send />}
+              Send message
+            </Button>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              By contacting us you agree that we may use your details to respond to your enquiry. Read
+              our{' '}
+              <Link to="/privacy" className="text-foreground font-medium hover:underline">
+                Privacy Policy
+              </Link>
+              . Interested in wholesale, sponsorship, or a collab? See{' '}
+              <Link to="/partners" className="text-foreground font-medium hover:underline">
+                Looking for partners
+              </Link>
+              .
+            </p>
+          </form>
+        )}
       </div>
 
       <div className="border-border bg-card/40 mt-14 overflow-hidden rounded-2xl border">

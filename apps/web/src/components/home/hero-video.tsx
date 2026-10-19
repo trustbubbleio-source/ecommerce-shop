@@ -54,7 +54,7 @@ export function HeroVideo() {
           <Pokeball className="size-4" /> {PRELAUNCH.homeEyebrow2}
         </span>
         <h1 className="max-w-2xl text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
-          Just one more <span className="text-gradient">rip</span>.
+          Just one more <span className="text-gradient">rip.</span>
           <br />
           You know the feeling.
         </h1>

@@ -2,6 +2,10 @@
 export const SELL_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export type SellImageMimeType = (typeof SELL_IMAGE_MIME_TYPES)[number];
 
+/** Product/admin uploads also allow GIF. */
+export const PRODUCT_IMAGE_MIME_TYPES = [...SELL_IMAGE_MIME_TYPES, 'image/gif'] as const;
+export type ProductImageMimeType = (typeof PRODUCT_IMAGE_MIME_TYPES)[number];
+
 export const SELL_IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp';
 export const SELL_MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const SELL_MAX_CARDS = 8;
@@ -13,10 +17,10 @@ export function isSellImageMimeType(value: string): value is SellImageMimeType {
 }
 
 /**
- * Detect jpeg/png/webp from magic bytes (do not trust client Content-Type alone).
+ * Detect jpeg/png/webp/gif from magic bytes (do not trust client Content-Type alone).
  * Returns null when the buffer is not a supported image.
  */
-export function detectSellImageMime(buffer: Uint8Array): SellImageMimeType | null {
+export function detectProductImageMime(buffer: Uint8Array): ProductImageMimeType | null {
   if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
     return 'image/jpeg';
   }
@@ -46,7 +50,28 @@ export function detectSellImageMime(buffer: Uint8Array): SellImageMimeType | nul
   ) {
     return 'image/webp';
   }
+  // GIF87a / GIF89a
+  if (
+    buffer.length >= 6 &&
+    buffer[0] === 0x47 &&
+    buffer[1] === 0x49 &&
+    buffer[2] === 0x46 &&
+    buffer[3] === 0x38 &&
+    (buffer[4] === 0x37 || buffer[4] === 0x39) &&
+    buffer[5] === 0x61
+  ) {
+    return 'image/gif';
+  }
   return null;
+}
+
+/**
+ * Detect jpeg/png/webp from magic bytes for sell/restoration uploads (no GIF).
+ */
+export function detectSellImageMime(buffer: Uint8Array): SellImageMimeType | null {
+  const mime = detectProductImageMime(buffer);
+  if (!mime || mime === 'image/gif') return null;
+  return mime;
 }
 
 export function sellImageExtension(mime: SellImageMimeType): 'jpg' | 'png' | 'webp' {

@@ -1,13 +1,16 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@akknerds/ui';
+import { Card, CardContent, CardHeader } from '@akknerds/ui';
 import { Link } from 'react-router-dom';
 import { AuthForm } from '../components/auth/auth-form';
+import { usePageTitle } from '../hooks/use-page-title';
 
 export function LoginPage() {
+  usePageTitle('Sign in');
+
   return (
     <div className="container flex justify-center py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <h1 className="text-2xl font-semibold leading-tight">Welcome back</h1>
           <p className="text-muted-foreground text-sm">Sign in to your One More Rip account.</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">

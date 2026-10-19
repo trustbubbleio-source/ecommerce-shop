@@ -1,10 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle, Button, Field, Input, Spinner, useToast } from '@akknerds/ui';
+import { Card, CardContent, CardHeader, Button, Field, Input, Spinner, useToast } from '@akknerds/ui';
 import { forgotPasswordInputSchema } from '@akknerds/shared';
 import { type FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError, api } from '@akknerds/api-client';
+import { usePageTitle } from '../hooks/use-page-title';
 
 export function ForgotPasswordPage() {
+  usePageTitle('Forgot password');
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string>();
@@ -39,7 +41,7 @@ export function ForgotPasswordPage() {
     <div className="container flex justify-center py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Forgot password</CardTitle>
+          <h1 className="text-2xl font-semibold leading-tight">Forgot password</h1>
           <p className="text-muted-foreground text-sm">
             Enter your account email and we will send a reset link if it exists.
           </p>

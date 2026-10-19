@@ -29,6 +29,11 @@ interface CartState {
   remove: (productId: string) => void;
   setQuantity: (productId: string, quantity: number) => void;
   clear: () => void;
+  /**
+   * Refresh line snapshots from the live catalogue.
+   * Pass `null` for a product id to drop that line (gone / out of stock).
+   */
+  reconcile: (freshById: Map<string, CartProduct | null>) => void;
 }
 
 const clampToStock = (quantity: number, stock: number) => Math.max(1, Math.min(stock, quantity));
@@ -66,6 +71,20 @@ export const useCartStore = create<CartState>()(
             .filter((item) => item.quantity > 0),
         })),
       clear: () => set({ items: [] }),
+      reconcile: (freshById) =>
+        set((state) => ({
+          items: state.items.flatMap((item) => {
+            if (!freshById.has(item.product.id)) return [item];
+            const fresh = freshById.get(item.product.id) ?? null;
+            if (!fresh || fresh.stock <= 0) return [];
+            return [
+              {
+                product: fresh,
+                quantity: clampToStock(item.quantity, fresh.stock),
+              },
+            ];
+          }),
+        })),
     }),
     { name: 'onemorerip-cart' },
   ),

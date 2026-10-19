@@ -354,7 +354,7 @@ export function CardRestorationPage() {
             </h2>
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed sm:text-base">
               You can still write us directly at {SITE.email.support}. We aim to reply{' '}
-              {SITE.supportHours.toLowerCase()}.
+              {SITE.supportHours}.
             </p>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:items-end">
