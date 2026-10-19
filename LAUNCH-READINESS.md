@@ -150,8 +150,25 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 
 ### Phase D — Hard load test (prefer staging / local)
 17. [x] Concurrent checkout race with stock=1 — covered by API `checkout.test` reserve race
-18. [ ] Burst contact/auth/checkout rate limits across “many users”
-19. [ ] Shop under parallel catalogue load
+18. [x] Burst contact/auth/checkout rate limits — **local 2026-10-19** (see below)
+19. [x] Shop under parallel catalogue load — **local + mild prod 2026-10-19**
+
+#### Phase D results (2026-10-19)
+
+Script: `scripts/phase-d-burst.mjs` · raw JSON: `scripts/results/phase-d-burst-*.json`
+
+| Probe | Target | Result | Latency |
+|-------|--------|--------|---------|
+| Contact POST ×8 (limit 5/15m) | local `:4000` | **429** after 5 (bodies were 502 — local email/Resend not live; RL still counted) | p95 ~556ms |
+| Login POST ×25 (limit 20/15m) | local | 20×401 then **429** | p95 ~1.4s |
+| Checkout POST ×14 (limit 10/15m) | local | 10×400 then **429** | p95 ~23ms |
+| Products GET ×40 @ concurrency 20 | local | **40/40 200** | p95 ~1.2s |
+| Products GET ×25 @ concurrency 10 | **prod** | **25/25 200** | p95 **429ms** |
+| Products `/meta` ×10 | **prod** | **10/10 200** | p95 **165ms** |
+
+**Verdict:** Rate limits fire as designed. Prod catalogue stays healthy under mild parallel load. No code change required from this run.
+
+**Not done on prod (intentional):** contact/auth/checkout bursts (would spam mail / Stripe / lockouts).
 
 ---
 

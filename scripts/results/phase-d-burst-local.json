@@ -1,0 +1,74 @@
+{
+  "target": "http://localhost:4000",
+  "health": {
+    "status": "ok"
+  },
+  "results": [
+    {
+      "label": "local contact POST (expect 200 then 429 @6)",
+      "count": 8,
+      "concurrency": 4,
+      "elapsedMs": 705,
+      "statuses": {
+        "429": 3,
+        "502": 5
+      },
+      "latencyMs": {
+        "p50": 531,
+        "p95": 556,
+        "max": 556
+      }
+    },
+    {
+      "label": "local login POST (expect 401 then 429 @21)",
+      "count": 25,
+      "concurrency": 8,
+      "elapsedMs": 1974,
+      "statuses": {
+        "401": 20,
+        "429": 5
+      },
+      "latencyMs": {
+        "p50": 318,
+        "p95": 1378,
+        "max": 1378
+      }
+    },
+    {
+      "label": "local checkout POST (expect 4xx then 429 @11)",
+      "count": 14,
+      "concurrency": 6,
+      "elapsedMs": 41,
+      "statuses": {
+        "400": 10,
+        "429": 4
+      },
+      "latencyMs": {
+        "p50": 15,
+        "p95": 23,
+        "max": 23
+      }
+    },
+    {
+      "label": "local products GET ×40 parallel",
+      "count": 40,
+      "concurrency": 20,
+      "elapsedMs": 1981,
+      "statuses": {
+        "200": 40
+      },
+      "latencyMs": {
+        "p50": 780,
+        "p95": 1195,
+        "max": 1205
+      }
+    }
+  ],
+  "ranAt": "2026-10-19T14:14:36.757Z",
+  "findings": [
+    "OK: contact rate limit tripped",
+    "OK: auth rate limit tripped",
+    "OK: checkout rate limit tripped",
+    "OK: shop 40/40 HTTP 200 (p95 1195ms)"
+  ]
+}

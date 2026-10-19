@@ -1,0 +1,42 @@
+{
+  "target": "https://api-production-6622e.up.railway.app",
+  "health": {
+    "status": "ok"
+  },
+  "results": [
+    {
+      "label": "prod products GET ×25 concurrency 10 (mild)",
+      "count": 25,
+      "concurrency": 10,
+      "elapsedMs": 708,
+      "statuses": {
+        "200": 25
+      },
+      "latencyMs": {
+        "p50": 168,
+        "p95": 429,
+        "max": 429
+      }
+    },
+    {
+      "label": "prod products/meta ×10",
+      "count": 10,
+      "concurrency": 5,
+      "elapsedMs": 327,
+      "statuses": {
+        "200": 10
+      },
+      "latencyMs": {
+        "p50": 160,
+        "p95": 165,
+        "max": 165
+      }
+    }
+  ],
+  "note": "No contact/auth/checkout bursts against production.",
+  "ranAt": "2026-10-19T14:15:07.829Z",
+  "findings": [
+    "OK: shop 25/25 HTTP 200 (p95 429ms)",
+    "OK: shop 10/10 HTTP 200 (p95 165ms)"
+  ]
+}
