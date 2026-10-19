@@ -1,4 +1,11 @@
-import { categoryLabel, isCardStyleCategory, languageLabel, productImageUrls, titleCase } from '@akknerds/shared';
+import {
+  FREE_SHIPPING_THRESHOLD,
+  categoryLabel,
+  isCardStyleCategory,
+  languageLabel,
+  productImageUrls,
+  titleCase,
+} from '@akknerds/shared';
 import { Badge, Button, ImageLightbox, QuantityStepper, Rating, Separator, Skeleton, cn } from '@akknerds/ui';
 import { ArrowLeft, Expand, PackageX, RotateCcw, ShieldCheck, Truck } from 'lucide-react';
 import { useState } from 'react';
@@ -15,6 +22,7 @@ import { ProductGrid } from '../components/product/product-grid';
 import { ProductPriceHistory } from '../components/product/product-price-history';
 import { ProductReviewsSection } from '../components/product/product-reviews';
 import { PRELAUNCH, usePurchaseLocked } from '../config/launch';
+import { useFormatMoney } from '../hooks/use-format-money';
 import { useProduct, useProducts } from '../hooks/use-products';
 
 function DetailSkeleton() {
@@ -41,6 +49,8 @@ export function ProductDetailPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const purchaseLocked = usePurchaseLocked();
+  const formatMoney = useFormatMoney();
+  const freeShippingLabel = formatMoney(FREE_SHIPPING_THRESHOLD);
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -230,7 +240,7 @@ export function ProductDetailPage() {
               <ShieldCheck className="text-foreground size-4" /> Authentic & sealed
             </li>
             <li className="text-muted-foreground flex items-center gap-2">
-              <Truck className="text-foreground size-4" /> Free shipping over $75
+              <Truck className="text-foreground size-4" /> Free shipping over {freeShippingLabel}
             </li>
             <li className="text-muted-foreground flex items-center gap-2">
               <RotateCcw className="text-foreground size-4" /> 14-day returns

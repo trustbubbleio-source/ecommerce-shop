@@ -103,9 +103,7 @@ export function Footer() {
 
       <div className="border-border border-t">
         <div className="text-muted-foreground container flex flex-col items-center justify-between gap-3 py-6 text-xs sm:flex-row">
-          <p>
-            © {new Date().getFullYear()} {SITE.legalName}. All rights reserved.
-          </p>
+          <p>{`© ${new Date().getFullYear()} ${SITE.legalName}. All rights reserved.`}</p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             <Link to="/shipping" className="hover:text-foreground hover:underline">
               Shipping

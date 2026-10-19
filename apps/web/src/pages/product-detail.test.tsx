@@ -23,6 +23,15 @@ describe('ProductDetailPage', () => {
     expect(useCartStore.getState().items).toHaveLength(1);
   });
 
+  it('shows currency-aware free shipping copy', async () => {
+    vi.spyOn(api, 'getProduct').mockResolvedValue({ product: makeProduct() });
+    vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
+    renderApp('/product/pokemon-151-booster-box-bb-151');
+
+    expect(await screen.findByText(/Free shipping over /i)).toBeInTheDocument();
+    expect(screen.queryByText(/Free shipping over \$75/)).not.toBeInTheDocument();
+  });
+
   it('shows the full single-card image without cropping on the detail page', async () => {
     vi.spyOn(api, 'getProduct').mockResolvedValue({
       product: makeProduct({

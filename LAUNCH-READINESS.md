@@ -74,7 +74,7 @@ The storefront **stays up** under light–moderate poking. Forms, CORS, prelaunc
 | M8 | **`shippingAddress` optional on API** | ✅ Fixed in code | `checkoutInputSchema` requires `addressSchema`. | Was: API bypass. | Deploy. |
 | M9 | **Register email enumeration** | ✅ Fixed | Verified email now returns same 201 as new signup. | Was: 409 revealed accounts. | Deploy API. |
 | M10 | **Uploads buffer full body before size check** | ✅ Fixed in code | Content-Length reject + `File.size` before `arrayBuffer` on sell/restoration/admin. | Was: memory spike. | Deploy. |
-| M11 | **Free-shipping copy ignores SEK** | ✅ Fixed | Trust strip uses `formatMoney(FREE_SHIPPING_THRESHOLD)`. | Was: hardcoded €75. | Deploy web. |
+| M11 | **Free-shipping copy ignores SEK** | ✅ Fixed | Home trust strip + product-detail bullet use `formatMoney(FREE_SHIPPING_THRESHOLD)`. | Was: hardcoded €75 / $75. | Deploy web. |
 | M12 | **“Buy now” while purchases locked** | ✅ Fixed | Category CTAs show “Browse” during prelaunch. | Was: misleading Buy now. | Deploy web. |
 | M13 | **Grading Submission is a stub** | Open | `/services/grading-submission`. | Dead-end. | Hide until ready. |
 | M14 | **Shop loading mojibake** | ✅ Fixed | Shop now uses `Loading…`. | Was: `Loadingâ€¦`. | Deploy web. |
@@ -170,6 +170,27 @@ Script: `scripts/phase-d-burst.mjs` · raw JSON: `scripts/results/phase-d-burst-
 
 **Not done on prod (intentional):** contact/auth/checkout bursts (would spam mail / Stripe / lockouts).
 
+#### Browser prod smoke (2026-10-19)
+
+Live crawl of `https://www.onemorerip.cards` + guest checkout API probe.
+
+| Check | Result |
+|-------|--------|
+| Home (Browse CTA, SEK free-shipping strip) | OK |
+| Shop catalogue (147 products, add disabled) | OK |
+| Category filter `?category=booster-box` | OK (7 products) |
+| Search dialog (“Charizard” → SEK result) | OK |
+| Product detail + purchase lock CTA | OK |
+| Empty cart | OK |
+| Contact form (chat hidden) | OK |
+| Login (chat hidden) | OK |
+| Web HSTS + CSP headers | OK |
+| Guest `POST /api/checkout` | **403** `Purchases open October 31, 2026.` |
+
+**Polish leftovers from smoke:** fixed in code (product `$75` → `formatMoney`; footer copyright template string). Redeploy web to verify on prod.
+
+**Not done:** admin signed-in smoke checkout (needs credentials).
+
 ---
 
 ## Next actions (ops)
@@ -198,3 +219,6 @@ Script: `scripts/phase-d-burst.mjs` · raw JSON: `scripts/results/phase-d-burst-
 | 2026-10-16 | M5 catalogue error+retry; M14 shop Loading…; M7 prod encoding scan clean + repairMojibakeText guard. |
 | 2026-10-16 | M4 cookie→signup overlay gate; M11 currency free-shipping strip; M12 Browse CTA while locked. |
 | 2026-10-16 | M9 uniform register response; H7 www Node static server with HSTS/CSP. |
+| 2026-10-19 | Phase D: local RL bursts OK; mild prod shop load 25/25 + meta 10/10. |
+| 2026-10-19 | Browser prod smoke: shop/search/lock/headers OK; leftover product `$75` copy + footer spacing. |
+| 2026-10-19 | Fixed product free-shipping currency copy + footer copyright whitespace. |
