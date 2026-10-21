@@ -3,6 +3,7 @@ import { useInitAuth } from '../../hooks/use-auth';
 import { SetPasswordDialog } from '../auth/set-password-dialog';
 import { ChatWidget } from '../chat/chat-widget';
 import { CookieNotice } from '../common/cookie-notice';
+import { OrganizationJsonLd } from '../common/organization-json-ld';
 import { SignupPromptModal } from '../common/signup-prompt-modal';
 import { Footer } from './footer';
 import { Header } from './header';
@@ -12,6 +13,7 @@ export function RootLayout() {
 
   return (
     <div className="flex min-h-dvh flex-col">
+      <OrganizationJsonLd />
       <Header />
       <main className="flex-1">
         <Outlet />

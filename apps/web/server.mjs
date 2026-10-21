@@ -28,6 +28,8 @@ const MIME = {
   '.map': 'application/json',
   '.webmanifest': 'application/manifest+json',
   '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
+  '.pdf': 'application/pdf',
 };
 
 function buildCsp() {
@@ -41,6 +43,7 @@ function buildCsp() {
     'https://accounts.google.com',
     'https://nominatim.openstreetmap.org',
     'https://*.basemaps.cartocdn.com',
+    'https://plausible.io',
   ]
     .filter(Boolean)
     .join(' ');
@@ -52,7 +55,7 @@ function buildCsp() {
     "object-src 'none'",
     "frame-ancestors 'none'",
     "form-action 'self'",
-    "script-src 'self' https://js.stripe.com https://accounts.google.com",
+    "script-src 'self' https://js.stripe.com https://accounts.google.com https://plausible.io",
     // React/Leaflet inline styles need 'unsafe-inline' for style attributes.
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",

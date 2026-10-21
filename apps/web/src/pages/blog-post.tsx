@@ -2,6 +2,7 @@ import { Button } from '@akknerds/ui';
 import { ArrowLeft, PackageX } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { BlogPostCard } from '../components/blog/blog-post-card';
+import { DocumentMeta } from '../components/common/document-meta';
 import { EmptyState } from '../components/common/empty-state';
 import { SectionHeader } from '../components/common/section';
 import { BLOG_POSTS, formatBlogDate, getBlogPost } from '../config/blog';
@@ -32,6 +33,12 @@ export function BlogPostPage() {
 
   return (
     <div className="container max-w-3xl py-8">
+      <DocumentMeta
+        title={post.title}
+        description={post.excerpt}
+        path={`/blog/${post.slug}`}
+        type="article"
+      />
       <Link
         to="/blog"
         className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1 text-sm"

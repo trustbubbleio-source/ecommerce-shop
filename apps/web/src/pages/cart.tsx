@@ -3,9 +3,11 @@ import { ShoppingBag, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CartLineItem } from '../components/cart/cart-line-item';
 import { CartSummary } from '../components/cart/cart-summary';
+import { DocumentMeta } from '../components/common/document-meta';
 import { EmptyState } from '../components/common/empty-state';
 import { PageHeader } from '../components/common/page-header';
 import { PRELAUNCH, usePurchaseLocked } from '../config/launch';
+import { useAbandonCheckout } from '../hooks/use-abandon-checkout';
 import { useReconcileCart } from '../hooks/use-reconcile-cart';
 import { useCartStore } from '../store/cart';
 
@@ -13,11 +15,13 @@ export function CartPage() {
   const items = useCartStore((s) => s.items);
   const clear = useCartStore((s) => s.clear);
   const prelaunch = usePurchaseLocked();
-  const reconcileStatus = useReconcileCart();
+  const abandonStatus = useAbandonCheckout();
+  const reconcileStatus = useReconcileCart({ enabled: abandonStatus === 'done' });
 
   if (items.length === 0) {
     return (
       <div className="container py-16">
+        <DocumentMeta title="Cart" robots="noindex,nofollow" />
         <EmptyState
           icon={<ShoppingBag />}
           title="Your cart is empty"
@@ -34,7 +38,7 @@ export function CartPage() {
 
   return (
     <div className="container py-8">
-      <PageHeader title="Your cart" />
+      <PageHeader title="Your cart" seoOptions={{ robots: 'noindex,nofollow' }} />
       <div className="grid items-start gap-8 lg:grid-cols-[1fr_22rem]">
         <div className="flex flex-col gap-4">
           <div className="divide-border border-border divide-y rounded-xl border px-5">

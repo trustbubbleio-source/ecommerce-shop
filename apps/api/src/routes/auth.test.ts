@@ -174,7 +174,7 @@ describe('PATCH /api/auth/me', () => {
           line1: '1 Pallet Lane',
           city: 'Pallet Town',
           postalCode: '00001',
-          country: 'Kanto',
+          country: 'Sweden',
         },
       },
       { authorization: `Bearer ${login.token}` },

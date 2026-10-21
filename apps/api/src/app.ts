@@ -18,6 +18,7 @@ import { checkoutRoutes } from './routes/checkout.js';
 import { contactRoutes } from './routes/contact.js';
 import { newsletterRoutes } from './routes/newsletter.js';
 import { favoriteRoutes } from './routes/favorites.js';
+import { notificationRoutes } from './routes/notifications.js';
 import { orderRoutes } from './routes/orders.js';
 import { productRoutes } from './routes/products.js';
 import {
@@ -47,6 +48,7 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
     wantList: overrides.wantList ?? memory.wantList,
     newsletter: overrides.newsletter ?? memory.newsletter,
     restorationSubmissions: overrides.restorationSubmissions ?? memory.restorationSubmissions,
+    notifications: overrides.notifications ?? memory.notifications,
     payments: overrides.payments ?? new PaymentService(env),
     storage: overrides.storage ?? new StorageService(env.storage),
     email: overrides.email ?? new EmailService(env),
@@ -88,6 +90,7 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
   api.route('/admin/orders', adminOrderRoutes(deps));
   api.route('/checkout', checkoutRoutes(deps));
   api.route('/orders', orderRoutes(deps));
+  api.route('/notifications', notificationRoutes(deps));
   api.route('/favorites', favoriteRoutes(deps));
   api.route('/contact', contactRoutes(deps));
   api.route('/newsletter', newsletterRoutes(deps));

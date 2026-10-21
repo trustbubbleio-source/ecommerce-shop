@@ -159,7 +159,8 @@ export class PaymentService {
       ...(discounts.length > 0 ? { discounts } : {}),
       customer_email: order.email,
       success_url: `${this.env.checkoutSuccessUrl}?order_id=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: this.env.checkoutCancelUrl,
+      // order_id lets /cart abandon the pending reservation and restore stock.
+      cancel_url: `${this.env.checkoutCancelUrl}?order_id=${encodeURIComponent(order.id)}`,
       metadata: {
         orderId: order.id,
         ...(discountCents > 0 ? { discountCents: String(discountCents) } : {}),

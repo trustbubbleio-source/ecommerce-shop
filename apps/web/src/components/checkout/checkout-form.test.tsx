@@ -32,7 +32,7 @@ async function fillAddress() {
   await userEvent.type(screen.getByLabelText('Address'), '1 Pallet Lane');
   await userEvent.type(screen.getByLabelText('City'), 'Pallet');
   await userEvent.type(screen.getByLabelText('Postal code'), '00001');
-  await userEvent.type(screen.getByLabelText('Country'), 'Kanto');
+  await userEvent.selectOptions(screen.getByLabelText('Country'), 'Sweden');
 }
 
 describe('CheckoutForm', () => {
@@ -41,6 +41,15 @@ describe('CheckoutForm', () => {
     renderWithProviders(<CheckoutForm />);
     await userEvent.click(screen.getByRole('button', { name: /pay securely/i }));
     expect(await screen.findByText(/valid email/i)).toBeInTheDocument();
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('requires Terms acceptance before submitting', async () => {
+    const spy = vi.spyOn(api, 'checkout');
+    renderWithProviders(<CheckoutForm />);
+    await fillAddress();
+    await userEvent.click(screen.getByRole('button', { name: /pay securely/i }));
+    expect(await screen.findByText(/accept the Terms and Returns/i)).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
   });
 
@@ -57,6 +66,7 @@ describe('CheckoutForm', () => {
 
     renderWithProviders(<CheckoutForm />);
     await fillAddress();
+    await userEvent.click(screen.getByRole('checkbox', { name: /I agree to the/i }));
     await userEvent.click(screen.getByRole('button', { name: /pay securely/i }));
 
     await waitFor(() => expect(api.checkout).toHaveBeenCalled());

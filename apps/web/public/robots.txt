@@ -1,0 +1,20 @@
+# https://www.onemorerip.cards/robots.txt
+User-agent: *
+Allow: /
+
+# Private / transactional surfaces — no value for search indexes
+Disallow: /admin
+Disallow: /admin/
+Disallow: /account
+Disallow: /account/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /newsletter/unsubscribe
+
+Sitemap: https://www.onemorerip.cards/sitemap.xml

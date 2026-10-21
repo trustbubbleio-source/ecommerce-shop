@@ -1,8 +1,10 @@
 import type {
   Address,
+  AppNotification,
   CatalogStats,
   CreateProductInput,
   FulfillmentStep,
+  NotificationType,
   Order,
   OrderLine,
   OrderStatus,
@@ -164,9 +166,17 @@ export interface CreateWantListInput {
   notes: string;
 }
 
+export interface NewsletterSubscribeResult {
+  /** True when this email was newly added. */
+  created: boolean;
+  unsubscribeToken: string;
+}
+
 export interface NewsletterRepository {
-  /** Returns true when this email was not already on the list. */
-  subscribe(email: string): Promise<boolean>;
+  /** Upsert subscriber; returns whether the row was newly created + unsubscribe token. */
+  subscribe(email: string): Promise<NewsletterSubscribeResult>;
+  /** Removes the subscriber for this token. Returns false if the token was unknown. */
+  unsubscribe(token: string): Promise<boolean>;
 }
 
 export interface WantListRepository {
@@ -194,4 +204,20 @@ export interface RestorationSubmissionRepository {
     id: string,
     input: { status: RestorationSubmissionStatus; adminNote?: string | null },
   ): Promise<RestorationSubmission | undefined>;
+}
+
+export interface CreateNotificationInput {
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  href: string;
+  orderId?: string;
+}
+
+export interface NotificationRepository {
+  create(input: CreateNotificationInput): Promise<AppNotification>;
+  listByUser(userId: string, limit?: number): Promise<AppNotification[]>;
+  unreadCount(userId: string): Promise<number>;
+  markRead(userId: string, ids?: string[]): Promise<number>;
 }

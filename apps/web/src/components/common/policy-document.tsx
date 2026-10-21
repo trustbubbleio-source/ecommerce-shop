@@ -1,11 +1,12 @@
+import { type ReactNode, isValidElement } from 'react';
 import { Link } from 'react-router-dom';
-import { PageHeader } from './page-header';
 import { SITE } from '../../config/site';
+import { PageHeader } from './page-header';
 
 export interface PolicySection {
   id: string;
   title: string;
-  body: string[];
+  body: Array<string | ReactNode>;
 }
 
 export function PolicyDocument({
@@ -48,14 +49,27 @@ export function PolicyDocument({
           <section key={section.id} id={section.id} className="scroll-mt-24">
             <h2 className="text-foreground mb-3 text-xl font-bold tracking-tight">{section.title}</h2>
             <div className="flex flex-col gap-3">
-              {section.body.map((paragraph) => (
-                <p
-                  key={paragraph.slice(0, 64)}
-                  className="text-muted-foreground text-sm leading-relaxed sm:text-base"
-                >
-                  {paragraph}
-                </p>
-              ))}
+              {section.body.map((paragraph, index) =>
+                typeof paragraph === 'string' ? (
+                  <p
+                    key={`${section.id}-${index}-${paragraph.slice(0, 48)}`}
+                    className="text-muted-foreground text-sm leading-relaxed sm:text-base"
+                  >
+                    {paragraph}
+                  </p>
+                ) : (
+                  <div
+                    key={
+                      isValidElement(paragraph) && paragraph.key != null
+                        ? String(paragraph.key)
+                        : `${section.id}-node-${index}`
+                    }
+                    className="text-muted-foreground text-sm leading-relaxed sm:text-base"
+                  >
+                    {paragraph}
+                  </div>
+                ),
+              )}
             </div>
           </section>
         ))}

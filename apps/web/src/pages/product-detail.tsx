@@ -10,6 +10,7 @@ import { Badge, Button, ImageLightbox, QuantityStepper, Rating, Separator, Skele
 import { ArrowLeft, Expand, PackageX, RotateCcw, ShieldCheck, Truck } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { DocumentMeta } from '../components/common/document-meta';
 import { EmptyState } from '../components/common/empty-state';
 import { SectionHeader } from '../components/common/section';
 import { AddToCartButton } from '../components/product/add-to-cart-button';
@@ -80,8 +81,20 @@ export function ProductDetailPage() {
     .filter((p) => p.id !== product.id)
     .slice(0, 4);
 
+  const ogImage = gallery[0];
+  const seoDescription =
+    product.description.slice(0, 160) ||
+    `${product.name} — ${categoryLabel(product.category)} from One More Rip.`;
+
   return (
     <div className="container py-8">
+      <DocumentMeta
+        title={product.name}
+        description={seoDescription}
+        path={`/product/${product.slug}`}
+        image={ogImage}
+        type="product"
+      />
       <Link
         to="/shop"
         className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1 text-sm"
@@ -186,7 +199,9 @@ export function ProductDetailPage() {
               {product.series} · {product.set}
               {product.artist ? ` · Illus. ${product.artist}` : ''}
             </p>
-            <Rating value={product.rating} reviewCount={product.reviewCount} size={16} />
+            {product.reviewCount > 0 ? (
+              <Rating value={product.rating} reviewCount={product.reviewCount} size={16} />
+            ) : null}
           </div>
 
           <PriceTag product={product} size="lg" />
@@ -243,7 +258,13 @@ export function ProductDetailPage() {
               <Truck className="text-foreground size-4" /> Free shipping over {freeShippingLabel}
             </li>
             <li className="text-muted-foreground flex items-center gap-2">
-              <RotateCcw className="text-foreground size-4" /> 14-day returns
+              <RotateCcw className="text-foreground size-4 shrink-0" />
+              <span>
+                14-day withdrawal for unopened sealed goods —{' '}
+                <Link to="/returns" className="text-primary font-medium hover:underline">
+                  see Returns
+                </Link>
+              </span>
             </li>
           </ul>
         </div>

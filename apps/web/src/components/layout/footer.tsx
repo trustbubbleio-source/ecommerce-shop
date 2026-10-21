@@ -15,9 +15,11 @@ const LEGAL_LINKS = [
   { label: 'Terms & Conditions', to: '/terms' },
   { label: 'Privacy Policy', to: '/privacy' },
   { label: 'Cookie Policy', to: '/cookies' },
+  { label: 'Company information', to: '/imprint' },
 ];
 
 const COMPANY_LINKS = [
+  { label: 'Company information', to: '/imprint' },
   { label: 'Sell to us', to: '/sell' },
   ...SERVICES_NAV,
   ...SOCIALS_NAV,
@@ -119,6 +121,9 @@ export function Footer() {
             </Link>
             <Link to="/cookies" className="hover:text-foreground hover:underline">
               Cookies
+            </Link>
+            <Link to="/imprint" className="hover:text-foreground hover:underline">
+              Company
             </Link>
             <p>Pokémon and related marks are trademarks of their respective owners.</p>
           </div>

@@ -1,7 +1,8 @@
 import { PolicyDocument, type PolicySection } from '../components/common/policy-document';
 import { SITE } from '../config/site';
 
-const UPDATED = '23 August 2026';
+const UPDATED = '21 October 2026';
+const WITHDRAWAL_FORM_HREF = '/eu-withdrawal-form.pdf';
 
 const SECTIONS: PolicySection[] = [
   {
@@ -37,7 +38,18 @@ const SECTIONS: PolicySection[] = [
       'If you are a consumer in the EU/EEA buying at a distance, you generally have 14 days from the day you receive the goods to withdraw from the purchase without giving a reason, in line with the EU Consumer Rights Directive and Swedish law.',
       'How to withdraw: email us within the 14-day period at ' +
         SITE.email.returns +
-        ' with your order number and a clear statement that you want to withdraw. You may use a standard withdrawal form if you prefer, but it is not required.',
+        ' with your order number and a clear statement that you want to withdraw.',
+      <p key="withdrawal-form">
+        You may use our{' '}
+        <a
+          href={WITHDRAWAL_FORM_HREF}
+          className="text-foreground font-medium underline-offset-2 hover:underline"
+          download
+        >
+          EU standard withdrawal form (PDF)
+        </a>{' '}
+        if you prefer, but it is not required — a clear email is enough.
+      </p>,
       'You must then return the goods without undue delay and no later than 14 days after telling us you withdraw. Goods should be unused and in original condition suitable for resale. Factory-sealed products should remain sealed.',
       'Exceptions: the right of withdrawal may not apply (or may be lost) for sealed goods that are unsealed after delivery where those goods are not suitable for return for health or hygiene reasons or similar statutory exceptions, and for goods made to your specifications. Opened booster packs and similar opened sealed product are typically not returnable under withdrawal once opened. Singles listed as final sale remain final sale unless faulty or not as described.',
       'Refunds after a valid withdrawal: we refund the price paid for the returned goods, and the cheapest standard outbound shipping you paid, within 14 days of receiving the returned goods or proof of return — whichever is earlier. We may withhold the refund until we have received the goods or adequate evidence of return.',

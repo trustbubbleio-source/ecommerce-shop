@@ -16,6 +16,7 @@ export function AccountLayout() {
       <PageHeader
         title={`Hi, ${user.name.split(' ')[0]}`}
         description="Your collector hub — profile, orders, favorites, want list, and settings."
+        seoOptions={{ robots: 'noindex,nofollow' }}
       />
 
       <nav

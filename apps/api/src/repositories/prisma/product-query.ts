@@ -4,7 +4,7 @@ import {
   toPrismaLanguage,
   toPrismaSeries,
 } from '@akknerds/db';
-import type { SortKey } from '@akknerds/shared';
+import type { ProductSeries, SortKey } from '@akknerds/shared';
 import type { Prisma } from '@prisma/client';
 import type { AdminProductSortKey, ListOptions } from '../interfaces.js';
 
@@ -21,7 +21,7 @@ export function toProductWhere(
     and.push({ category: toPrismaCategory(filter.category) });
   }
   if (filter.series) {
-    and.push({ series: toPrismaSeries(filter.series) });
+    and.push({ series: toPrismaSeries(filter.series as ProductSeries) });
   }
   if (filter.inStockOnly) {
     and.push({ stock: { gt: 0 } });

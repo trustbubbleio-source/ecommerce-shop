@@ -39,7 +39,9 @@ export function ProductCard({ product }: { product: Product }) {
 
       <div className="flex flex-col gap-2 p-3">
         <PriceTag product={product} />
-        <Rating value={product.rating} reviewCount={product.reviewCount} size={13} />
+        {product.reviewCount > 0 ? (
+          <Rating value={product.rating} reviewCount={product.reviewCount} size={13} />
+        ) : null}
         <AddToCartButton product={product} block size="sm" compact label="Add to cart" />
       </div>
     </Card>

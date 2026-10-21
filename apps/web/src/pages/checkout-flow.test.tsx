@@ -59,8 +59,19 @@ describe('CheckoutSuccessPage', () => {
 
     expect(await screen.findByText(/Thank you for your order/i)).toBeInTheDocument();
     expect(screen.getByText('ord_1')).toBeInTheDocument();
+    expect(screen.getByText(/two emails/i)).toBeInTheDocument();
     expect(screen.getByText(/of which VAT \(25%\)/)).toBeInTheDocument();
     await waitFor(() => expect(useCartStore.getState().items).toHaveLength(0));
+  });
+
+  it('does not clear the cart for an unpaid pending order', async () => {
+    useCartStore.setState({ items: [{ product: cartProduct(), quantity: 1 }] });
+    vi.spyOn(api, 'getOrder').mockResolvedValue({
+      order: { ...order, status: 'pending' },
+    });
+    renderApp('/checkout/success?order_id=ord_1');
+    expect(await screen.findByText(/Thank you for your order/i)).toBeInTheDocument();
+    expect(useCartStore.getState().items).toHaveLength(1);
   });
 
   it('handles a missing order id', async () => {

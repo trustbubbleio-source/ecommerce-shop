@@ -81,7 +81,7 @@ describe('addressSchema', () => {
         line1: '1 Pallet Lane',
         city: 'Pallet Town',
         postalCode: '00001',
-        country: 'Kanto',
+        country: 'Sweden',
       }).success,
     ).toBe(true);
   });

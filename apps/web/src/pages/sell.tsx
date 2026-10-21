@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { type ChangeEvent, useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { DocumentMeta } from '../components/common/document-meta';
 import { SellAuthModal } from '../components/sell/sell-auth-modal';
 import {
   createEmptySellCard,
@@ -248,6 +249,11 @@ export function SellPage() {
 
   return (
     <div>
+      <DocumentMeta
+        title="Sell your cards"
+        description="Sell Pokémon cards to One More Rip — submit photos or a CSV and we will reply if we want to buy."
+        path="/sell"
+      />
       <section className="border-border relative isolate overflow-hidden border-b">
         <img
           src={bulkCardsHero}

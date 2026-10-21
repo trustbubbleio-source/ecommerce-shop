@@ -5,11 +5,18 @@ import { toCartProduct, useCartStore } from '../store/cart';
 /**
  * Re-fetch cart line products on mount so price/stock match the catalogue
  * before the customer sees totals or proceeds to checkout (L6).
+ *
+ * Pass `enabled: false` while a Stripe abandon is still releasing reserved stock.
  */
-export function useReconcileCart() {
+export function useReconcileCart({ enabled = true }: { enabled?: boolean } = {}) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
 
   useEffect(() => {
+    if (!enabled) {
+      setStatus('idle');
+      return;
+    }
+
     const { items, reconcile } = useCartStore.getState();
     if (items.length === 0) {
       setStatus('done');
@@ -42,7 +49,7 @@ export function useReconcileCart() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enabled]);
 
   return status;
 }

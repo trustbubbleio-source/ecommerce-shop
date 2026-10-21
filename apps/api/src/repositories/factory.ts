@@ -1,6 +1,7 @@
 import type { Env } from '../env.js';
 import type {
   FavoriteRepository,
+  NotificationRepository,
   OrderRepository,
   ProductRepository,
   ProductReviewRepository,
@@ -10,6 +11,7 @@ import type {
   WantListRepository,
 } from './interfaces.js';
 import { FavoriteRepository as MemoryFavoriteRepository } from './favorites.js';
+import { MemoryNotificationRepository } from './notifications.js';
 import { OrderRepository as MemoryOrderRepository } from './orders.js';
 import { ProductRepository as MemoryProductRepository } from './products.js';
 import { ProductReviewRepository as MemoryProductReviewRepository } from './reviews.js';
@@ -18,6 +20,7 @@ import { MemoryNewsletterRepository } from './newsletter.js';
 import { RestorationSubmissionRepository as MemoryRestorationSubmissionRepository } from './restoration.js';
 import { WantListRepository as MemoryWantListRepository } from './want-list.js';
 import { PrismaFavoriteRepository } from './prisma/favorites.js';
+import { PrismaNotificationRepository } from './prisma/notifications.js';
 import { PrismaOrderRepository } from './prisma/orders.js';
 import { PrismaProductRepository } from './prisma/products.js';
 import { PrismaProductReviewRepository } from './prisma/reviews.js';
@@ -35,6 +38,7 @@ export interface DataRepositories {
   wantList: WantListRepository;
   newsletter: NewsletterRepository;
   restorationSubmissions: RestorationSubmissionRepository;
+  notifications: NotificationRepository;
 }
 
 export function createMemoryRepositories(): DataRepositories {
@@ -49,6 +53,7 @@ export function createMemoryRepositories(): DataRepositories {
     wantList: new MemoryWantListRepository(users),
     newsletter: new MemoryNewsletterRepository(),
     restorationSubmissions: new MemoryRestorationSubmissionRepository(),
+    notifications: new MemoryNotificationRepository(),
   };
 }
 
@@ -63,6 +68,7 @@ export function createRepositories(env: Env): DataRepositories {
       wantList: new PrismaWantListRepository(),
       newsletter: new PrismaNewsletterRepository(),
       restorationSubmissions: new PrismaRestorationSubmissionRepository(),
+      notifications: new PrismaNotificationRepository(),
     };
   }
   return createMemoryRepositories();

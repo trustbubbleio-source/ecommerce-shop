@@ -108,6 +108,8 @@ export const routes: RouteObject[] = [
       { path: 'terms', element: lazyNamed(() => import('./pages/terms'), 'TermsPage') },
       { path: 'privacy', element: lazyNamed(() => import('./pages/privacy'), 'PrivacyPage') },
       { path: 'cookies', element: lazyNamed(() => import('./pages/cookies'), 'CookiesPage') },
+      { path: 'imprint', element: lazyNamed(() => import('./pages/imprint'), 'ImprintPage') },
+      { path: 'company', element: lazyNamed(() => import('./pages/imprint'), 'ImprintPage') },
       { path: 'partners', element: lazyNamed(() => import('./pages/partners'), 'PartnersPage') },
       { path: 'socials', element: lazyNamed(() => import('./pages/socials'), 'SocialsPage') },
       { path: 'blog', element: lazyNamed(() => import('./pages/blog'), 'BlogPage') },
@@ -130,6 +132,13 @@ export const routes: RouteObject[] = [
         ),
       },
       { path: 'faq', element: lazyNamed(() => import('./pages/faq'), 'FaqPage') },
+      {
+        path: 'newsletter/unsubscribe',
+        element: lazyNamed(
+          () => import('./pages/newsletter-unsubscribe'),
+          'NewsletterUnsubscribePage',
+        ),
+      },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

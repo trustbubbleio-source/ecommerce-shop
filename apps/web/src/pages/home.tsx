@@ -7,6 +7,7 @@ import {
 } from '@akknerds/shared';
 import { ArrowRight, MapPin, ShieldCheck, Sparkles, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { DocumentMeta } from '../components/common/document-meta';
 import { NewsletterSubscribe } from '../components/common/newsletter-subscribe';
 import { SectionHeader } from '../components/common/section';
 // import { HeroClassic } from '../components/home/hero-classic'; // previous header — swap with HeroVideo to restore
@@ -185,6 +186,11 @@ export function HomePage() {
 
   return (
     <>
+      <DocumentMeta
+        title={SITE.name}
+        description={SITE.description}
+        path="/"
+      />
       {/* Swap to <HeroClassic /> to restore the previous aurora/series header */}
       <HeroVideo />
       <ValueProps />

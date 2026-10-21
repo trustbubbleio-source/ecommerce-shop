@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SHIPPING_COUNTRIES, isShippingCountry } from './countries.js';
 import {
   CARD_CONDITIONS,
   CARD_RARITIES,
@@ -108,7 +109,14 @@ export const addressSchema = z.object({
     .transform((v) => (v === '' || v === undefined ? undefined : v)),
   city: z.string().trim().min(1, 'City is required').max(80),
   postalCode: z.string().trim().min(1, 'Postal code is required').max(20),
-  country: z.string().trim().min(2, 'Country is required').max(60),
+  country: z
+    .string()
+    .trim()
+    .min(1, 'Country is required')
+    .refine(isShippingCountry, {
+      message: 'Select a country from the list',
+    })
+    .transform((value) => value as (typeof SHIPPING_COUNTRIES)[number]),
 });
 
 export const cartLineSchema = z.object({
@@ -218,6 +226,14 @@ export const newsletterSubscribeInputSchema = z.object({
     .email('A valid email is required')
     .max(200)
     .transform((email) => email.toLowerCase()),
+  /** Explicit marketing consent — must be true to join the list. */
+  consent: z.literal(true, {
+    errorMap: () => ({ message: 'Please confirm you want drop alerts by email' }),
+  }),
+});
+
+export const newsletterUnsubscribeInputSchema = z.object({
+  token: z.string().trim().min(8, 'Missing unsubscribe token').max(120),
 });
 
 export const contactInputSchema = z.object({
@@ -308,6 +324,7 @@ export type UpdateProfileInput = z.infer<typeof updateProfileInputSchema>;
 export type GoogleAuthInput = z.infer<typeof googleAuthInputSchema>;
 export type ContactInput = z.infer<typeof contactInputSchema>;
 export type NewsletterSubscribeInput = z.infer<typeof newsletterSubscribeInputSchema>;
+export type NewsletterUnsubscribeInput = z.infer<typeof newsletterUnsubscribeInputSchema>;
 export type CreateProductReviewInput = z.infer<typeof createProductReviewInputSchema>;
 export type SellRequestInput = z.infer<typeof sellRequestInputSchema>;
 export type CreateWantListItemInput = z.infer<typeof createWantListItemSchema>;

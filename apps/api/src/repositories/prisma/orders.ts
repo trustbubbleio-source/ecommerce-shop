@@ -81,7 +81,7 @@ export class PrismaOrderRepository implements OrderRepository {
           ? { carrierName: input.carrierName.trim() || null }
           : {}),
         ...(input.trackingUrl !== undefined
-          ? { trackingUrl: input.trackingUrl.trim() || null }
+          ? { trackingUrl: input.trackingUrl?.trim() || null }
           : {}),
       },
     });

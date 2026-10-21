@@ -2,6 +2,10 @@ import type { ProductCategory } from '@akknerds/shared';
 
 export const SITE = {
   name: 'One More Rip',
+  /** Canonical production origin (no trailing slash). Used for sitemap, OG, and canonical URLs. */
+  url: 'https://www.onemorerip.cards',
+  /** Default Open Graph / social share image (absolute or site-relative). */
+  ogImage: 'https://www.onemorerip.cards/android-chrome-512x512.png',
   /** Trading / merchant name shown to customers (Sweden / EU ecommerce). */
   legalName: 'One More Rip',
   /** Swedish legal form (enskild firma). */
@@ -12,7 +16,8 @@ export const SITE = {
   vatNumber: 'SE920108493701',
   tagline: 'Premium Pokémon TCG — sealed boxes, packs & singles',
   description:
-    'Your trusted shop for sealed Pokémon TCG booster boxes, Elite Trainer Boxes, packs and graded single cards.',
+    'Your trusted shop for sealed Pokémon TCG booster boxes, Elite Trainer Boxes, packs and graded single cards. Fast shipping from Båstad, Sweden.',
+
   /**
    * Purpose-specific mailboxes. Prefer these over a single inbox in customer-facing copy.
    * Keep newsletter@ for list mail if you use it; create aliases that do not yet exist in DNS/hosting.

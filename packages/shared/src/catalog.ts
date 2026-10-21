@@ -25,17 +25,19 @@ interface ProductSeed {
 }
 
 function defineProduct(seed: ProductSeed): Product {
+  // Ignore seed rating/reviewCount — only real member reviews should show stars.
+  const { rating: _rating, reviewCount: _reviewCount, ...rest } = seed;
   return {
     currency: 'eur',
     stock: 25,
     featured: false,
     isNew: false,
-    rating: 4.6,
-    reviewCount: 42,
     tags: [],
     images: [],
     language: 'english',
-    ...seed,
+    ...rest,
+    rating: 0,
+    reviewCount: 0,
     slug: slugify(`${seed.name}-${seed.id}`),
   };
 }

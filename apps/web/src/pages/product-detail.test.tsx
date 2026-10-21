@@ -32,6 +32,16 @@ describe('ProductDetailPage', () => {
     expect(screen.queryByText(/Free shipping over \$75/)).not.toBeInTheDocument();
   });
 
+  it('does not oversell open-box returns on the PDP', async () => {
+    vi.spyOn(api, 'getProduct').mockResolvedValue({ product: makeProduct() });
+    vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
+    renderApp('/product/pokemon-151-booster-box-bb-151');
+
+    expect(await screen.findByText(/unopened sealed goods/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /see Returns/i })).toHaveAttribute('href', '/returns');
+    expect(screen.queryByText(/^14-day returns$/i)).not.toBeInTheDocument();
+  });
+
   it('shows the full single-card image without cropping on the detail page', async () => {
     vi.spyOn(api, 'getProduct').mockResolvedValue({
       product: makeProduct({

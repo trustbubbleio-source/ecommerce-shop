@@ -194,10 +194,14 @@ export function orderCarrierDetails(order: Order): OrderCarrierDetails {
     };
   }
 
-  const tracked = hasCarrierTracking(order.subtotal, order.currency);
+  const thresholdEligible = hasCarrierTracking(order.subtotal, order.currency);
   const threshold = formatMoney(FREE_SHIPPING_THRESHOLD, order.currency);
+  const trackingUrl = safeHttpUrl(order.trackingUrl);
+  const savedCarrier = order.carrierName?.trim() || '';
+  // Admin may add carrier/tracking even below the free-shipping threshold.
+  const hasAdminTracking = Boolean(savedCarrier || trackingUrl);
 
-  if (!tracked) {
+  if (!thresholdEligible && !hasAdminTracking) {
     return {
       tracked: false,
       carrierName: 'Untracked postal',
@@ -207,8 +211,7 @@ export function orderCarrierDetails(order: Order): OrderCarrierDetails {
     };
   }
 
-  const trackingUrl = safeHttpUrl(order.trackingUrl);
-  const carrierName = order.carrierName?.trim() || 'Assigned at dispatch';
+  const carrierName = savedCarrier || 'Assigned at dispatch';
 
   if (trackingUrl) {
     return {
@@ -225,6 +228,8 @@ export function orderCarrierDetails(order: Order): OrderCarrierDetails {
     carrierName,
     trackingUrl: null,
     trackingDisplay: 'Issued when the parcel is collected',
-    note: `Tracked courier service is included on orders of ${threshold} and above. Carrier name and tracking URL appear here when the parcel is collected.`,
+    note: thresholdEligible
+      ? `Tracked courier service is included on orders of ${threshold} and above. Carrier name and tracking URL appear here when the parcel is collected.`
+      : 'Carrier details were added for this shipment. Tracking URL appears here when available.',
   };
 }

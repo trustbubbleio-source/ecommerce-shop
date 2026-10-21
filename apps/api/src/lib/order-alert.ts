@@ -1,4 +1,4 @@
-import { formatPrice, type Order } from '@akknerds/shared';
+import { formatPrice, type FulfillmentStep, type Order } from '@akknerds/shared';
 import type { Env } from '../env.js';
 import type { EmailService } from './email.js';
 
@@ -6,6 +6,13 @@ function orderPageUrl(env: Env, orderId: string): string {
   const shop = env.webOrigins[0] ?? 'http://localhost:5173';
   return `${shop}/account/orders/${orderId}`;
 }
+
+/** Steps that mean the parcel has left (or is leaving) the warehouse. */
+const DISPATCH_EMAIL_STEPS = new Set<FulfillmentStep>([
+  'handed_to_carrier',
+  'in_transit',
+  'delivered',
+]);
 
 export async function notifyPaidOrder(email: EmailService, env: Env, order: Order): Promise<void> {
   const shop = env.webOrigins[0] ?? 'http://localhost:5173';
@@ -55,5 +62,28 @@ export async function notifyRefundedOrder(email: EmailService, env: Env, order: 
     await email.sendOrderRefunded(order, orderPageUrl(env, order.id));
   } catch (error) {
     console.error('[email] refund notice failed', error);
+  }
+}
+
+/**
+ * One-shot dispatch email the first time an order moves to carrier / in transit / delivered.
+ * Guests get this even without an account notification.
+ */
+export async function notifyDispatchedOrder(
+  email: EmailService,
+  env: Env,
+  order: Order,
+  previousStep: FulfillmentStep | undefined,
+): Promise<void> {
+  const wasDispatched = previousStep ? DISPATCH_EMAIL_STEPS.has(previousStep) : false;
+  const isDispatched = order.fulfillmentStep
+    ? DISPATCH_EMAIL_STEPS.has(order.fulfillmentStep)
+    : false;
+  if (wasDispatched || !isDispatched) return;
+
+  try {
+    await email.sendOrderDispatched(order, orderPageUrl(env, order.id));
+  } catch (error) {
+    console.error('[email] dispatch notice failed', error);
   }
 }

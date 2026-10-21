@@ -1,10 +1,12 @@
 import type {
   AuthResponse,
   CatalogStats,
+  AppNotification,
   CheckoutInput,
   CheckoutSession,
   ContactInput,
   NewsletterSubscribeInput,
+  NewsletterUnsubscribeInput,
   CreateProductInput,
   CreateProductReviewInput,
   CreateWantListItemInput,
@@ -67,6 +69,9 @@ export interface ApiClient {
   checkout(input: CheckoutInput): Promise<CheckoutSession>;
   getOrder(id: string): Promise<{ order: Order }>;
   myOrders(): Promise<{ orders: Order[] }>;
+  abandonOrder(id: string): Promise<{ order: Order; abandoned: boolean }>;
+  listNotifications(): Promise<{ notifications: AppNotification[]; unreadCount: number }>;
+  markNotificationsRead(ids?: string[]): Promise<{ marked: number; unreadCount: number }>;
   listFavorites(): Promise<{ products: Product[] }>;
   listFavoriteIds(): Promise<{ productIds: string[] }>;
   addFavorite(productId: string): Promise<{ ok: boolean; productIds: string[] }>;
@@ -109,6 +114,9 @@ export interface ApiClient {
   adminUpdateProduct(id: string, input: UpdateProductInput): Promise<{ product: Product }>;
   contact(input: ContactInput): Promise<{ ok: boolean; message: string }>;
   subscribeNewsletter(input: NewsletterSubscribeInput): Promise<{ ok: boolean; message: string }>;
+  unsubscribeNewsletter(
+    input: NewsletterUnsubscribeInput,
+  ): Promise<{ ok: boolean; removed: boolean; message: string }>;
   submitSellRequest(formData: FormData): Promise<{ ok: boolean; message: string }>;
   submitRestorationRequest(
     formData: FormData,
@@ -244,6 +252,18 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     myOrders() {
       return request('/orders');
     },
+    abandonOrder(id) {
+      return request(`/orders/${encodeURIComponent(id)}/abandon`, { method: 'POST' });
+    },
+    listNotifications() {
+      return request('/notifications');
+    },
+    markNotificationsRead(ids) {
+      return request('/notifications/read', {
+        method: 'POST',
+        body: JSON.stringify(ids ? { ids } : {}),
+      });
+    },
     listFavorites() {
       return request('/favorites');
     },
@@ -290,6 +310,9 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     },
     subscribeNewsletter(input) {
       return request('/newsletter', { method: 'POST', body: JSON.stringify(input) });
+    },
+    unsubscribeNewsletter(input) {
+      return request('/newsletter/unsubscribe', { method: 'POST', body: JSON.stringify(input) });
     },
     submitSellRequest(formData) {
       return uploadRequest('/sell', formData);

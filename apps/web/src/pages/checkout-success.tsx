@@ -16,7 +16,8 @@ export function CheckoutSuccessPage() {
   const cleared = useRef(false);
 
   useEffect(() => {
-    if (data?.order && !cleared.current) {
+    const status = data?.order?.status;
+    if ((status === 'paid' || status === 'fulfilled') && !cleared.current) {
       clear();
       cleared.current = true;
     }
@@ -59,6 +60,10 @@ export function CheckoutSuccessPage() {
         <p className="text-muted-foreground">
           A confirmation has been sent to{' '}
           <span className="text-foreground font-medium">{order.email}</span>.
+        </p>
+        <p className="text-muted-foreground max-w-md text-sm">
+          You will receive two emails: one order confirmation from One More Rip, and a separate
+          payment receipt from Stripe. Both are normal — nothing is wrong if you see both.
         </p>
         <p className="text-muted-foreground text-sm">
           Order <span className="text-foreground font-mono">{order.id}</span>

@@ -87,7 +87,11 @@ describe('GET /api/admin/orders', () => {
     expect(data.order.status).toBe('paid');
     expect(data.order.carrierName).toBe('PostNord');
     expect(data.order.trackingUrl).toBe('https://tracking.postnord.com/abc');
+    expect(
+      info.mock.calls.some((call) => String(call[0]).includes('On its way')),
+    ).toBe(true);
 
+    const beforeDeliver = info.mock.calls.length;
     const delivered = await jsonRequest(
       app,
       'PATCH',
@@ -96,6 +100,10 @@ describe('GET /api/admin/orders', () => {
       { authorization: `Bearer ${token}` },
     );
     expect(delivered.data.order.status).toBe('fulfilled');
+    // Dispatch email is one-shot — not sent again on delivered.
+    expect(
+      info.mock.calls.slice(beforeDeliver).some((call) => String(call[0]).includes('On its way')),
+    ).toBe(false);
     info.mockRestore();
   });
 

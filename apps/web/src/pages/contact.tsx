@@ -187,6 +187,9 @@ export function ContactPage() {
           <Link to="/cookies" className="hover:text-muted-foreground hover:underline">
             Cookies
           </Link>
+          <Link to="/imprint" className="hover:text-muted-foreground hover:underline">
+            Company
+          </Link>
         </nav>
 
         <details className="group open:pb-1">
@@ -198,7 +201,14 @@ export function ContactPage() {
             <p>
               {SITE.legalName} is a Swedish {SITE.legalForm.toLowerCase()} based at{' '}
               {SITE.store.line}. For invoices and tax purposes we use VAT number {SITE.vatNumber}.
-              Organisation number and the full trader register details appear in our{' '}
+              Full trader details are on our{' '}
+              <Link
+                to="/imprint"
+                className="text-muted-foreground underline-offset-2 hover:underline"
+              >
+                Company information
+              </Link>{' '}
+              page and in the{' '}
               <Link
                 to="/terms"
                 className="text-muted-foreground underline-offset-2 hover:underline"

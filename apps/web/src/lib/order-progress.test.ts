@@ -99,7 +99,7 @@ describe('orderCarrierDetails', () => {
     expect(details.trackingUrl).toBe('https://tracking.postnord.com/abc');
   });
 
-  it('omits carrier tracking below 75 EUR', () => {
+  it('omits carrier tracking below 75 EUR when admin has not added details', () => {
     const details = orderCarrierDetails({
       ...order,
       subtotal: 7499,
@@ -110,6 +110,20 @@ describe('orderCarrierDetails', () => {
     expect(details.carrierName).toBe('Untracked postal');
     expect(details.trackingDisplay).toBe('Not included');
     expect(details.note).toMatch(/without a carrier tracking number/);
+  });
+
+  it('shows admin-added carrier details even below 75 EUR', () => {
+    const details = orderCarrierDetails({
+      ...order,
+      subtotal: 769,
+      shipping: 599,
+      total: 1368,
+      carrierName: 'PostNord',
+      trackingUrl: 'https://tracking.postnord.com/xyz',
+    });
+    expect(details.tracked).toBe(true);
+    expect(details.carrierName).toBe('PostNord');
+    expect(details.trackingUrl).toBe('https://tracking.postnord.com/xyz');
   });
 });
 

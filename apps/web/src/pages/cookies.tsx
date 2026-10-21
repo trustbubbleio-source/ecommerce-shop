@@ -1,7 +1,9 @@
+import { Button } from '@akknerds/ui';
 import { PolicyDocument, type PolicySection } from '../components/common/policy-document';
+import { openCookiePreferences } from '../lib/cookie-consent';
 import { SITE } from '../config/site';
 
-const UPDATED = '23 August 2026';
+const UPDATED = '21 October 2026';
 
 const SECTIONS: PolicySection[] = [
   {
@@ -28,8 +30,8 @@ const SECTIONS: PolicySection[] = [
     body: [
       'Strictly necessary: required for the shop to work — for example keeping you signed in, remembering your cart, securing checkout, and load balancing. These do not require consent under EU/Swedish e-privacy rules when strictly necessary to provide the service you requested.',
       'Functional: remember preferences such as UI state where used.',
-      'Analytics / statistics (if enabled): help us understand traffic and improve the site. Non-essential analytics are only used with your consent where required by law.',
-      'Marketing (if enabled): measure campaigns or remarketing. Not used without consent where required.',
+      'Analytics / statistics (optional): anonymous traffic statistics (for example Plausible) to understand which pages help collectors. Loaded only after you opt in via the cookie banner.',
+      'Marketing: not used on this shop today. If we add campaign tools later, they will require a separate opt-in.',
     ],
   },
   {
@@ -38,6 +40,7 @@ const SECTIONS: PolicySection[] = [
     body: [
       'Authentication tokens / session data for logged-in customers.',
       'Cart and checkout-related local storage so your basket persists between visits.',
+      'Cookie preference storage (your necessary / analytics choice).',
       'Security and fraud-prevention signals used by our hosting and payment providers (for example Stripe) during checkout.',
     ],
   },
@@ -45,8 +48,15 @@ const SECTIONS: PolicySection[] = [
     id: 'manage',
     title: '5. How you can manage cookies',
     body: [
-      'You can delete or block cookies in your browser settings. Blocking strictly necessary storage may break sign-in, cart or checkout.',
-      'Where we present a consent banner for non-essential cookies, you can accept or refuse those categories and change your mind later by clearing site data or contacting us.',
+      'Use the cookie banner on your first visit: Accept all, Necessary only, or Customize analytics.',
+      <p key="manage-prefs">
+        You can change your mind anytime:{' '}
+        <Button type="button" variant="link" className="h-auto p-0 text-sm" onClick={openCookiePreferences}>
+          Open cookie preferences
+        </Button>
+        .
+      </p>,
+      'You can also delete or block cookies in your browser settings. Blocking strictly necessary storage may break sign-in, cart or checkout.',
       'Most desktop browsers include cookie controls under Settings → Privacy.',
     ],
   },

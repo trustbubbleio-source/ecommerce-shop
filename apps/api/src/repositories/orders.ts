@@ -71,7 +71,7 @@ export class OrderRepository implements IOrderRepository {
       order.carrierName = input.carrierName.trim() || undefined;
     }
     if (input.trackingUrl !== undefined) {
-      order.trackingUrl = input.trackingUrl.trim() || undefined;
+      order.trackingUrl = input.trackingUrl?.trim() || undefined;
     }
     return order;
   }

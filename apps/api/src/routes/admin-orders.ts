@@ -3,7 +3,11 @@ import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
 import { validate } from '../lib/http.js';
 import { cancelOrderAndReleaseStock } from '../lib/inventory.js';
-import { notifyCancelledOrder } from '../lib/order-alert.js';
+import { notifyCancelledOrder, notifyDispatchedOrder } from '../lib/order-alert.js';
+import {
+  notifyOrderCancelledInApp,
+  notifyOrderFulfillmentUpdate,
+} from '../lib/order-notifications.js';
 import { requireAdmin } from '../middleware/admin.js';
 import { requireAuth } from '../middleware/auth.js';
 
@@ -33,12 +37,20 @@ export function adminOrderRoutes(deps: AppDeps) {
       if (existing.status !== 'paid' && existing.status !== 'fulfilled') {
         return c.json({ error: 'Only paid orders can be fulfilled' }, 409);
       }
+      // Snapshot before update — in-memory repo mutates the same object.
+      const previous = {
+        fulfillmentStep: existing.fulfillmentStep,
+        carrierName: existing.carrierName,
+        trackingUrl: existing.trackingUrl,
+      };
       const order = await deps.orders.updateFulfillment(c.req.param('id'), {
         fulfillmentStep: body.fulfillmentStep,
         carrierName: body.carrierName,
         trackingUrl: body.trackingUrl,
       });
       if (!order) return c.json({ error: 'Order not found' }, 404);
+      await notifyOrderFulfillmentUpdate(deps, order, previous);
+      await notifyDispatchedOrder(deps.email, deps.env, order, previous.fulfillmentStep);
       return c.json({ order });
     },
   );
@@ -78,6 +90,7 @@ export function adminOrderRoutes(deps: AppDeps) {
 
       const result = await cancelOrderAndReleaseStock(deps, existing.id, reason);
       if (!result) return c.json({ error: 'Order not found' }, 404);
+      await notifyOrderCancelledInApp(deps, result.order);
       const emailed = await notifyCancelledOrder(deps.email, deps.env, result.order, { refunded });
       return c.json({ order: result.order, emailed });
     },

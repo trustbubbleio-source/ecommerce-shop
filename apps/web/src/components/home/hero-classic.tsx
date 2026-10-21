@@ -44,9 +44,9 @@ export function HeroClassic() {
           </div>
           <dl className="mt-2 flex gap-8">
             {[
-              { k: '10k+', v: 'Orders shipped' },
-              { k: '4.9★', v: 'Avg. rating' },
-              { k: '24h', v: 'Dispatch time' },
+              { k: 'Sealed', v: 'Authentic stock' },
+              { k: 'EU', v: 'Shipping ready' },
+              { k: '24h', v: 'Dispatch aim' },
             ].map((stat) => (
               <div key={stat.v}>
                 <dt className="text-foreground text-2xl font-extrabold">{stat.k}</dt>

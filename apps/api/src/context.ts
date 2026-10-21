@@ -6,6 +6,7 @@ import type { PaymentService } from './lib/payments.js';
 import type { StorageService } from './lib/storage.js';
 import type {
   FavoriteRepository,
+  NotificationRepository,
   OrderRepository,
   ProductRepository,
   ProductReviewRepository,
@@ -26,6 +27,7 @@ export interface AppDeps {
   wantList: WantListRepository;
   newsletter: NewsletterRepository;
   restorationSubmissions: RestorationSubmissionRepository;
+  notifications: NotificationRepository;
   payments: PaymentService;
   storage: StorageService;
   email: EmailService;

@@ -40,7 +40,7 @@ export class EmailService {
   }
 
   async send(input: SendEmailInput): Promise<SendEmailResult> {
-    const from = input.from ?? this.env.email.from;
+    const from = withBrandFrom(input.from ?? this.env.email.from);
     const to = Array.isArray(input.to) ? input.to : [input.to];
 
     if (!this.client) {
@@ -380,6 +380,56 @@ export class EmailService {
     });
   }
 
+  async sendOrderDispatched(
+    order: Order,
+    orderUrl: string,
+  ): Promise<SendEmailResult> {
+    const name = order.shippingAddress?.fullName?.trim() || 'there';
+    const carrier = order.carrierName?.trim();
+    const trackingUrl = order.trackingUrl?.trim();
+    const trackingLines =
+      carrier || trackingUrl
+        ? [
+            '',
+            carrier ? `Carrier: ${carrier}` : '',
+            trackingUrl ? `Tracking: ${trackingUrl}` : '',
+          ].filter(Boolean)
+        : ['', 'Tracking details appear on your order page when available.'];
+    const trackingHtml =
+      carrier || trackingUrl
+        ? `<p style="margin:0 0 12px;">${carrier ? `<strong>Carrier:</strong> ${escapeHtml(carrier)}` : ''}${
+            carrier && trackingUrl ? '<br/>' : ''
+          }${
+            trackingUrl
+              ? `<strong>Tracking:</strong> <a href="${escapeHtml(trackingUrl)}" style="color:#a78bfa;">${escapeHtml(trackingUrl)}</a>`
+              : ''
+          }</p>`
+        : `<p style="margin:0 0 16px;">Tracking details appear on your order page when available.</p>`;
+
+    return this.send({
+      to: order.email,
+      replyTo: this.env.email.ordersInbox,
+      subject: `On its way — ${order.id}`,
+      text: [
+        `Hi ${name},`,
+        '',
+        `Good news — order ${order.id} has been handed to the carrier.`,
+        ...trackingLines,
+        '',
+        `View your order: ${orderUrl}`,
+        '',
+        '— One More Rip',
+      ].join('\n'),
+      html: brandedEmail({
+        preheader: `Order ${order.id} is with the carrier.`,
+        title: `Hi ${escapeHtml(name)},`,
+        body: `<p style="margin:0 0 12px;">Good news — order <strong>${escapeHtml(order.id)}</strong> has been handed to the carrier.</p>${trackingHtml}`,
+        actionLabel: 'Track your order',
+        actionUrl: orderUrl,
+      }),
+    });
+  }
+
   async sendOrderCancelled(
     order: Order,
     orderUrl: string,
@@ -419,17 +469,29 @@ export class EmailService {
     });
   }
 
-  async sendNewsletterConfirmation(email: string): Promise<SendEmailResult> {
+  async sendNewsletterConfirmation(
+    email: string,
+    input: { unsubscribeUrl: string },
+  ): Promise<SendEmailResult> {
     const shopUrl = `${this.env.webOrigins[0] ?? 'https://www.onemorerip.cards'}/shop`;
+    const unsub = input.unsubscribeUrl;
     return this.send({
       to: email,
       replyTo: this.env.email.contactInbox,
       subject: "You're on the One More Rip list",
-      text: `You're signed up for drop alerts from One More Rip.\n\nBrowse the shop: ${shopUrl}\n\n— One More Rip`,
+      text: [
+        "You're signed up for drop alerts from One More Rip.",
+        '',
+        `Browse the shop: ${shopUrl}`,
+        '',
+        `Unsubscribe: ${unsub}`,
+        '',
+        '— One More Rip',
+      ].join('\n'),
       html: brandedEmail({
         preheader: "You're on the list for new drops and restocks.",
         title: "You're on the list",
-        body: '<p style="margin:0 0 16px;">New drops and restocks will land in this inbox.</p>',
+        body: `<p style="margin:0 0 16px;">New drops and restocks will land in this inbox.</p><p style="margin:0 0 16px;color:#8a8a8a;font-size:13px;">You can <a href="${escapeHtml(unsub)}" style="color:#a78bfa;">unsubscribe</a> any time.</p>`,
         actionLabel: 'Browse the shop',
         actionUrl: shopUrl,
       }),
@@ -525,4 +587,17 @@ function escapeHtml(value: string): string {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
+}
+
+/**
+ * Inbox clients often show the local-part ("noreply") when the From header
+ * has no display name. Always brand as One More Rip.
+ */
+export function withBrandFrom(from: string): string {
+  const trimmed = from.trim();
+  const match = /^([^<]*)<([^>]+)>$/.exec(trimmed);
+  if (match) {
+    return `One More Rip <${match[2]!.trim()}>`;
+  }
+  return `One More Rip <${trimmed}>`;
 }

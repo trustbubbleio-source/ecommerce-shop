@@ -161,6 +161,21 @@ export interface CheckoutSession {
   orderId: string;
 }
 
+/** In-app notification for order updates (bell icon). */
+export type NotificationType = 'order_updated' | 'order_cancelled';
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  href: string;
+  orderId?: string;
+  readAt: string | null;
+  createdAt: string;
+}
+
 export interface ApiError {
   error: string;
   details?: unknown;
