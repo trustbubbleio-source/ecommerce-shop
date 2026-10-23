@@ -16,6 +16,7 @@
   "dependencies": {
     "@akknerds/api-client": "workspace:*",
     "@akknerds/chat": "workspace:*",
+    "@akknerds/qr": "workspace:*",
     "@akknerds/shared": "workspace:*",
     "@akknerds/ui": "workspace:*",
     "@stripe/stripe-js": "^5.4.0",

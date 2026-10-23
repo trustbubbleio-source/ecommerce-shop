@@ -46,6 +46,7 @@ import { ApiError, api } from '@akknerds/api-client';
 import { ProductTagPicker, normalizeProductTags } from '../../components/admin/product-tag-picker';
 import { ProductVisibilityFields } from '../../components/admin/product-visibility-fields';
 import { SingleCardPriceField } from '../../components/admin/single-card-price-field';
+import { ProductQrPanel } from '../../components/product/product-qr-panel';
 import {
   PRODUCT_NAME_GUIDE,
   buildProductDraft,
@@ -559,6 +560,12 @@ export function AdminEditProductPage() {
             />
           </CardContent>
         </Card>
+
+        <ProductQrPanel
+          slug={productQuery.data.product.slug}
+          productName={productQuery.data.product.name}
+          variant="admin"
+        />
 
         <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={!canSave || updateProduct.isPending}>

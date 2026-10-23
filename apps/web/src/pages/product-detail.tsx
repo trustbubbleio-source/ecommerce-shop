@@ -21,6 +21,7 @@ import { ProductArt } from '../components/product/product-art';
 import { RarityIcon } from '../components/product/rarity-icon';
 import { ProductGrid } from '../components/product/product-grid';
 import { ProductPriceHistory } from '../components/product/product-price-history';
+import { ProductQrPanel } from '../components/product/product-qr-panel';
 import { ProductReviewsSection } from '../components/product/product-reviews';
 import { PRELAUNCH, usePurchaseLocked } from '../config/launch';
 import { useFormatMoney } from '../hooks/use-format-money';
@@ -267,6 +268,13 @@ export function ProductDetailPage() {
               </span>
             </li>
           </ul>
+
+          <ProductQrPanel
+            slug={product.slug}
+            productName={product.name}
+            variant="storefront"
+            className="mt-2"
+          />
         </div>
       </div>
 

@@ -619,6 +619,11 @@ export function AdminNewProductPage() {
           </CardContent>
         </Card>
 
+        <p className="text-muted-foreground text-sm">
+          After you create this product, open it in Edit to download a printable QR code linked to
+          the live product page.
+        </p>
+
         <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={!canCreateProduct || createProduct.isPending}>
             {createProduct.isPending && <Spinner className="text-primary-foreground" />}

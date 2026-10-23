@@ -7,8 +7,8 @@ Guidance for working in this repository.
 `One More Rip` — a mobile-first Pokémon TCG e-commerce app. pnpm monorepo with a Vite
 
 - React storefront (`apps/web`), a Hono API (`apps/api`), a shared domain package
-  (`packages/shared`), a typed HTTP client (`packages/api-client`), and a shared
-  design system (`packages/ui`).
+  (`packages/shared`), a typed HTTP client (`packages/api-client`), a shared
+  design system (`packages/ui`), and a product QR package (`packages/qr`).
 
 ## Commands
 
@@ -49,6 +49,8 @@ pnpm --filter @akknerds/api dev
   its token into the API client via `setAuthToken`.
 - **UI consistency:** build on `@akknerds/ui` primitives. The dark/purple theme is
   HSL CSS variables in `packages/ui/src/styles.css` + the Tailwind preset.
+- **Product QR codes:** `@akknerds/qr` builds live product URLs and QR images on
+  the fly (no DB column). Prefer `SITE.url` + slug so printed codes hit production.
 
 ## Testing conventions
 

@@ -32,6 +32,18 @@ describe('ProductDetailPage', () => {
     expect(screen.queryByText(/Free shipping over \$75/)).not.toBeInTheDocument();
   });
 
+  it('shows a scannable product QR on the detail page', async () => {
+    vi.spyOn(api, 'getProduct').mockResolvedValue({ product: makeProduct() });
+    vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
+    renderApp('/product/pokemon-151-booster-box-bb-151');
+
+    expect(await screen.findByLabelText(/Product QR code/i)).toBeInTheDocument();
+    expect(screen.getByText(/Scan in store/i)).toBeInTheDocument();
+    expect(
+      await screen.findByRole('img', { name: /QR code for Pokémon 151 Booster Box/i }),
+    ).toBeInTheDocument();
+  });
+
   it('does not oversell open-box returns on the PDP', async () => {
     vi.spyOn(api, 'getProduct').mockResolvedValue({ product: makeProduct() });
     vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
