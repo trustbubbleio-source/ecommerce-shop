@@ -337,3 +337,10 @@ export type FetchCardImageInput = z.infer<typeof fetchCardImageInputSchema>;
 
 /** Admin product updates use the same shape as create. */
 export const updateProductInputSchema = createProductInputSchema;
+
+/** Decrement catalogue stock after an in-store (POS) sale. */
+export const sellInStoreInputSchema = z.object({
+  quantity: z.number().int().min(1).max(20).default(1),
+});
+
+export type SellInStoreInput = z.infer<typeof sellInStoreInputSchema>;

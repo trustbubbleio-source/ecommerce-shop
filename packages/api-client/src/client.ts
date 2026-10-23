@@ -21,6 +21,7 @@ import type {
   RegisterInput,
   RegisterPendingResponse,
   ResetPasswordInput,
+  SellInStoreInput,
   SetPasswordInput,
   UpdateProductInput,
   UpdateProfileInput,
@@ -112,6 +113,10 @@ export interface ApiClient {
   }>;
   adminCreateProduct(input: CreateProductInput): Promise<{ product: Product }>;
   adminUpdateProduct(id: string, input: UpdateProductInput): Promise<{ product: Product }>;
+  adminSellInStore(
+    idOrSlug: string,
+    input?: SellInStoreInput,
+  ): Promise<{ product: Product }>;
   contact(input: ContactInput): Promise<{ ok: boolean; message: string }>;
   subscribeNewsletter(input: NewsletterSubscribeInput): Promise<{ ok: boolean; message: string }>;
   unsubscribeNewsletter(
@@ -302,6 +307,12 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     adminUpdateProduct(id, input) {
       return request(`/admin/products/${encodeURIComponent(id)}`, {
         method: 'PATCH',
+        body: JSON.stringify(input),
+      });
+    },
+    adminSellInStore(idOrSlug, input = { quantity: 1 }) {
+      return request(`/admin/products/${encodeURIComponent(idOrSlug)}/sell-in-store`, {
+        method: 'POST',
         body: JSON.stringify(input),
       });
     },

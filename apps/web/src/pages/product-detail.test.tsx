@@ -2,11 +2,13 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError, api } from '@akknerds/api-client';
+import { useAuthStore } from '../store/auth';
 import { useCartStore } from '../store/cart';
 import { makeProduct, renderApp } from '../test/utils';
 
 beforeEach(() => {
   useCartStore.setState({ items: [] });
+  useAuthStore.setState({ token: null, user: null, mustSetPassword: false });
   vi.restoreAllMocks();
 });
 

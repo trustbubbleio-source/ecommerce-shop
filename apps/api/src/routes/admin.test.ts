@@ -257,6 +257,98 @@ describe('GET /api/admin/products/:id', () => {
   });
 });
 
+describe('POST /api/admin/products/:id/sell-in-store', () => {
+  it('decrements stock by one for an admin till sale', async () => {
+    const { app, deps } = makeApp();
+    await seedAdmin(deps);
+    const { data: login } = await jsonRequest(app, 'POST', '/api/auth/login', {
+      email: adminCreds.email,
+      password: adminCreds.password,
+    });
+    const { data: created } = await jsonRequest(
+      app,
+      'POST',
+      '/api/admin/products',
+      {
+        name: 'Till Sale Single',
+        description: 'In-store sale test card.',
+        category: 'single-card',
+        set: '151',
+        series: 'Scarlet & Violet',
+        price: 2500,
+        stock: 3,
+        accent: '#a855f7',
+        images: ['products/till-sale.jpg'],
+        releaseDate: '2024-06-01',
+        language: 'english',
+        rarity: 'rare',
+        condition: 'near-mint',
+      },
+      { authorization: `Bearer ${login.token}` },
+    );
+
+    const { res, data } = await jsonRequest(
+      app,
+      'POST',
+      `/api/admin/products/${created.product.id}/sell-in-store`,
+      { quantity: 1 },
+      { authorization: `Bearer ${login.token}` },
+    );
+
+    expect(res.status).toBe(200);
+    expect(data.product.stock).toBe(2);
+  });
+
+  it('rejects when stock is empty', async () => {
+    const { app, deps } = makeApp();
+    await seedAdmin(deps);
+    const { data: login } = await jsonRequest(app, 'POST', '/api/auth/login', {
+      email: adminCreds.email,
+      password: adminCreds.password,
+    });
+    const { data: created } = await jsonRequest(
+      app,
+      'POST',
+      '/api/admin/products',
+      {
+        name: 'Sold Out Single',
+        description: 'No stock left.',
+        category: 'single-card',
+        set: '151',
+        series: 'Scarlet & Violet',
+        price: 2500,
+        stock: 1,
+        accent: '#a855f7',
+        images: ['products/sold-out.jpg'],
+        releaseDate: '2024-06-01',
+        language: 'english',
+        rarity: 'rare',
+        condition: 'near-mint',
+      },
+      { authorization: `Bearer ${login.token}` },
+    );
+
+    await jsonRequest(
+      app,
+      'POST',
+      `/api/admin/products/${created.product.id}/sell-in-store`,
+      { quantity: 1 },
+      { authorization: `Bearer ${login.token}` },
+    );
+
+    const { res, data } = await jsonRequest(
+      app,
+      'POST',
+      `/api/admin/products/${created.product.id}/sell-in-store`,
+      { quantity: 1 },
+      { authorization: `Bearer ${login.token}` },
+    );
+
+    expect(res.status).toBe(409);
+    expect(data.error).toMatch(/stock/i);
+  });
+});
+
 describe('PATCH /api/admin/products/:id', () => {
   it('updates a product for an admin', async () => {
     const { app, deps } = makeApp();

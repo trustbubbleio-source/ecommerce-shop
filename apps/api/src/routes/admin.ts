@@ -2,6 +2,7 @@ import {
   PRODUCT_CATEGORIES,
   createProductInputSchema,
   fetchCardImageInputSchema,
+  sellInStoreInputSchema,
   updateProductInputSchema,
 } from '@akknerds/shared';
 import {
@@ -129,6 +130,44 @@ export function adminRoutes(deps: AppDeps) {
       const product = await deps.products.update(c.req.param('id'), input);
       if (!product) return c.json({ error: 'Product not found' }, 404);
       return c.json({ product });
+    },
+  );
+
+  /**
+   * Physical till sale: atomically decrement stock (same primitive as checkout
+   * reservation). Payment is taken separately on the merchant's Stripe reader.
+   */
+  app.post(
+    '/products/:id/sell-in-store',
+    requireAuth(),
+    requireAdmin(deps),
+    validate('json', sellInStoreInputSchema),
+    async (c) => {
+      const idOrSlug = c.req.param('id');
+      const product = await deps.products.getByIdOrSlug(idOrSlug);
+      if (!product) return c.json({ error: 'Product not found' }, 404);
+
+      const { quantity } = c.req.valid('json');
+      if (product.stock < quantity) {
+        return c.json(
+          { error: 'Insufficient stock', stock: product.stock },
+          409,
+        );
+      }
+
+      const reserved = await deps.products.reserveStock([
+        { productId: product.id, quantity },
+      ]);
+      if (!reserved.ok) {
+        const latest = await deps.products.getByIdOrSlug(product.id);
+        return c.json(
+          { error: 'Insufficient stock', stock: latest?.stock ?? 0 },
+          409,
+        );
+      }
+
+      const updated = await deps.products.getByIdOrSlug(product.id);
+      return c.json({ product: updated });
     },
   );
 

@@ -9,7 +9,7 @@ import {
 import { Badge, Button, ImageLightbox, QuantityStepper, Rating, Separator, Skeleton, cn } from '@akknerds/ui';
 import { ArrowLeft, Expand, PackageX, RotateCcw, ShieldCheck, Truck } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { DocumentMeta } from '../components/common/document-meta';
 import { EmptyState } from '../components/common/empty-state';
 import { SectionHeader } from '../components/common/section';
@@ -26,6 +26,7 @@ import { ProductReviewsSection } from '../components/product/product-reviews';
 import { PRELAUNCH, usePurchaseLocked } from '../config/launch';
 import { useFormatMoney } from '../hooks/use-format-money';
 import { useProduct, useProducts } from '../hooks/use-products';
+import { useAuthStore } from '../store/auth';
 
 function DetailSkeleton() {
   return (
@@ -44,6 +45,9 @@ function DetailSkeleton() {
 
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
+  const preferStorefront = searchParams.get('storefront') === '1';
   const { data, isLoading, isError } = useProduct(slug);
   const product = data?.product;
   const related = useProducts({ category: product?.category, limit: 5 });
@@ -53,6 +57,11 @@ export function ProductDetailPage() {
   const purchaseLocked = usePurchaseLocked();
   const formatMoney = useFormatMoney();
   const freeShippingLabel = formatMoney(FREE_SHIPPING_THRESHOLD);
+
+  // Same shelf QR: customers see the PDP; signed-in admins open till mode.
+  if (isAdmin && slug && !preferStorefront) {
+    return <Navigate to={`/admin/instore/${slug}`} replace />;
+  }
 
   if (isLoading) return <DetailSkeleton />;
 

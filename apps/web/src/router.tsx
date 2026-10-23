@@ -142,6 +142,17 @@ export const routes: RouteObject[] = [
       { path: '*', element: <NotFoundPage /> },
     ],
   },
+  /** Bare till mode — no admin chrome, just Yes / No. */
+  {
+    path: '/admin/instore/:slug',
+    element: <AdminGuard />,
+    children: [
+      {
+        index: true,
+        element: lazyNamed(() => import('./pages/admin/instore-sell'), 'AdminInstoreSellPage'),
+      },
+    ],
+  },
   {
     path: '/admin',
     element: <AdminLayout />,
