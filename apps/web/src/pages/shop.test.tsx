@@ -6,18 +6,8 @@ import { makeProduct, renderApp } from '../test/utils';
 
 beforeEach(() => vi.restoreAllMocks());
 
-function stubCatalog() {
-  vi.spyOn(api, 'catalogMeta').mockResolvedValue({
-    categories: [{ value: 'booster-box', count: 5 }],
-    series: ['Scarlet & Violet'],
-    sets: ['151'],
-    priceRange: { min: 100, max: 20000 },
-  });
-}
-
 describe('ShopPage', () => {
   it('lists products with a result count', async () => {
-    stubCatalog();
     vi.spyOn(api, 'listProducts').mockResolvedValue({
       products: [makeProduct()],
       total: 1,
@@ -32,7 +22,6 @@ describe('ShopPage', () => {
   });
 
   it('shows an empty state when nothing matches', async () => {
-    stubCatalog();
     vi.spyOn(api, 'listProducts').mockResolvedValue({
       products: [],
       total: 0,
@@ -45,7 +34,6 @@ describe('ShopPage', () => {
   });
 
   it('shows an error state with retry when the catalogue fails', async () => {
-    stubCatalog();
     const spy = vi.spyOn(api, 'listProducts').mockRejectedValue(new Error('network down'));
     renderApp('/shop');
 
@@ -65,7 +53,6 @@ describe('ShopPage', () => {
   });
 
   it('passes the search term to the api', async () => {
-    stubCatalog();
     const spy = vi.spyOn(api, 'listProducts').mockResolvedValue({
       products: [],
       total: 0,
@@ -85,7 +72,6 @@ describe('ShopPage', () => {
   });
 
   it('loads the next page when Load more is pressed', async () => {
-    stubCatalog();
     const spy = vi
       .spyOn(api, 'listProducts')
       .mockResolvedValueOnce({

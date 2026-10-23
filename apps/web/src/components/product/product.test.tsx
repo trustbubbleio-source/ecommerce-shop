@@ -120,39 +120,30 @@ describe('AddToCartButton', () => {
 });
 
 describe('ProductFiltersPanel', () => {
-  const meta = {
-    categories: [
-      { value: 'booster-box' as const, count: 5 },
-      { value: 'single-card' as const, count: 3 },
-    ],
-    series: ['Scarlet & Violet', 'Sword & Shield'],
-    sets: ['151', 'Obsidian Flames'],
-    priceRange: { min: 100, max: 20000 },
+  const emptyFilters = {
+    category: 'all' as const,
+    series: '',
+    search: '',
+    language: '' as const,
+    condition: '' as const,
+    sort: 'featured' as const,
   };
 
-  it('renders categories and fires onChange when selected', async () => {
+  it('renders categories immediately and fires onChange when selected', async () => {
     const onChange = vi.fn();
     renderWithProviders(
-      <ProductFiltersPanel
-        meta={meta}
-        value={{ category: 'all', series: '', search: '', language: '', condition: '', sort: 'featured' }}
-        onChange={onChange}
-        onReset={vi.fn()}
-      />,
+      <ProductFiltersPanel value={emptyFilters} onChange={onChange} onReset={vi.fn()} />,
     );
+    expect(screen.getByRole('button', { name: 'Booster Box' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Single Card' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Booster Box' }));
     expect(onChange).toHaveBeenCalledWith({ category: 'booster-box' });
   });
 
-  it('selects series', async () => {
+  it('selects series from the static series list', async () => {
     const onChange = vi.fn();
     renderWithProviders(
-      <ProductFiltersPanel
-        meta={meta}
-        value={{ category: 'all', series: '', search: '', language: '', condition: '', sort: 'featured' }}
-        onChange={onChange}
-        onReset={vi.fn()}
-      />,
+      <ProductFiltersPanel value={emptyFilters} onChange={onChange} onReset={vi.fn()} />,
     );
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     await userEvent.selectOptions(screen.getByLabelText('Series'), 'Sword & Shield');
@@ -162,12 +153,7 @@ describe('ProductFiltersPanel', () => {
   it('toggles language and condition chips', async () => {
     const onChange = vi.fn();
     renderWithProviders(
-      <ProductFiltersPanel
-        meta={meta}
-        value={{ category: 'all', series: '', search: '', language: '', condition: '', sort: 'featured' }}
-        onChange={onChange}
-        onReset={vi.fn()}
-      />,
+      <ProductFiltersPanel value={emptyFilters} onChange={onChange} onReset={vi.fn()} />,
     );
     await userEvent.click(screen.getByRole('button', { name: 'Japanese' }));
     expect(onChange).toHaveBeenCalledWith({ language: 'japanese' });
@@ -178,25 +164,12 @@ describe('ProductFiltersPanel', () => {
   it('shows reset only when filters are non-default', async () => {
     const onReset = vi.fn();
     const { rerender } = renderWithProviders(
-      <ProductFiltersPanel
-        meta={meta}
-        value={{ category: 'all', series: '', search: '', language: '', condition: '', sort: 'featured' }}
-        onChange={vi.fn()}
-        onReset={onReset}
-      />,
+      <ProductFiltersPanel value={emptyFilters} onChange={vi.fn()} onReset={onReset} />,
     );
     expect(screen.queryByRole('button', { name: /reset/i })).not.toBeInTheDocument();
     rerender(
       <ProductFiltersPanel
-        meta={meta}
-        value={{
-          category: 'single-card',
-          series: '',
-          search: '',
-          language: '',
-          condition: '',
-          sort: 'featured',
-        }}
+        value={{ ...emptyFilters, category: 'single-card' }}
         onChange={vi.fn()}
         onReset={onReset}
       />,

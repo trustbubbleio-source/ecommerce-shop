@@ -16,7 +16,7 @@ import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../components/common/page-header';
 import { ProductFiltersPanel } from '../components/product/product-filters';
 import { ProductGrid } from '../components/product/product-grid';
-import { useCatalogMeta, useInfiniteProducts } from '../hooks/use-products';
+import { useInfiniteProducts } from '../hooks/use-products';
 import {
   type ProductFilters,
   filtersToParams,
@@ -30,7 +30,6 @@ export function ShopPage() {
   const filters = useMemo(() => parseFilters(searchParams), [searchParams]);
   const query = useMemo(() => toProductsQuery(filters), [filters]);
 
-  const meta = useCatalogMeta();
   const products = useInfiniteProducts(query);
 
   const update = (patch: Partial<ProductFilters>) => {
@@ -57,12 +56,7 @@ export function ShopPage() {
       <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
         <aside className="hidden lg:block">
           <div className="sticky top-20">
-            <ProductFiltersPanel
-              meta={meta.data}
-              value={filters}
-              onChange={update}
-              onReset={reset}
-            />
+            <ProductFiltersPanel value={filters} onChange={update} onReset={reset} />
           </div>
         </aside>
 
@@ -92,12 +86,7 @@ export function ShopPage() {
                     <SheetTitle>Filters</SheetTitle>
                   </SheetHeader>
                   <div className="p-5 pt-4">
-                    <ProductFiltersPanel
-                      meta={meta.data}
-                      value={filters}
-                      onChange={update}
-                      onReset={reset}
-                    />
+                    <ProductFiltersPanel value={filters} onChange={update} onReset={reset} />
                   </div>
                 </SheetContent>
               </Sheet>

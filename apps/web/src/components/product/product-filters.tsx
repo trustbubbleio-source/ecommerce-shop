@@ -1,6 +1,8 @@
 import {
   CARD_CONDITIONS,
+  PRODUCT_CATEGORIES,
   PRODUCT_LANGUAGES,
+  PRODUCT_SERIES,
   type CardCondition,
   type ProductCategory,
   type ProductLanguage,
@@ -10,11 +12,9 @@ import {
 } from '@akknerds/shared';
 import { Button, Label, Separator, cn } from '@akknerds/ui';
 import { RotateCcw } from 'lucide-react';
-import type { CatalogMeta } from '@akknerds/api-client';
 import { type ProductFilters, isDefaultFilters } from '../../lib/filters';
 
 interface ProductFiltersPanelProps {
-  meta?: CatalogMeta;
   value: ProductFilters;
   onChange: (patch: Partial<ProductFilters>) => void;
   onReset: () => void;
@@ -68,28 +68,29 @@ function FilterChips<T extends string>({
   );
 }
 
-export function ProductFiltersPanel({ meta, value, onChange, onReset }: ProductFiltersPanelProps) {
-  const categories: { value: ProductCategory | 'all'; label: string }[] = [
-    { value: 'all', label: 'All products' },
-    ...(meta?.categories ?? []).map((c) => ({ value: c.value, label: categoryLabel(c.value) })),
-  ];
+const CATEGORY_OPTIONS: { value: ProductCategory | 'all'; label: string }[] = [
+  { value: 'all', label: 'All products' },
+  ...PRODUCT_CATEGORIES.map((value) => ({ value, label: categoryLabel(value) })),
+];
 
-  const languageOptions: ChipOption<ProductLanguage | ''>[] = [
-    { value: '', label: 'All' },
-    ...PRODUCT_LANGUAGES.map((language) => ({
-      value: language,
-      label: languageLabel(language),
-    })),
-  ];
+const LANGUAGE_OPTIONS: ChipOption<ProductLanguage | ''>[] = [
+  { value: '', label: 'All' },
+  ...PRODUCT_LANGUAGES.map((language) => ({
+    value: language,
+    label: languageLabel(language),
+  })),
+];
 
-  const conditionOptions: ChipOption<CardCondition | ''>[] = [
-    { value: '', label: 'All' },
-    ...CARD_CONDITIONS.map((condition) => ({
-      value: condition,
-      label: conditionLabel(condition),
-    })),
-  ];
+const CONDITION_OPTIONS: ChipOption<CardCondition | ''>[] = [
+  { value: '', label: 'All' },
+  ...CARD_CONDITIONS.map((condition) => ({
+    value: condition,
+    label: conditionLabel(condition),
+  })),
+];
 
+/** Shop sidebar filters — category/series/language/condition are static domain enums (no API wait). */
+export function ProductFiltersPanel({ value, onChange, onReset }: ProductFiltersPanelProps) {
   return (
     <div className="flex w-full min-w-0 flex-col gap-6">
       <div className="flex flex-col gap-2" role="group" aria-labelledby="filter-category">
@@ -97,7 +98,7 @@ export function ProductFiltersPanel({ meta, value, onChange, onReset }: ProductF
           Category
         </p>
         <div className="flex flex-col gap-1">
-          {categories.map((category) => {
+          {CATEGORY_OPTIONS.map((category) => {
             const active = value.category === category.value;
             return (
               <button
@@ -130,7 +131,7 @@ export function ProductFiltersPanel({ meta, value, onChange, onReset }: ProductF
           className="border-input bg-background text-foreground focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full appearance-none rounded-lg border px-3 text-sm focus-visible:outline-none focus-visible:ring-2"
         >
           <option value="">All series</option>
-          {(meta?.series ?? []).map((series) => (
+          {PRODUCT_SERIES.map((series) => (
             <option key={series} value={series}>
               {series}
             </option>
@@ -143,14 +144,14 @@ export function ProductFiltersPanel({ meta, value, onChange, onReset }: ProductF
       <FilterChips
         legend="Language"
         value={value.language}
-        options={languageOptions}
+        options={LANGUAGE_OPTIONS}
         onSelect={(language) => onChange({ language })}
       />
 
       <FilterChips
         legend="Condition"
         value={value.condition}
-        options={conditionOptions}
+        options={CONDITION_OPTIONS}
         onSelect={(condition) => onChange({ condition })}
       />
 
