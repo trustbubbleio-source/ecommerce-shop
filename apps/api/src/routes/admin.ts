@@ -134,8 +134,8 @@ export function adminRoutes(deps: AppDeps) {
   );
 
   /**
-   * Physical till sale: atomically decrement stock (same primitive as checkout
-   * reservation). Payment is taken separately on the merchant's Stripe reader.
+   * Physical till sale: decrement stock and record a fulfilled in-store order
+   * (shows under Orders → Finished). Card payment is taken separately on Stripe.
    */
   app.post(
     '/products/:id/sell-in-store',
@@ -166,8 +166,46 @@ export function adminRoutes(deps: AppDeps) {
         );
       }
 
+      const unitPrice = product.price;
+      const subtotal = unitPrice * quantity;
+      const auth = c.get('user')!;
+
+      let order;
+      try {
+        order = await deps.orders.create({
+          email: auth.email,
+          userId: auth.sub,
+          lines: [
+            {
+              productId: product.id,
+              name: product.name,
+              unitPrice,
+              quantity,
+            },
+          ],
+          subtotal,
+          shipping: 0,
+          total: subtotal,
+          currency: product.currency,
+          status: 'fulfilled',
+          channel: 'in_store',
+          fulfillmentStep: 'delivered',
+          shippingAddress: {
+            fullName: 'In-store customer',
+            line1: 'Hallandsvägen 21',
+            city: 'Båstad',
+            postalCode: '269 36',
+            country: 'SE',
+          },
+        });
+      } catch (error) {
+        await deps.products.releaseStock([{ productId: product.id, quantity }]);
+        const message = error instanceof Error ? error.message : 'Could not record sale';
+        return c.json({ error: message }, 500);
+      }
+
       const updated = await deps.products.getByIdOrSlug(product.id);
-      return c.json({ product: updated });
+      return c.json({ product: updated, order });
     },
   );
 

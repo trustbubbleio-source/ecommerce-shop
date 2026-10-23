@@ -25,11 +25,23 @@ export class OrderRepository implements IOrderRepository {
   private readonly bySession = new Map<string, string>();
 
   async create(input: CreateOrderInput): Promise<Order> {
+    const status = input.status ?? 'pending';
     const order: Order = {
       id: `ord_${nanoid(20)}`,
-      status: 'pending',
       createdAt: new Date().toISOString(),
-      ...input,
+      email: input.email,
+      userId: input.userId,
+      lines: input.lines,
+      subtotal: input.subtotal,
+      shipping: input.shipping,
+      total: input.total,
+      currency: input.currency,
+      shippingAddress: input.shippingAddress,
+      status,
+      channel: input.channel ?? 'online',
+      fulfillmentStep:
+        input.fulfillmentStep ??
+        (status === 'fulfilled' ? 'delivered' : defaultFulfillmentStep(status) ?? undefined),
     };
     this.byId.set(order.id, order);
     return order;

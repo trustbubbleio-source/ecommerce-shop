@@ -106,6 +106,7 @@ export function toOrder(row: DbOrder): Order {
     total: row.total,
     currency: row.currency,
     status: row.status as OrderStatus,
+    channel: row.channel === 'in_store' ? 'in_store' : 'online',
     stripeSessionId: row.stripeSessionId ?? undefined,
     invoiceUrl: row.invoiceUrl ?? undefined,
     fulfillmentStep: (row.fulfillmentStep as FulfillmentStep | null) ?? undefined,

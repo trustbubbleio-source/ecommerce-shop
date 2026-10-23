@@ -29,6 +29,7 @@ const order: Order = {
   total: 16999,
   currency: 'eur',
   status: 'paid',
+  channel: 'online',
   createdAt: '2024-02-01T00:00:00.000Z',
 };
 

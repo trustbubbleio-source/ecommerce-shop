@@ -13,6 +13,7 @@ function makeOrder(overrides: Partial<Order> = {}): Order {
     total: 5599,
     currency: 'eur',
     status: 'pending',
+    channel: 'online',
     createdAt: '2024-01-01T00:00:00.000Z',
     ...overrides,
   };

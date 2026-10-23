@@ -17,6 +17,7 @@ export function AdminInstoreSellPage() {
   const queryClient = useQueryClient();
   const [phase, setPhase] = useState<Phase>('confirm');
   const [error, setError] = useState<string | null>(null);
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
 
   const productQuery = useQuery({
     queryKey: ['admin', 'instore', slug],
@@ -30,10 +31,11 @@ export function AdminInstoreSellPage() {
     mutationFn: () => api.adminSellInStore(product!.id, { quantity: 1 }),
     onSuccess: async (data) => {
       setError(null);
+      setLastOrderId(data.order.id);
       setPhase(data.product.stock <= 0 ? 'empty' : 'done');
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       await queryClient.invalidateQueries({ queryKey: ['admin'] });
-      queryClient.setQueryData(['admin', 'instore', slug], data);
+      queryClient.setQueryData(['admin', 'instore', slug], { product: data.product });
     },
     onError: (err) => {
       setError(err instanceof ApiError ? err.message : 'Could not update stock');
@@ -89,7 +91,12 @@ export function AdminInstoreSellPage() {
             Stock left online:{' '}
             <span className="font-semibold text-white">{product.stock}</span>
           </p>
-          <p className="text-sm text-white/45">Take payment on Stripe as usual.</p>
+          {lastOrderId && (
+            <p className="font-mono text-xs text-white/50">{lastOrderId}</p>
+          )}
+          <p className="text-sm text-white/45">
+            Recorded under Orders → Finished. Take payment on Stripe as usual.
+          </p>
         </div>
         <div className="flex w-full max-w-xs flex-col gap-3">
           {product.stock > 0 && (
@@ -99,10 +106,19 @@ export function AdminInstoreSellPage() {
               onClick={() => {
                 setPhase('confirm');
                 setError(null);
+                setLastOrderId(null);
               }}
             >
               Sell another
             </button>
+          )}
+          {lastOrderId && (
+            <Link
+              to={`/admin/orders/${lastOrderId}`}
+              className="rounded-2xl border border-white/25 px-6 py-4 text-lg font-medium text-white"
+            >
+              View order
+            </Link>
           )}
           <Link
             to={`/product/${product.slug}?storefront=1`}

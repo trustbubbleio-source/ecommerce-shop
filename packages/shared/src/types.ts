@@ -62,6 +62,9 @@ export interface CartLine {
 
 export type OrderStatus = 'pending' | 'paid' | 'fulfilled' | 'cancelled';
 
+/** Where the sale happened. Online checkout vs physical till. */
+export type OrderChannel = 'online' | 'in_store';
+
 export interface OrderLine {
   productId: string;
   name: string;
@@ -88,6 +91,8 @@ export interface Order {
   total: number;
   currency: string;
   status: OrderStatus;
+  /** online (default) or in_store till sale. */
+  channel: OrderChannel;
   /** Warehouse progress after payment. Omitted while pending/cancelled. */
   fulfillmentStep?: FulfillmentStep;
   stripeSessionId?: string;

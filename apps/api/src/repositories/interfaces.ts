@@ -32,6 +32,10 @@ export interface CreateOrderInput {
   total: number;
   currency: string;
   shippingAddress?: Address;
+  /** Defaults to pending / online for web checkout. */
+  status?: import('@akknerds/shared').OrderStatus;
+  channel?: import('@akknerds/shared').OrderChannel;
+  fulfillmentStep?: import('@akknerds/shared').FulfillmentStep;
 }
 
 export interface UserRepository {

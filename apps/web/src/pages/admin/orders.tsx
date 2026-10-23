@@ -3,9 +3,10 @@ import {
   defaultFulfillmentStep,
   formatPrice,
   type FulfillmentStep,
+  type Order,
 } from '@akknerds/shared';
-import { Badge, Card, CardContent, Skeleton, cn } from '@akknerds/ui';
-import { ChevronRight, Package, Search } from 'lucide-react';
+import { Badge, Button, Card, CardContent, Skeleton, cn } from '@akknerds/ui';
+import { ChevronRight, Download, Package, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { EmptyState } from '../../components/common/empty-state';
@@ -21,9 +22,16 @@ import {
   orderOpsLabel,
   type AdminOrderTab,
 } from '../../lib/order-progress';
+import { downloadOrdersCsv } from '../../lib/orders-csv';
 
 function stepOf(order: { status: string; fulfillmentStep?: FulfillmentStep }) {
   return order.fulfillmentStep ?? defaultFulfillmentStep(order.status);
+}
+
+function statusBadgeLabel(order: Order): string {
+  if (order.channel === 'in_store') return 'In store';
+  const step = stepOf(order);
+  return step ? FULFILLMENT_STEP_LABELS[step] : orderOpsLabel(order);
 }
 
 const EMPTY_COPY: Record<AdminOrderTab, { title: string; description: string }> = {
@@ -41,7 +49,7 @@ const EMPTY_COPY: Record<AdminOrderTab, { title: string; description: string }> 
   },
   finished: {
     title: 'No finished orders',
-    description: 'Delivered orders land here when you mark them done.',
+    description: 'Delivered online orders and in-store till sales land here.',
   },
   unpaid: {
     title: 'No awaiting payment',
@@ -82,6 +90,7 @@ export function AdminOrdersPage() {
       return (
         order.id.toLowerCase().includes(q) ||
         order.email.toLowerCase().includes(q) ||
+        order.channel.toLowerCase().includes(q) ||
         orderHeadline(order).toLowerCase().includes(q) ||
         (order.shippingAddress?.city ?? '').toLowerCase().includes(q)
       );
@@ -90,12 +99,28 @@ export function AdminOrdersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-extrabold tracking-tight">Orders</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Paid orders land here to pack. Stripe handles payment, invoices and receipts — update
-          the fulfillment timeline as you go.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight">Orders</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Online checkout and in-store till sales. Export the current tab for bokföring.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={filtered.length === 0}
+          onClick={() =>
+            downloadOrdersCsv(
+              filtered,
+              `onemorerip-orders-${tab}-${new Date().toISOString().slice(0, 10)}.csv`,
+            )
+          }
+        >
+          <Download className="size-4" />
+          Export CSV
+        </Button>
       </div>
 
       <div className="relative min-w-0">
@@ -173,7 +198,6 @@ export function AdminOrdersPage() {
           {filtered.map((order) => {
             const items = orderItemCount(order);
             const city = order.shippingAddress?.city;
-            const step = stepOf(order);
             return (
               <li key={order.id}>
                 <Link
@@ -192,8 +216,14 @@ export function AdminOrdersPage() {
                         <p className="text-muted-foreground mt-1 font-mono text-[11px]">{order.id}</p>
                       </div>
                       <div className="flex shrink-0 flex-col items-end gap-1.5">
-                        <Badge variant={ORDER_STATUS_VARIANT[order.status]}>
-                          {step ? FULFILLMENT_STEP_LABELS[step] : orderOpsLabel(order)}
+                        <Badge
+                          variant={
+                            order.channel === 'in_store'
+                              ? 'secondary'
+                              : ORDER_STATUS_VARIANT[order.status]
+                          }
+                        >
+                          {statusBadgeLabel(order)}
                         </Badge>
                         <span className="font-bold">{formatPrice(order.total, order.currency)}</span>
                       </div>

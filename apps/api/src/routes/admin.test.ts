@@ -297,6 +297,11 @@ describe('POST /api/admin/products/:id/sell-in-store', () => {
 
     expect(res.status).toBe(200);
     expect(data.product.stock).toBe(2);
+    expect(data.order.status).toBe('fulfilled');
+    expect(data.order.channel).toBe('in_store');
+    expect(data.order.fulfillmentStep).toBe('delivered');
+    expect(data.order.total).toBe(2500);
+    expect(data.order.lines).toHaveLength(1);
   });
 
   it('rejects when stock is empty', async () => {

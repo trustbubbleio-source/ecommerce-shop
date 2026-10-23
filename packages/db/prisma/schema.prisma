@@ -430,6 +430,8 @@ model Order {
   user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   email           String
   status          String   @default("pending")
+  /** online (web checkout) or in_store (physical till). */
+  channel         String   @default("online")
   lines           Json
   subtotal        Int
   shipping        Int
@@ -447,6 +449,7 @@ model Order {
 
   @@index([userId])
   @@index([status])
+  @@index([channel])
   @@map("orders")
 }
 

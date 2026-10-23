@@ -18,10 +18,17 @@ function statusPatch(currentStep: string | null, status: OrderStatus): Prisma.Or
 
 export class PrismaOrderRepository implements OrderRepository {
   async create(input: CreateOrderInput) {
+    const status = input.status ?? 'pending';
+    const channel = input.channel ?? 'online';
+    const fulfillmentStep =
+      input.fulfillmentStep ??
+      (status === 'fulfilled' ? 'delivered' : defaultFulfillmentStep(status));
     const row = await prisma.order.create({
       data: {
         id: `ord_${nanoid(20)}`,
-        status: 'pending',
+        status,
+        channel,
+        fulfillmentStep,
         email: input.email,
         userId: input.userId,
         lines: input.lines as unknown as Prisma.InputJsonValue,

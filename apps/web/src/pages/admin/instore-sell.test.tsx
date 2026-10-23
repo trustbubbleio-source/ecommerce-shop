@@ -42,6 +42,26 @@ describe('AdminInstoreSellPage', () => {
     vi.spyOn(api, 'adminGetProduct').mockResolvedValue({ product });
     vi.spyOn(api, 'adminSellInStore').mockResolvedValue({
       product: { ...product, stock: 1 },
+      order: {
+        id: 'ord_instore_1',
+        email: adminUser.email,
+        lines: [
+          {
+            productId: product.id,
+            name: product.name,
+            unitPrice: product.price,
+            quantity: 1,
+          },
+        ],
+        subtotal: product.price,
+        shipping: 0,
+        total: product.price,
+        currency: product.currency,
+        status: 'fulfilled',
+        channel: 'in_store',
+        fulfillmentStep: 'delivered',
+        createdAt: new Date().toISOString(),
+      },
     });
 
     renderApp('/admin/instore/charizard-ex');
@@ -56,7 +76,8 @@ describe('AdminInstoreSellPage', () => {
     });
     expect(await screen.findByText(/Stock left online:/i)).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
-    expect(screen.getByText(/Take payment on Stripe/i)).toBeInTheDocument();
+    expect(screen.getByText('ord_instore_1')).toBeInTheDocument();
+    expect(screen.getByText(/Orders → Finished/i)).toBeInTheDocument();
   });
 
   it('No returns to the public product page', async () => {

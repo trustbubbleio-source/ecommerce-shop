@@ -116,7 +116,7 @@ export interface ApiClient {
   adminSellInStore(
     idOrSlug: string,
     input?: SellInStoreInput,
-  ): Promise<{ product: Product }>;
+  ): Promise<{ product: Product; order: Order }>;
   contact(input: ContactInput): Promise<{ ok: boolean; message: string }>;
   subscribeNewsletter(input: NewsletterSubscribeInput): Promise<{ ok: boolean; message: string }>;
   unsubscribeNewsletter(

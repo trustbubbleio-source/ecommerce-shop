@@ -25,7 +25,8 @@ export const ORDER_STATUS_VARIANT: Record<OrderStatus, BadgeProps['variant']> = 
   cancelled: 'destructive',
 };
 
-export function orderOpsLabel(order: Pick<Order, 'status' | 'fulfillmentStep'>): string {
+export function orderOpsLabel(order: Pick<Order, 'status' | 'fulfillmentStep' | 'channel'>): string {
+  if (order.channel === 'in_store') return 'In store';
   if (order.status === 'pending' || order.status === 'cancelled') {
     return ORDER_STATUS_LABEL[order.status];
   }
