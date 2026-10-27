@@ -8,7 +8,12 @@ import {
   type Product,
   type ProductCategory,
 } from '@akknerds/shared';
-import { ADMIN_PRODUCTS_PAGE_SIZE, api, type AdminProductSortKey } from '@akknerds/api-client';
+import {
+  ADMIN_PRODUCTS_PAGE_SIZE,
+  ApiError,
+  api,
+  type AdminProductSortKey,
+} from '@akknerds/api-client';
 import {
   Badge,
   Button,
@@ -152,8 +157,12 @@ export function AdminProductsPage() {
         `Prices synced: ${summary.updated} updated, ${summary.skipped} unchanged, ${summary.errors} failed.`,
       );
     },
-    onError: () => {
-      setSyncMessage('Price sync failed. Try again in a moment.');
+    onError: (error) => {
+      setSyncMessage(
+        error instanceof ApiError
+          ? `Price sync failed: ${error.message}`
+          : 'Price sync failed. Try again in a moment.',
+      );
     },
   });
 

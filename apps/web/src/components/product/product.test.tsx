@@ -23,6 +23,14 @@ describe('ProductCard', () => {
     expect(screen.queryByText(/Pokémon 151 Booster Box/i)).not.toBeInTheDocument();
   });
 
+  it('shows a muted language flag for the product print language', () => {
+    const { container } = renderWithProviders(
+      <ProductCard product={makeProduct({ language: 'japanese' })} />,
+    );
+    expect(screen.getByRole('link', { name: /Japanese print/i })).toBeInTheDocument();
+    expect(container.querySelector('[data-language="japanese"]')).toBeTruthy();
+  });
+
   it('adds the product to the cart', async () => {
     renderWithProviders(<ProductCard product={makeProduct()} />);
     await userEvent.click(screen.getByRole('button', { name: /Add .* to cart/i }));
@@ -77,8 +85,26 @@ describe('ProductArt', () => {
       <ProductArt product={makeProduct({ image: 'https://x/y.png' })} variant="card" />,
     );
     expect(screen.getByRole('img', { name: /151 Booster Box/i })).toBeInTheDocument();
-    expect(screen.getByText('Booster Box')).toBeInTheDocument();
+    expect(screen.getByText('Scarlet & Violet')).toBeInTheDocument();
     expect(screen.getByText('151')).toBeInTheDocument();
+  });
+
+  it('shows the product name on accessory shop cards instead of the shared set label', () => {
+    renderWithProviders(
+      <ProductArt
+        product={makeProduct({
+          category: 'accessory',
+          series: 'Protection',
+          set: 'Accessories',
+          name: 'Snorlax Card Sleeves (65 ct)',
+          image: 'https://x/y.png',
+        })}
+        variant="card"
+      />,
+    );
+    expect(screen.getByText('Protection')).toBeInTheDocument();
+    expect(screen.getByText('Snorlax Card Sleeves (65 ct)')).toBeInTheDocument();
+    expect(screen.queryByText('Accessories')).not.toBeInTheDocument();
   });
 
   it('renders a clean single-card image without overlay in card variant', () => {

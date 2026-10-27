@@ -1,5 +1,6 @@
 export { PriceFetchError, type PriceFetchErrorCode } from './errors.js';
 export {
+  fetchUngradedCardPrice,
   fetchUngradedPriceFromPriceCharting,
   type FetchCardPriceInput,
   type FetchCardPriceResult,
@@ -23,3 +24,9 @@ export {
   type PriceSyncOutcome,
   type PriceSyncStatus,
 } from './sync-catalog.js';
+export {
+  extractCardmarketPriceEur,
+  pickTcgdexCard,
+  tcgdexLocale,
+  tcgdexSetSearchName,
+} from './tcgdex.js';

@@ -17,14 +17,14 @@ type PriceFetchContext = Pick<
 export function canAutoFetchCardPrice(context: PriceFetchContext): boolean {
   return (
     context.category === 'single-card' &&
-    context.language === 'english' &&
+    (context.language === 'english' || context.language === 'japanese') &&
     Boolean(context.series && context.set && context.cardNumber.trim())
   );
 }
 
-const AUTO_PRICE_TITLE = 'Load ungraded market price from PriceCharting';
+const AUTO_PRICE_TITLE = 'Load Cardmarket trend price via TCGdex';
 const AUTO_PRICE_DISABLED_HINT =
-  'Set series, set, card number and English language to auto-load price';
+  'Set series, set, card number and English or Japanese language to auto-load price';
 
 interface SingleCardPriceFieldProps {
   inputProps: InputProps;

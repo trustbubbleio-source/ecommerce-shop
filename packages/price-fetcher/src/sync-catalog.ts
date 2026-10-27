@@ -52,7 +52,8 @@ export async function syncSingleCardPrices(
 ): Promise<PriceSyncOutcome[]> {
   const outcomes: PriceSyncOutcome[] = [];
   const singles = products.filter((product) => product.category === 'single-card');
-  const delayMs = options.delayMs ?? 750;
+  // TCGdex has no hard rate limit; keep a short pause so bulk sync stays polite.
+  const delayMs = options.delayMs ?? 300;
 
   for (const [index, product] of singles.entries()) {
     if (!product.cardNumber?.trim()) {

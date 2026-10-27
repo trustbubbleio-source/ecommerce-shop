@@ -1,11 +1,15 @@
 import { parseCardNumberForLookup } from '@akknerds/card-fetcher';
 import type { ProductLanguage, ProductSet } from '@akknerds/shared';
 import { PriceFetchError } from './errors.js';
-import { findCardOnSetPage, parseSetPageHtml } from './parse-set-page.js';
-import { priceChartingSetPageUrl } from './set-slugs.js';
-
-const DEFAULT_USER_AGENT = 'OneMoreRip-price-fetcher/1.0 (+https://onemorerip.shop)';
-const FETCH_TIMEOUT_MS = 20_000;
+import {
+  extractCardmarketPriceEur,
+  pickTcgdexCard,
+  tcgdexGetJson,
+  tcgdexLocale,
+  tcgdexSetSearchName,
+  type TcgdexCardBrief,
+  type TcgdexCardDetail,
+} from './tcgdex.js';
 
 export interface FetchCardPriceInput {
   set: ProductSet;
@@ -26,27 +30,18 @@ export interface FetchCardPriceOptions {
   fetch?: typeof fetch;
 }
 
-async function httpGet(url: string, fetchImpl: typeof fetch): Promise<string> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  try {
-    const res = await fetchImpl(url, {
-      signal: controller.signal,
-      headers: { 'user-agent': DEFAULT_USER_AGENT },
-    });
-    if (!res.ok) {
-      throw new PriceFetchError(`PriceCharting returned ${res.status}`, 'network');
-    }
-    return await res.text();
-  } catch (error) {
-    if (error instanceof PriceFetchError) throw error;
-    throw new PriceFetchError('Could not reach PriceCharting', 'network');
-  } finally {
-    clearTimeout(timer);
-  }
+/**
+ * Ungraded market price via TCGdex (Cardmarket EUR).
+ * Replaces PriceCharting HTML scraping, which Cloudflare now blocks.
+ */
+export async function fetchUngradedPriceFromPriceCharting(
+  input: FetchCardPriceInput,
+  options: FetchCardPriceOptions = {},
+): Promise<FetchCardPriceResult> {
+  return fetchUngradedCardPrice(input, options);
 }
 
-export async function fetchUngradedPriceFromPriceCharting(
+export async function fetchUngradedCardPrice(
   input: FetchCardPriceInput,
   options: FetchCardPriceOptions = {},
 ): Promise<FetchCardPriceResult> {
@@ -56,34 +51,64 @@ export async function fetchUngradedPriceFromPriceCharting(
     throw new PriceFetchError('Enter a card number like 286 or 178/165', 'parse');
   }
 
-  const setPageUrl = priceChartingSetPageUrl(input.set, language);
-  if (!setPageUrl) {
-    throw new PriceFetchError(`No PriceCharting mapping for set "${input.set}"`, 'unsupported');
-  }
-
+  const locale = tcgdexLocale(language);
+  const setName = tcgdexSetSearchName(input.set);
   const fetchImpl = options.fetch ?? fetch;
-  const html = await httpGet(setPageUrl, fetchImpl);
-  const entries = parseSetPageHtml(html);
-  if (entries.length === 0) {
-    throw new PriceFetchError('Could not parse card prices from PriceCharting', 'parse');
+  const setPageUrl = `https://api.tcgdex.net/v2/${locale}/sets?name=${encodeURIComponent(setName)}`;
+
+  let briefs: TcgdexCardBrief[];
+  try {
+    const query = new URLSearchParams({
+      localId: String(lookupNumber),
+      'set.name': setName,
+    });
+    briefs = await tcgdexGetJson<TcgdexCardBrief[]>(
+      `/${locale}/cards?${query.toString()}`,
+      fetchImpl,
+    );
+  } catch (error) {
+    if (error instanceof PriceFetchError) throw error;
+    throw new PriceFetchError('Could not reach TCGdex price API', 'network');
   }
 
-  const card = findCardOnSetPage(entries, lookupNumber, input.name);
-  if (!card) {
+  const brief = pickTcgdexCard(briefs, lookupNumber, input.name);
+  if (!brief) {
     throw new PriceFetchError(
-      `Card #${lookupNumber} not found on PriceCharting for ${input.set}`,
+      `Card #${lookupNumber} not found on TCGdex for ${input.set}`,
       'not_found',
     );
   }
 
-  const sourceUrl = card.detailPath.startsWith('http')
-    ? card.detailPath
-    : `https://www.pricecharting.com${card.detailPath}`;
+  let detail: TcgdexCardDetail;
+  try {
+    detail = await tcgdexGetJson<TcgdexCardDetail>(
+      `/${locale}/cards/${encodeURIComponent(brief.id)}`,
+      fetchImpl,
+    );
+  } catch (error) {
+    if (error instanceof PriceFetchError) throw error;
+    throw new PriceFetchError('Could not load card price from TCGdex', 'network');
+  }
+
+  const priceEur = extractCardmarketPriceEur(detail);
+  if (priceEur === null) {
+    throw new PriceFetchError(
+      `No Cardmarket price listed yet for ${detail.name} #${lookupNumber}`,
+      'not_found',
+    );
+  }
+
+  const priceCents = Math.round(priceEur * 100);
+  const cmId = detail.variants_detailed?.find((v) => v.pricing?.cardmarket?.idProduct)?.pricing
+    ?.cardmarket?.idProduct;
+  const sourceUrl = cmId
+    ? `https://www.cardmarket.com/en/Pokemon/Products?idProduct=${cmId}`
+    : `https://www.tcgdex.net/card/${encodeURIComponent(detail.id)}`;
 
   return {
-    cardName: card.title,
-    cardNumber: card.cardNumber,
-    priceCents: card.ungradedPriceCents,
+    cardName: detail.name,
+    cardNumber: lookupNumber,
+    priceCents,
     sourceUrl,
     setPageUrl,
   };

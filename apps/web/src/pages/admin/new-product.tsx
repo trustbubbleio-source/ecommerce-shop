@@ -570,7 +570,7 @@ export function AdminNewProductPage() {
                 required
                 hint={
                   values.category === 'single-card'
-                    ? 'Use the wand to load today’s ungraded PriceCharting price (English sets).'
+                    ? 'Use the wand to load today’s Cardmarket trend price (via TCGdex).'
                     : undefined
                 }
               >

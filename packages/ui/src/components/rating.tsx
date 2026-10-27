@@ -14,15 +14,18 @@ export function Rating({ value, max = 5, reviewCount, className, size = 14 }: Ra
   const clamped = Math.max(0, Math.min(max, value));
   return (
     <span
-      className={cn('inline-flex items-center gap-1', className)}
+      className={cn('inline-flex items-center gap-1.5', className)}
       aria-label={`Rated ${clamped} out of ${max}`}
     >
-      <span className="flex" aria-hidden="true">
+      <span className="flex shrink-0 items-center" aria-hidden="true">
         {Array.from({ length: max }, (_, i) => {
           const fill = Math.max(0, Math.min(1, clamped - i));
           return (
-            <span key={i} className="relative" style={{ width: size, height: size }}>
-              <Star className="text-muted absolute inset-0" style={{ width: size, height: size }} />
+            <span key={i} className="relative block" style={{ width: size, height: size }}>
+              <Star
+                className="text-muted-foreground/55 absolute inset-0"
+                style={{ width: size, height: size }}
+              />
               <span
                 className="absolute inset-0 overflow-hidden"
                 style={{ width: `${fill * 100}%` }}
@@ -38,7 +41,7 @@ export function Rating({ value, max = 5, reviewCount, className, size = 14 }: Ra
         })}
       </span>
       {typeof reviewCount === 'number' && (
-        <span className="text-muted-foreground text-xs">({reviewCount})</span>
+        <span className="text-muted-foreground text-xs leading-none">({reviewCount})</span>
       )}
     </span>
   );

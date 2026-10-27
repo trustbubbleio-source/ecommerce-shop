@@ -10,23 +10,39 @@ export type ProductArtVariant = 'detail' | 'card';
 function ProductArtOverlay({
   product,
   show,
+  /** Shop cards render category next to the language flag instead. */
+  showCategory = true,
 }: {
   product: ArtProduct;
   show: boolean;
+  showCategory?: boolean;
 }) {
   if (!show) return null;
+
+  // Accessories share one set label ("Accessories") — show the real product name instead.
+  const isAccessory = product.category === 'accessory';
+  const title = isAccessory ? product.name : product.set;
 
   return (
     <>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-      <span className="absolute left-3 top-3 rounded-full bg-black/35 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/90 backdrop-blur-sm">
-        {categoryLabel(product.category)}
-      </span>
+      {showCategory && (
+        <span className="absolute left-3 top-3 rounded-full bg-black/35 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/90 backdrop-blur-sm">
+          {categoryLabel(product.category)}
+        </span>
+      )}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
           {product.series}
         </p>
-        <p className="text-xl font-extrabold leading-tight text-white drop-shadow">{product.set}</p>
+        <p
+          className={cn(
+            'font-extrabold leading-tight text-white drop-shadow',
+            isAccessory ? 'line-clamp-2 text-base' : 'text-xl',
+          )}
+        >
+          {title}
+        </p>
       </div>
     </>
   );
@@ -72,7 +88,7 @@ export function ProductArt({
           loading="lazy"
           className={cn('h-full w-full', imageFitClass)}
         />
-        <ProductArtOverlay product={product} show={showOverlay} />
+        <ProductArtOverlay product={product} show={showOverlay} showCategory={!isShopCard} />
       </div>
     );
   }
@@ -86,7 +102,7 @@ export function ProductArt({
     >
       <Pokeball className="absolute -right-8 -top-8 size-44 text-white/10" />
       <Pokeball className="absolute -bottom-12 -left-10 size-40 text-black/20" />
-      <ProductArtOverlay product={product} show={showOverlay} />
+      <ProductArtOverlay product={product} show={showOverlay} showCategory={!isShopCard} />
     </div>
   );
 }
