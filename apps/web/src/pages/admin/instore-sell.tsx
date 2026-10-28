@@ -65,18 +65,39 @@ export function AdminInstoreSellPage() {
     );
   }
 
+  if (product.inactive && phase === 'confirm') {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-black px-6 text-center text-white">
+        <p className="text-sm uppercase tracking-[0.2em] text-white/50">In-store</p>
+        <h1 className="max-w-sm text-2xl font-bold leading-tight">{product.name}</h1>
+        <p className="text-lg text-red-400">Product is inactive</p>
+        <p className="max-w-sm text-sm text-white/55">
+          Reactivate it in admin before selling in store.
+        </p>
+        <Link
+          to={`/admin/products/${product.id}`}
+          className="text-sm text-white/60 underline underline-offset-4"
+        >
+          Open in admin
+        </Link>
+      </div>
+    );
+  }
+
   if (product.stock <= 0 && phase === 'confirm') {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-black px-6 text-center text-white">
         <p className="text-sm uppercase tracking-[0.2em] text-white/50">In-store</p>
         <h1 className="max-w-sm text-2xl font-bold leading-tight">{product.name}</h1>
         <p className="text-lg text-red-400">Out of stock online</p>
-        <Link
-          to={`/product/${product.slug}?storefront=1`}
-          className="text-sm text-white/60 underline underline-offset-4"
-        >
-          View product page
-        </Link>
+        {!product.storeOnly && (
+          <Link
+            to={`/product/${product.slug}?storefront=1`}
+            className="text-sm text-white/60 underline underline-offset-4"
+          >
+            View product page
+          </Link>
+        )}
       </div>
     );
   }
@@ -121,7 +142,11 @@ export function AdminInstoreSellPage() {
             </Link>
           )}
           <Link
-            to={`/product/${product.slug}?storefront=1`}
+            to={
+              product.storeOnly
+                ? '/admin/products'
+                : `/product/${product.slug}?storefront=1`
+            }
             className="rounded-2xl border border-white/25 px-6 py-4 text-lg font-medium text-white"
           >
             Done
@@ -165,7 +190,11 @@ export function AdminInstoreSellPage() {
           type="button"
           disabled={sell.isPending}
           className="rounded-2xl border border-white/30 px-6 py-5 text-xl font-semibold text-white active:scale-[0.98]"
-          onClick={() => navigate(`/product/${product.slug}?storefront=1`)}
+          onClick={() =>
+            navigate(
+              product.storeOnly ? '/admin/products' : `/product/${product.slug}?storefront=1`,
+            )
+          }
         >
           No
         </button>

@@ -26,6 +26,12 @@ export function toProductWhere(
   if (filter.inStockOnly) {
     and.push({ stock: { gt: 0 } });
   }
+  if (filter.storeOnly !== undefined) {
+    and.push({ storeOnly: filter.storeOnly });
+  }
+  if (filter.inactive !== undefined) {
+    and.push({ inactive: filter.inactive });
+  }
   if (filter.language) {
     and.push({ language: toPrismaLanguage(filter.language) });
   }

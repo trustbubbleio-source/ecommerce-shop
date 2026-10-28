@@ -33,6 +33,8 @@ export function productToUpdateInput(product: Product, priceCents: number): Crea
     images: product.images.length > 0 ? product.images : product.image ? [product.image] : [],
     featured: product.featured,
     isNew: product.isNew,
+    storeOnly: product.storeOnly,
+    inactive: product.inactive,
     tags: product.tags as CreateProductInput['tags'],
     cardNumber: product.cardNumber,
     rarity: product.rarity!,

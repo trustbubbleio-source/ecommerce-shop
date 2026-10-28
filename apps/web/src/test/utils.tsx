@@ -77,6 +77,8 @@ export function makeProduct(overrides: Partial<Product> = {}): Product {
     stock: 10,
     featured: true,
     isNew: true,
+    storeOnly: false,
+    inactive: false,
     rating: 4.9,
     reviewCount: 120,
     tags: ['sealed'],

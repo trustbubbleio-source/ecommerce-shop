@@ -113,6 +113,7 @@ export interface ApiClient {
   }>;
   adminCreateProduct(input: CreateProductInput): Promise<{ product: Product }>;
   adminUpdateProduct(id: string, input: UpdateProductInput): Promise<{ product: Product }>;
+  adminDeleteProduct(id: string): Promise<{ ok: boolean }>;
   adminSellInStore(
     idOrSlug: string,
     input?: SellInStoreInput,
@@ -309,6 +310,9 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
         method: 'PATCH',
         body: JSON.stringify(input),
       });
+    },
+    adminDeleteProduct(id) {
+      return request(`/admin/products/${encodeURIComponent(id)}`, { method: 'DELETE' });
     },
     adminSellInStore(idOrSlug, input = { quantity: 1 }) {
       return request(`/admin/products/${encodeURIComponent(idOrSlug)}/sell-in-store`, {

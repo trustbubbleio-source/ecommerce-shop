@@ -49,6 +49,10 @@ export const createProductInputSchema = z
       .max(12),
     featured: z.boolean().optional(),
     isNew: z.boolean().optional(),
+    /** When true, product stays out of the public webshop (admin/QR/till only). */
+    storeOnly: z.boolean().optional(),
+    /** When true, product is fully deactivated (no webshop, no till sales). */
+    inactive: z.boolean().optional(),
     tags: z.array(z.enum(PRODUCT_TAGS)).max(12).optional(),
     cardNumber: z
       .string()

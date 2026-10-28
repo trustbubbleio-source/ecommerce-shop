@@ -133,6 +133,12 @@ export function adminRoutes(deps: AppDeps) {
     },
   );
 
+  app.delete('/products/:id', requireAuth(), requireAdmin(deps), async (c) => {
+    const deleted = await deps.products.delete(c.req.param('id'));
+    if (!deleted) return c.json({ error: 'Product not found' }, 404);
+    return c.json({ ok: true });
+  });
+
   /**
    * Physical till sale: decrement stock and record a fulfilled in-store order
    * (shows under Orders → Finished). Card payment is taken separately on Stripe.
@@ -146,6 +152,9 @@ export function adminRoutes(deps: AppDeps) {
       const idOrSlug = c.req.param('id');
       const product = await deps.products.getByIdOrSlug(idOrSlug);
       if (!product) return c.json({ error: 'Product not found' }, 404);
+      if (product.inactive) {
+        return c.json({ error: 'Product is inactive and cannot be sold in store' }, 409);
+      }
 
       const { quantity } = c.req.valid('json');
       if (product.stock < quantity) {

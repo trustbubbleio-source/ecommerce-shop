@@ -20,8 +20,11 @@ export function newProductFromInput(input: CreateProductInput): Product {
     image: input.images[0],
     accent: input.accent,
     stock: input.stock,
-    featured: input.featured ?? false,
-    isNew: input.isNew ?? true,
+    storeOnly: input.storeOnly ?? false,
+    inactive: input.inactive ?? false,
+    featured:
+      input.storeOnly || input.inactive ? false : (input.featured ?? false),
+    isNew: input.storeOnly || input.inactive ? false : (input.isNew ?? true),
     rating: 0,
     reviewCount: 0,
     tags: input.tags ?? [],
@@ -49,8 +52,16 @@ export function applyProductInput(existing: Product, input: CreateProductInput):
     image: input.images[0],
     accent: input.accent,
     stock: input.stock,
-    featured: input.featured ?? existing.featured,
-    isNew: input.isNew ?? existing.isNew,
+    storeOnly: input.storeOnly ?? existing.storeOnly,
+    inactive: input.inactive ?? existing.inactive,
+    featured:
+      (input.storeOnly ?? existing.storeOnly) || (input.inactive ?? existing.inactive)
+        ? false
+        : (input.featured ?? existing.featured),
+    isNew:
+      (input.storeOnly ?? existing.storeOnly) || (input.inactive ?? existing.inactive)
+        ? false
+        : (input.isNew ?? existing.isNew),
     tags: input.tags ?? existing.tags,
     rarity: input.rarity,
     condition: input.condition,

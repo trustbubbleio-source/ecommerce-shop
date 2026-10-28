@@ -103,6 +103,8 @@ const defaultValues = {
   tags: [] as ProductTag[],
   featured: false,
   isNew: true,
+  storeOnly: false,
+  inactive: false,
 };
 
 function buildCreateProductDraft(
@@ -121,8 +123,10 @@ function buildCreateProductDraft(
     stock: Number.isFinite(stock) ? stock : -1,
     accent: values.accent,
     images: imageCount > 0 ? Array.from({ length: imageCount }, () => 'pending') : [],
-    isNew: values.isNew,
-    featured: values.featured,
+    isNew: values.storeOnly || values.inactive ? false : values.isNew,
+    featured: values.storeOnly || values.inactive ? false : values.featured,
+    storeOnly: values.storeOnly,
+    inactive: values.inactive,
     releaseDate: values.releaseDate,
     cardNumber: values.cardNumber.trim() || undefined,
     artist: values.artist.trim() || undefined,
@@ -165,8 +169,10 @@ export function AdminNewProductPage() {
         stock: Number.parseInt(values.stock, 10),
         accent: values.accent,
         images: keys,
-        isNew: values.isNew,
-        featured: values.featured,
+        isNew: values.storeOnly || values.inactive ? false : values.isNew,
+        featured: values.storeOnly || values.inactive ? false : values.featured,
+        storeOnly: values.storeOnly,
+        inactive: values.inactive,
         releaseDate: values.releaseDate,
         cardNumber: values.cardNumber.trim() || undefined,
         artist: values.artist.trim() || undefined,
@@ -609,7 +615,7 @@ export function AdminNewProductPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Homepage</CardTitle>
+            <CardTitle className="text-base">Visibility</CardTitle>
           </CardHeader>
           <CardContent>
             <ProductVisibilityFields
@@ -620,8 +626,8 @@ export function AdminNewProductPage() {
         </Card>
 
         <p className="text-muted-foreground text-sm">
-          After you create this product, open it in Edit to download a printable QR code linked to
-          the live product page.
+          After you create this product, open it in Edit to download a printable QR code. Store-only
+          products stay hidden from the webshop but still work for in-store scans.
         </p>
 
         <div className="flex flex-wrap gap-3">

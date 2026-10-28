@@ -27,6 +27,8 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
     stock: 10,
     featured: false,
     isNew: false,
+    storeOnly: false,
+    inactive: false,
     rating: 4,
     reviewCount: 1,
     tags: [],

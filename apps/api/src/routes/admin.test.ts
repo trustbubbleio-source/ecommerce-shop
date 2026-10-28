@@ -354,6 +354,48 @@ describe('POST /api/admin/products/:id/sell-in-store', () => {
   });
 });
 
+describe('DELETE /api/admin/products/:id', () => {
+  it('deletes a product for an admin', async () => {
+    const { app, deps } = makeApp();
+    await seedAdmin(deps);
+    const { data: login } = await jsonRequest(app, 'POST', '/api/auth/login', {
+      email: adminCreds.email,
+      password: adminCreds.password,
+    });
+    const { data: created } = await jsonRequest(
+      app,
+      'POST',
+      '/api/admin/products',
+      {
+        name: 'Temp Pack',
+        description: 'Will be deleted.',
+        category: 'booster-pack',
+        set: 'Temporal Forces',
+        series: 'Scarlet & Violet',
+        price: 499,
+        stock: 3,
+        accent: '#a855f7',
+        images: ['products/temp.jpg'],
+        releaseDate: '2024-01-01',
+        language: 'english',
+        rarity: 'rare',
+        condition: 'near-mint',
+      },
+      { authorization: `Bearer ${login.token}` },
+    );
+
+    const { res } = await jsonRequest(
+      app,
+      'DELETE',
+      `/api/admin/products/${created.product.id}`,
+      undefined,
+      { authorization: `Bearer ${login.token}` },
+    );
+    expect(res.status).toBe(200);
+    expect(await deps.products.getByIdOrSlug(created.product.id)).toBeUndefined();
+  });
+});
+
 describe('PATCH /api/admin/products/:id', () => {
   it('updates a product for an admin', async () => {
     const { app, deps } = makeApp();

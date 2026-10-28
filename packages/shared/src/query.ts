@@ -20,6 +20,10 @@ export interface ProductFilter {
   inStockOnly?: boolean;
   language?: ProductLanguage;
   condition?: CardCondition;
+  /** When false, hide store-only products (public shop). When true, only those. */
+  storeOnly?: boolean;
+  /** When false, hide inactive products. When true, only inactive. */
+  inactive?: boolean;
 }
 
 export interface ProductQuery {
@@ -33,6 +37,8 @@ function matches(product: Product, filter: ProductFilter): boolean {
   }
   if (filter.series && product.series !== filter.series) return false;
   if (filter.inStockOnly && product.stock <= 0) return false;
+  if (filter.storeOnly !== undefined && product.storeOnly !== filter.storeOnly) return false;
+  if (filter.inactive !== undefined && product.inactive !== filter.inactive) return false;
   if (filter.language && product.language !== filter.language) return false;
   if (filter.condition && product.condition !== filter.condition) return false;
   if (typeof filter.minPrice === 'number' && product.price < filter.minPrice) return false;

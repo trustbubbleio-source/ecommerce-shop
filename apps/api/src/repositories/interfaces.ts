@@ -126,6 +126,8 @@ export interface ProductRepository {
   catalogStats(): Promise<CatalogStats>;
   create(input: CreateProductInput): Promise<Product>;
   update(id: string, input: CreateProductInput): Promise<Product | undefined>;
+  /** Permanently remove a product (cascades favorites/reviews). */
+  delete(id: string): Promise<boolean>;
   /** Sync catalogue aggregate stars after a new review. */
   setRatingStats(
     productId: string,

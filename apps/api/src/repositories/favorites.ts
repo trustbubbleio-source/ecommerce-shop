@@ -26,7 +26,7 @@ export class FavoriteRepository implements IFavoriteRepository {
     const products: Product[] = [];
     for (const id of ids) {
       const product = await this.products.getByIdOrSlug(id);
-      if (product) products.push(product);
+      if (product && !product.storeOnly && !product.inactive) products.push(product);
     }
     return products;
   }

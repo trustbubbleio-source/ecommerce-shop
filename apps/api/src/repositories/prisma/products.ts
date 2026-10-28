@@ -113,7 +113,7 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async meta(): Promise<CatalogMeta> {
-    const inStock = { stock: { gt: 0 } } as const;
+    const inStock = { stock: { gt: 0 }, storeOnly: false, inactive: false } as const;
     const [grouped, priceAgg] = await Promise.all([
       prisma.product.groupBy({
         by: ['category'],
@@ -158,6 +158,13 @@ export class PrismaProductRepository implements ProductRepository {
     const product = applyProductInput(existing, input);
     const row = await prisma.product.update({ where: { id: existing.id }, data: fromProduct(product) });
     return toProduct(row);
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const existing = await this.getByIdOrSlug(id);
+    if (!existing) return false;
+    await prisma.product.delete({ where: { id: existing.id } });
+    return true;
   }
 
   async setRatingStats(

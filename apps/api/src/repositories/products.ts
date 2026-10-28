@@ -53,7 +53,7 @@ export class ProductRepository implements IProductRepository {
   }
 
   async meta(): Promise<CatalogMeta> {
-    const inStock = this.products.filter((p) => p.stock > 0);
+    const inStock = this.products.filter((p) => p.stock > 0 && !p.storeOnly && !p.inactive);
     const categories = PRODUCT_CATEGORIES.map((value) => ({
       value,
       count: inStock.filter((p) => p.category === value).length,
@@ -83,6 +83,13 @@ export class ProductRepository implements IProductRepository {
     const updated = applyProductInput(this.products[index]!, input);
     this.products[index] = updated;
     return updated;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const index = this.products.findIndex((p) => p.id === id);
+    if (index === -1) return false;
+    this.products.splice(index, 1);
+    return true;
   }
 
   async setRatingStats(

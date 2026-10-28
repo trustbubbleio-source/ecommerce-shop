@@ -29,6 +29,12 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Field,
   Input,
   Select,
@@ -38,7 +44,7 @@ import {
   useToast,
 } from '@akknerds/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ImagePlus, Sparkles, X } from 'lucide-react';
+import { ImagePlus, Sparkles, Trash2, X } from 'lucide-react';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useSingleCardAutoCopy } from '../../hooks/use-single-card-auto-copy';
@@ -75,6 +81,8 @@ function productToFormValues(product: Product): ProductFormValues {
     tags: normalizeProductTags(product.tags),
     featured: product.featured,
     isNew: product.isNew,
+    storeOnly: product.storeOnly,
+    inactive: product.inactive,
   };
 }
 
@@ -102,6 +110,7 @@ export function AdminEditProductPage() {
   const [images, setImages] = useState<ImageDraft[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hydratedId, setHydratedId] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const { applyFetchedCard, setDescription } = useSingleCardAutoCopy(values, setValues);
 
   useEffect(() => {
@@ -146,6 +155,27 @@ export function AdminEditProductPage() {
       if (error instanceof Error && error.message === 'validation') return;
       toast({
         title: 'Could not update product',
+        description: error instanceof ApiError ? error.message : 'Please try again.',
+        variant: 'error',
+      });
+    },
+  });
+
+  const deleteProduct = useMutation({
+    mutationFn: async () => {
+      if (!id) throw new Error('missing id');
+      return api.adminDeleteProduct(id);
+    },
+    onSuccess: async () => {
+      setDeleteOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({ title: 'Product deleted', variant: 'success' });
+      navigate('/admin');
+    },
+    onError: (error) => {
+      toast({
+        title: 'Could not delete product',
         description: error instanceof ApiError ? error.message : 'Please try again.',
         variant: 'error',
       });
@@ -551,7 +581,7 @@ export function AdminEditProductPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Homepage</CardTitle>
+            <CardTitle className="text-base">Visibility</CardTitle>
           </CardHeader>
           <CardContent>
             <ProductVisibilityFields
@@ -576,7 +606,63 @@ export function AdminEditProductPage() {
             <Link to="/admin">Cancel</Link>
           </Button>
         </div>
+
+        <Card className="border-destructive/40">
+          <CardHeader>
+            <CardTitle className="text-destructive text-base">Danger zone</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <p className="text-muted-foreground text-sm">
+              Prefer <strong>Deactivate completely</strong> above if you might sell this again.
+              Delete removes the product permanently (favorites and reviews for it are removed
+              too). Past orders keep the product name.
+            </p>
+            <Button
+              type="button"
+              variant="destructive"
+              className="w-fit"
+              onClick={() => setDeleteOpen(true)}
+            >
+              <Trash2 className="size-4" />
+              Delete product
+            </Button>
+          </CardContent>
+        </Card>
       </form>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete this product?</DialogTitle>
+            <DialogDescription>
+              This permanently removes{' '}
+              <span className="text-foreground font-medium">
+                {productQuery.data?.product.name ?? 'this product'}
+              </span>{' '}
+              from the catalogue. QR codes for it will stop working. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={deleteProduct.isPending}
+              onClick={() => setDeleteOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={deleteProduct.isPending}
+              onClick={() => deleteProduct.mutate()}
+            >
+              {deleteProduct.isPending && <Spinner className="text-destructive-foreground" />}
+              Yes, delete permanently
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

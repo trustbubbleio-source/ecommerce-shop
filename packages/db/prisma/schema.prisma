@@ -324,6 +324,10 @@ model Product {
   stock          Int                @default(0)
   featured       Boolean            @default(false)
   isNew          Boolean            @default(false) @map("is_new")
+  /** Hidden from public shop; admin + QR / in-store till only. */
+  storeOnly      Boolean            @default(false) @map("store_only")
+  /** Fully off — no webshop listing and no in-store till sales. */
+  inactive       Boolean            @default(false)
   rating         Float              @default(0)
   reviewCount    Int                @default(0) @map("review_count")
   tags           String[]           @default([])
@@ -340,6 +344,8 @@ model Product {
   @@index([category])
   @@index([series])
   @@index([featured])
+  @@index([storeOnly])
+  @@index([inactive])
   @@index([price])
   @@index([stock])
   @@index([releaseDate])

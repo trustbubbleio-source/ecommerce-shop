@@ -67,6 +67,8 @@ export type ProductFormValues = {
   tags: ProductTag[];
   featured: boolean;
   isNew: boolean;
+  storeOnly: boolean;
+  inactive: boolean;
 };
 
 export const defaultProductFormValues: ProductFormValues = {
@@ -87,6 +89,8 @@ export const defaultProductFormValues: ProductFormValues = {
   tags: [],
   featured: false,
   isNew: true,
+  storeOnly: false,
+  inactive: false,
 };
 
 /** Standard single-card listing copy — headline uses name, rarity and condition. */
@@ -155,8 +159,10 @@ export function buildProductDraft(
     stock: Number.isFinite(stock) ? stock : -1,
     accent: values.accent,
     images: imageCount > 0 ? Array.from({ length: imageCount }, () => 'pending') : [],
-    isNew: values.isNew,
-    featured: values.featured,
+    isNew: values.storeOnly || values.inactive ? false : values.isNew,
+    featured: values.storeOnly || values.inactive ? false : values.featured,
+    storeOnly: values.storeOnly,
+    inactive: values.inactive,
     releaseDate: values.releaseDate,
     cardNumber: values.cardNumber.trim() || undefined,
     artist: values.artist.trim() || undefined,

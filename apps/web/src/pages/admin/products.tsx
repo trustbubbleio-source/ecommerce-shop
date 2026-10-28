@@ -372,6 +372,10 @@ export function AdminProductsPage() {
                           <td className="px-4 py-3">
                             <Link to={`/admin/products/${product.id}`} className="block">
                               <div className="flex flex-wrap gap-1">
+                                {product.inactive && <Badge variant="destructive">Inactive</Badge>}
+                                {!product.inactive && product.storeOnly && (
+                                  <Badge variant="muted">Store only</Badge>
+                                )}
                                 {product.featured && <Badge variant="default">Featured</Badge>}
                                 {product.isNew && <Badge variant="success">New</Badge>}
                                 {product.stock <= 0 && <Badge variant="destructive">Out</Badge>}

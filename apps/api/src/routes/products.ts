@@ -48,6 +48,9 @@ export function productRoutes(deps: AppDeps) {
       maxPrice: q.maxPrice,
       // Public catalogue only shows sellable stock (admin list still includes OOS).
       inStockOnly: true,
+      // Store-only / offline / inactive products stay out of the webshop.
+      storeOnly: false,
+      inactive: false,
       language: q.language,
       condition: q.condition,
     };
@@ -74,7 +77,9 @@ export function productRoutes(deps: AppDeps) {
 
   app.get('/:idOrSlug/reviews', requireAuth(), async (c) => {
     const product = await deps.products.getByIdOrSlug(c.req.param('idOrSlug'));
-    if (!product) return c.json({ error: 'Product not found' }, 404);
+    if (!product || product.storeOnly || product.inactive) {
+      return c.json({ error: 'Product not found' }, 404);
+    }
 
     const user = c.get('user')!;
     const [reviews, myReview, purchased] = await Promise.all([
@@ -97,7 +102,9 @@ export function productRoutes(deps: AppDeps) {
     validate('json', createProductReviewInputSchema),
     async (c) => {
       const product = await deps.products.getByIdOrSlug(c.req.param('idOrSlug'));
-      if (!product) return c.json({ error: 'Product not found' }, 404);
+      if (!product || product.storeOnly || product.inactive) {
+        return c.json({ error: 'Product not found' }, 404);
+      }
 
       const user = c.get('user')!;
       const existing = await deps.reviews.findByUserAndProduct(user.sub, product.id);
@@ -127,7 +134,7 @@ export function productRoutes(deps: AppDeps) {
 
   app.get('/:idOrSlug', async (c) => {
     const product = await deps.products.getByIdOrSlug(c.req.param('idOrSlug'));
-    if (!product) {
+    if (!product || product.storeOnly || product.inactive) {
       return c.json({ error: 'Product not found' }, 404);
     }
     return c.json({ product });

@@ -41,6 +41,16 @@ export interface Product {
   stock: number;
   featured: boolean;
   isNew: boolean;
+  /**
+   * Store-only / offline listing: visible in admin + QR/till, hidden from the
+   * public shop and product detail page.
+   */
+  storeOnly: boolean;
+  /**
+   * Fully deactivated: hidden from the webshop and blocked from in-store till
+   * sales. Still editable in admin until permanently deleted.
+   */
+  inactive: boolean;
   rating: number;
   reviewCount: number;
   tags: string[];

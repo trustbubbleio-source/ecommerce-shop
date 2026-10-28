@@ -122,7 +122,7 @@ export function priceCart(
 
   for (const item of items) {
     const product = lookup(item.productId);
-    if (!product || product.stock <= 0) continue;
+    if (!product || product.stock <= 0 || product.storeOnly || product.inactive) continue;
     const quantity = Math.min(Math.max(1, Math.floor(item.quantity)), product.stock);
     if (quantity <= 0) continue;
     lines.push({
@@ -148,7 +148,7 @@ export async function priceCartAsync(
 
   for (const item of items) {
     const product = await lookup(item.productId);
-    if (!product || product.stock <= 0) continue;
+    if (!product || product.stock <= 0 || product.storeOnly || product.inactive) continue;
     const quantity = Math.min(Math.max(1, Math.floor(item.quantity)), product.stock);
     if (quantity <= 0) continue;
     lines.push({

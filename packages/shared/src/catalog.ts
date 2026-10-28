@@ -14,6 +14,8 @@ interface ProductSeed {
   stock?: number;
   featured?: boolean;
   isNew?: boolean;
+  storeOnly?: boolean;
+  inactive?: boolean;
   rating?: number;
   reviewCount?: number;
   tags?: string[];
@@ -32,6 +34,8 @@ function defineProduct(seed: ProductSeed): Product {
     stock: 25,
     featured: false,
     isNew: false,
+    storeOnly: false,
+    inactive: false,
     tags: [],
     images: [],
     language: 'english',

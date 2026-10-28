@@ -115,4 +115,33 @@ describe('GET /api/products/:idOrSlug', () => {
     const { res } = await jsonRequest(app, 'GET', '/api/products/nope');
     expect(res.status).toBe(404);
   });
+
+  it('hides store-only products from the public catalogue and detail page', async () => {
+    const { app, deps } = makeApp();
+    const created = await deps.products.create({
+      name: 'Store Only Sleeves',
+      description: 'In-store QR product only.',
+      category: 'accessory',
+      set: 'Accessories',
+      series: 'Protection',
+      price: 999,
+      stock: 5,
+      accent: '#a855f7',
+      images: ['products/test.png'],
+      storeOnly: true,
+      language: 'english',
+      rarity: 'common',
+      condition: 'near-mint',
+      releaseDate: '2026-01-01',
+    });
+
+    const { data: list } = await jsonRequest(app, 'GET', '/api/products?category=accessory');
+    expect(list.products.every((p: { id: string }) => p.id !== created.id)).toBe(true);
+
+    const { res } = await jsonRequest(app, 'GET', `/api/products/${created.slug}`);
+    expect(res.status).toBe(404);
+
+    const adminProduct = await deps.products.getByIdOrSlug(created.id);
+    expect(adminProduct?.storeOnly).toBe(true);
+  });
 });

@@ -4,6 +4,8 @@ import type { AdminProductSortKey, ListOptions, ProductPage } from './interfaces
 function statusSortKey(product: Product): string {
   const parts: string[] = [];
   if (product.stock <= 0) parts.push('out');
+  if (product.inactive) parts.push('inactive');
+  if (product.storeOnly) parts.push('store');
   if (product.featured) parts.push('featured');
   if (product.isNew) parts.push('new');
   return parts.join(',') || 'active';
