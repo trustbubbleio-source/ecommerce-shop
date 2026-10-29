@@ -15,7 +15,8 @@ describe('ProductCard', () => {
   it('shows series and category overlay on sealed products', () => {
     renderWithProviders(<ProductCard product={makeProduct()} />);
     expect(screen.getByRole('link', { name: /151 Booster Box/i })).toBeInTheDocument();
-    expect(screen.getByText(/169[,.]99/)).toBeInTheDocument();
+    // Default display is SEK (169,99 EUR × 11.3 → 1 920,89 kr)
+    expect(screen.getByText(/1[ ]?920[,.]89/)).toBeInTheDocument();
     expect(screen.getByText('Booster Box')).toBeInTheDocument();
     expect(screen.getByText('Scarlet & Violet')).toBeInTheDocument();
     expect(screen.getByText('151')).toBeInTheDocument();
@@ -62,8 +63,8 @@ describe('ProductCard', () => {
 describe('PriceTag', () => {
   it('shows discount when on sale', () => {
     renderWithProviders(<PriceTag product={makeProduct()} />);
-    expect(screen.getByText(/169[,.]99/)).toBeInTheDocument();
-    expect(screen.getByText(/189[,.]99/)).toBeInTheDocument();
+    expect(screen.getByText(/1[ ]?920[,.]89/)).toBeInTheDocument();
+    expect(screen.getByText(/2[ ]?146[,.]89/)).toBeInTheDocument();
     expect(screen.getByText(/-11%/)).toBeInTheDocument();
   });
 

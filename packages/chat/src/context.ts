@@ -1,4 +1,4 @@
-import { FREE_SHIPPING_THRESHOLD, formatPrice } from '@akknerds/shared';
+import { FREE_SHIPPING_THRESHOLD, formatMoney } from '@akknerds/shared';
 
 export interface ChatLink {
   label: string;
@@ -43,7 +43,7 @@ export function createChatContext(input: {
     privacyEmail: input.privacyEmail ?? input.supportEmail,
     partnerEmail: input.partnerEmail ?? input.supportEmail,
     tradeEmail: input.tradeEmail ?? input.supportEmail,
-    freeShippingLabel: formatPrice(FREE_SHIPPING_THRESHOLD),
+    freeShippingLabel: formatMoney(FREE_SHIPPING_THRESHOLD, 'sek'),
     storeLine: input.storeLine ?? 'Båstad, Sweden',
     launchDateLabel: input.launchDateLabel ?? 'October 31, 2026',
     supportHours: input.supportHours ?? 'Monday–Friday, typically within one business day',

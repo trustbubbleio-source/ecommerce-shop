@@ -5,7 +5,7 @@ import {
   type ChatLink,
   type ChatMatchResult,
 } from '@akknerds/chat';
-import { formatPrice } from '@akknerds/shared';
+import { formatMoney } from '@akknerds/shared';
 import { useCallback, useRef } from 'react';
 import { PRELAUNCH } from '../config/launch';
 import { SITE } from '../config/site';
@@ -66,7 +66,7 @@ async function resolveBotReply(result: ChatMatchResult): Promise<{
     }
 
     const lines = products.map(
-      (product) => `• ${product.name} — ${formatPrice(product.price, product.currency)}`,
+      (product) => `• ${product.name} — ${formatMoney(product.price, 'sek')}`,
     );
     return {
       text: `Here’s what I found for “${query}”:\n${lines.join('\n')}`,

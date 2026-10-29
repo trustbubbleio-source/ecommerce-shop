@@ -80,7 +80,7 @@ export function AccountProfilePage() {
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
   const [bio, setBio] = useState('');
-  const [preferredCurrency, setPreferredCurrency] = useState<SupportedCurrency>('eur');
+  const [preferredCurrency, setPreferredCurrency] = useState<SupportedCurrency>('sek');
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [shipFullName, setShipFullName] = useState('');
   const [shipLine1, setShipLine1] = useState('');
@@ -252,8 +252,8 @@ export function AccountProfilePage() {
                       value={preferredCurrency}
                       onChange={(ev) => setPreferredCurrency(ev.target.value as SupportedCurrency)}
                       options={[
-                        { value: 'eur', label: CURRENCY_LABELS.eur },
                         { value: 'sek', label: CURRENCY_LABELS.sek },
+                        { value: 'eur', label: CURRENCY_LABELS.eur },
                       ]}
                     />
                   )}

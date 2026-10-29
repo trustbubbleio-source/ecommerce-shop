@@ -41,7 +41,7 @@ export function emptyProfile(now = new Date().toISOString()): StoredProfile {
     bio: null,
     shippingAddress: null,
     discountCode: null,
-    preferredCurrency: 'eur',
+    preferredCurrency: 'sek',
     marketingOptIn: false,
     updatedAt: now,
   };

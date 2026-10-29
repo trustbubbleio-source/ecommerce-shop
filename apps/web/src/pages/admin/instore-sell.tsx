@@ -1,4 +1,4 @@
-import { formatPrice } from '@akknerds/shared';
+import { formatMoney } from '@akknerds/shared';
 import { Spinner } from '@akknerds/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -162,7 +162,7 @@ export function AdminInstoreSellPage() {
         <p className="text-sm uppercase tracking-[0.2em] text-white/45">In-store sale</p>
         <h1 className="max-w-sm text-2xl font-bold leading-tight sm:text-3xl">{product.name}</h1>
         <p className="text-xl font-semibold tabular-nums">
-          {formatPrice(product.price, product.currency)}
+          {formatMoney(product.price, 'sek')}
         </p>
         <p className="text-sm text-white/55">
           Online stock: <span className="text-white">{product.stock}</span>

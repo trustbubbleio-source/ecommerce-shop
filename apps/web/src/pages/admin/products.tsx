@@ -1,7 +1,7 @@
 import {
   PRODUCT_CATEGORIES,
   categoryLabel,
-  formatPrice,
+  formatMoney,
   primaryProductImage,
   resolveAssetUrl,
   type CatalogStats,
@@ -67,8 +67,8 @@ function CatalogStatsRow({
     },
     {
       label: 'Inventory value',
-      value: formatPrice(stats.inventoryValueCents),
-      hint: 'Sum of price × stock (full catalog)',
+      value: formatMoney(stats.inventoryValueCents, 'sek'),
+      hint: 'Sum of price × stock (full catalog, SEK)',
       icon: Wallet,
     },
   ] as const;
@@ -358,7 +358,7 @@ export function AdminProductsPage() {
                               to={`/admin/products/${product.id}`}
                               className="hover:text-foreground block"
                             >
-                              {formatPrice(product.price, product.currency)}
+                              {formatMoney(product.price, 'sek')}
                             </Link>
                           </td>
                           <td className="px-4 py-3">

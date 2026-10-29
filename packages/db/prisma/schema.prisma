@@ -299,7 +299,7 @@ model Profile {
   shippingAddress   Json?    @map("shipping_address")
   /** Saved promo code applied automatically at checkout. */
   discountCode      String?  @map("discount_code")
-  preferredCurrency String   @default("eur") @map("preferred_currency")
+  preferredCurrency String   @default("sek") @map("preferred_currency")
   marketingOptIn    Boolean  @default(false) @map("marketing_opt_in")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")

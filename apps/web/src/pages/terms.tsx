@@ -3,8 +3,8 @@ import { PolicyDocument, type PolicySection } from '../components/common/policy-
 import { SITE } from '../config/site';
 
 const UPDATED = '24 August 2026';
-const fee = formatMoney(FLAT_SHIPPING_FEE, 'eur');
-const freeAt = formatMoney(FREE_SHIPPING_THRESHOLD, 'eur');
+const fee = formatMoney(FLAT_SHIPPING_FEE, 'sek');
+const freeAt = formatMoney(FREE_SHIPPING_THRESHOLD, 'sek');
 
 const SECTIONS: PolicySection[] = [
   {
@@ -49,7 +49,7 @@ const SECTIONS: PolicySection[] = [
     body: [
       'An order is an offer to buy. We accept the order when we confirm it (confirmation page/email) and process payment. We may refuse or cancel an order in cases such as pricing errors, suspected fraud, export restrictions, or inability to deliver.',
       'Prices are shown in the currency indicated at checkout and include applicable VAT where required for the destination, unless stated otherwise. Shipping is added as described on Shipping & Delivery.',
-      `Current standard shipping: ${fee} below ${freeAt} subtotal; free standard shipping at or above ${freeAt}. You may view and pay in EUR or SEK; SEK amounts use a fixed conversion from our EUR catalogue prices.`,
+      `Current standard shipping: ${fee} below ${freeAt} subtotal; free standard shipping at or above ${freeAt}. Prices are shown in SEK by default; you may switch to EUR. SEK amounts use a fixed conversion from our EUR catalogue prices.`,
     ],
   },
   {

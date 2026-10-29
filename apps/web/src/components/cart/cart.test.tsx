@@ -39,7 +39,8 @@ describe('CartLineItem', () => {
 
   it('shows the line total', () => {
     renderWithProviders(<CartLineItem item={{ product: cartProduct(), quantity: 2 }} />);
-    expect(screen.getByText(/40[,.]00/)).toBeInTheDocument();
+    // 40,00 EUR → SEK default (×11.3)
+    expect(screen.getByText(/452[,.]00/)).toBeInTheDocument();
   });
 });
 
@@ -48,8 +49,9 @@ describe('CartSummary', () => {
     renderWithProviders(
       <CartSummary items={[{ product: cartProduct({ price: 2000 }), quantity: 1 }]} />,
     );
-    expect(screen.getByText(/20[,.]00/)).toBeInTheDocument();
-    expect(screen.getByText(/^5[,.]99/)).toBeInTheDocument(); // shipping
+    // 20,00 EUR / 5,99 EUR shipping → SEK default
+    expect(screen.getByText(/226[,.]00/)).toBeInTheDocument();
+    expect(screen.getByText(/^67[,.]69/)).toBeInTheDocument(); // shipping
     expect(screen.getByText(/free shipping/i)).toBeInTheDocument();
     expect(screen.getByText(/of which VAT \(25%\)/)).toBeInTheDocument();
   });

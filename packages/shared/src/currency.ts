@@ -1,8 +1,15 @@
-/** Shop money: catalog & cart math are always EUR cents. Display/checkout may convert to SEK. */
+/**
+ * Shop money: catalog & cart math are always EUR cents (`BASE_CURRENCY`).
+ * Shoppers and the physical store default to SEK display (`DEFAULT_DISPLAY_CURRENCY`).
+ */
 
 export const BASE_CURRENCY = 'eur' as const;
 
-export const SUPPORTED_CURRENCIES = ['eur', 'sek'] as const;
+/** Default currency for storefront, checkout, and new user profiles (Sweden-first). */
+export const DEFAULT_DISPLAY_CURRENCY = 'sek' as const;
+
+/** SEK first so the header switcher matches the store default. */
+export const SUPPORTED_CURRENCIES = ['sek', 'eur'] as const;
 export type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];
 
 /**
@@ -12,8 +19,8 @@ export type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];
 export const EUR_TO_SEK = 11.3;
 
 export const CURRENCY_LABELS: Record<SupportedCurrency, string> = {
-  eur: 'EUR',
   sek: 'SEK',
+  eur: 'EUR',
 };
 
 export function isSupportedCurrency(value: string): value is SupportedCurrency {
@@ -45,8 +52,11 @@ export function convertFromEur(centsEur: number, to: SupportedCurrency): number 
   return Math.round(centsEur * EUR_TO_SEK);
 }
 
-/** Format EUR-base cents for a display currency (converts when needed). */
-export function formatMoney(centsEur: number, displayCurrency: string = BASE_CURRENCY): string {
+/** Format EUR-base cents for a display currency (converts when needed). Defaults to SEK. */
+export function formatMoney(
+  centsEur: number,
+  displayCurrency: string = DEFAULT_DISPLAY_CURRENCY,
+): string {
   const currency = normalizeCurrency(displayCurrency);
   const amount = convertFromEur(centsEur, currency);
   return new Intl.NumberFormat(currencyLocale(currency), {
