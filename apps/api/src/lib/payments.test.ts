@@ -1,7 +1,12 @@
 import type { Order } from '@akknerds/shared';
 import { describe, expect, it, vi } from 'vitest';
 import { loadEnv } from '../env.js';
-import { orderDiscountCents, PaymentService, type StripeLike } from './payments.js';
+import {
+  orderDiscountCents,
+  PaymentService,
+  swishPaymentReference,
+  type StripeLike,
+} from './payments.js';
 
 function makeOrder(overrides: Partial<Order> = {}): Order {
   return {
@@ -155,5 +160,60 @@ describe('PaymentService (live mode, injected client)', () => {
       url: 'https://pay.stripe.com/receipts/abc',
       label: 'Receipt',
     });
+  });
+
+  it('creates an in-store Swish Checkout session in SEK', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'cs_swish', url: 'https://stripe.test/swish' });
+    const service = new PaymentService(
+      loadEnv({
+        STRIPE_SECRET_KEY: 'sk_test_real',
+        STRIPE_WEBHOOK_SECRET: 'whsec_real',
+        WEB_ORIGIN: 'https://shop.test',
+        STRIPE_INSTORE_PAYMENT_METHOD_CONFIG: 'pmc_instore',
+      }),
+      {
+        checkout: { sessions: { create } },
+        webhooks: { constructEvent: vi.fn() },
+      },
+    );
+
+    const order = makeOrder({
+      id: 'ord_swish_ref_1',
+      currency: 'sek',
+      shipping: 0,
+      total: 5000,
+      subtotal: 5000,
+      channel: 'in_store',
+    });
+    const result = await service.createInstoreSwishCheckout(order, { slug: 'charizard-ex' });
+    expect(result).toEqual({ sessionId: 'cs_swish', url: 'https://stripe.test/swish' });
+
+    const params = create.mock.calls[0]![0];
+    expect(params.line_items[0].price_data.currency).toBe('sek');
+    expect(params.metadata).toEqual({ orderId: 'ord_swish_ref_1', channel: 'in_store' });
+    expect(params.payment_method_options.swish.reference).toBe(
+      swishPaymentReference('ord_swish_ref_1'),
+    );
+    expect(params.payment_method_configurations).toBe('pmc_instore');
+    expect(params.success_url).toContain('/admin/instore/charizard-ex?paid=1');
+    expect(params.cancel_url).toContain('cancelled=1');
+    expect(params).not.toHaveProperty('payment_method_types');
+  });
+
+  it('rejects in-store Swish when the order is not SEK', async () => {
+    const service = new PaymentService(env, {
+      checkout: { sessions: { create: vi.fn() } },
+      webhooks: { constructEvent: vi.fn() },
+    });
+    await expect(
+      service.createInstoreSwishCheckout(makeOrder({ currency: 'eur' }), { slug: 'x' }),
+    ).rejects.toThrow(/SEK/);
+  });
+});
+
+describe('swishPaymentReference', () => {
+  it('keeps letters, numbers, and hyphens within 35 chars', () => {
+    expect(swishPaymentReference('ord_abc_123')).toBe('ord-abc-123');
+    expect(swishPaymentReference('a'.repeat(40)).length).toBe(35);
   });
 });

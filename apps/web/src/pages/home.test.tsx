@@ -11,7 +11,11 @@ describe('HomePage', () => {
     renderApp('/');
 
     expect(screen.getByRole('heading', { name: /Just one more/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /We go live October 31/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /We.re open in Båstad/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /See full opening hours/i })).toHaveAttribute(
+      'href',
+      '/contact#opening-hours',
+    );
     expect(
       screen.getByRole('img', { name: /One More Rip storefront in Båstad/i }),
     ).toBeInTheDocument();

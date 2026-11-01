@@ -301,7 +301,57 @@ describe('POST /api/admin/products/:id/sell-in-store', () => {
     expect(data.order.channel).toBe('in_store');
     expect(data.order.fulfillmentStep).toBe('delivered');
     expect(data.order.total).toBe(2500);
+    expect(data.order.currency).toBe('eur');
     expect(data.order.lines).toHaveLength(1);
+    expect(data.checkoutUrl).toBeUndefined();
+  });
+
+  it('starts a SEK Swish checkout and settles immediately in mock mode', async () => {
+    const { app, deps } = makeApp();
+    await seedAdmin(deps);
+    const { data: login } = await jsonRequest(app, 'POST', '/api/auth/login', {
+      email: adminCreds.email,
+      password: adminCreds.password,
+    });
+    const { data: created } = await jsonRequest(
+      app,
+      'POST',
+      '/api/admin/products',
+      {
+        name: 'Swish Till Single',
+        description: 'Swish in-store sale.',
+        category: 'single-card',
+        set: '151',
+        series: 'Scarlet & Violet',
+        price: 2500,
+        stock: 2,
+        accent: '#a855f7',
+        images: ['products/swish-till.jpg'],
+        releaseDate: '2024-06-01',
+        language: 'english',
+        rarity: 'rare',
+        condition: 'near-mint',
+      },
+      { authorization: `Bearer ${login.token}` },
+    );
+
+    const { res, data } = await jsonRequest(
+      app,
+      'POST',
+      `/api/admin/products/${created.product.id}/sell-in-store`,
+      { quantity: 1, paymentMethod: 'swish' },
+      { authorization: `Bearer ${login.token}` },
+    );
+
+    expect(res.status).toBe(200);
+    expect(data.product.stock).toBe(1);
+    expect(data.order.currency).toBe('sek');
+    expect(data.order.total).toBe(Math.round(2500 * 11.3));
+    expect(data.order.channel).toBe('in_store');
+    // Mock Stripe settles synchronously (no webhook).
+    expect(data.order.status).toBe('fulfilled');
+    expect(data.checkoutUrl).toMatch(/paid=1/);
+    expect(data.checkoutUrl).toContain(created.product.slug);
   });
 
   it('rejects when stock is empty', async () => {

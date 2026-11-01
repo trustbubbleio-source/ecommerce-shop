@@ -5,13 +5,14 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Pokeball } from '../common/pokeball';
 import { PRELAUNCH } from '../../config/launch';
+import { SITE } from '../../config/site';
 
 /** Slightly under 1 so the store loop feels calmer without looking “slow-mo”. */
 const HERO_PLAYBACK_RATE = 0.9;
 
 /** Full-bleed looping store video hero for the home page. */
 export function HeroVideo() {
-  const videoUrl = resolveAssetUrl(PRELAUNCH.storeVideo, import.meta.env.VITE_ASSET_CDN_URL);
+  const videoUrl = resolveAssetUrl(SITE.store.video, import.meta.env.VITE_ASSET_CDN_URL);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {

@@ -117,7 +117,7 @@ export interface ApiClient {
   adminSellInStore(
     idOrSlug: string,
     input?: SellInStoreInput,
-  ): Promise<{ product: Product; order: Order }>;
+  ): Promise<{ product: Product; order: Order; checkoutUrl?: string }>;
   contact(input: ContactInput): Promise<{ ok: boolean; message: string }>;
   subscribeNewsletter(input: NewsletterSubscribeInput): Promise<{ ok: boolean; message: string }>;
   unsubscribeNewsletter(
@@ -314,7 +314,7 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     adminDeleteProduct(id) {
       return request(`/admin/products/${encodeURIComponent(id)}`, { method: 'DELETE' });
     },
-    adminSellInStore(idOrSlug, input = { quantity: 1 }) {
+    adminSellInStore(idOrSlug, input = { quantity: 1, paymentMethod: 'card_manual' }) {
       return request(`/admin/products/${encodeURIComponent(idOrSlug)}/sell-in-store`, {
         method: 'POST',
         body: JSON.stringify(input),

@@ -1,13 +1,15 @@
 import { contactInputSchema } from '@akknerds/shared';
 import { Alert, Button, Field, Input, Spinner, Textarea, useToast } from '@akknerds/ui';
-import { ChevronDown, Mail, MapPin, MessageSquare, Send } from 'lucide-react';
+import { ChevronDown, Clock, Mail, MapPin, MessageSquare, Send } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/common/page-header';
+import { StoreHours } from '../components/common/store-hours';
 import { StoreMap } from '../components/common/store-map';
 import { SITE } from '../config/site';
 import { useContact } from '../hooks/use-contact';
 import { ApiError } from '@akknerds/api-client';
+
 
 type Values = { name: string; email: string; subject: string; message: string };
 type Errors = Partial<Record<keyof Values, string>>;
@@ -88,7 +90,7 @@ export function ContactPage() {
               <MapPin className="size-5" />
             </span>
             <div>
-              <p className="text-foreground font-semibold">Business address</p>
+              <p className="text-foreground font-semibold">Visit the store</p>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 {SITE.store.street}
                 <br />
@@ -96,9 +98,14 @@ export function ContactPage() {
                 <br />
                 {SITE.store.country}
               </p>
-              <p className="text-muted-foreground mt-2 text-xs">
-                Physical store opens October 31, 2026.
-              </p>
+              <a
+                href={SITE.store.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground mt-2 inline-block text-sm font-medium hover:underline"
+              >
+                Open in Google Maps
+              </a>
             </div>
           </div>
 
@@ -166,6 +173,26 @@ export function ContactPage() {
           </form>
         )}
       </div>
+
+      <section
+        id="opening-hours"
+        className="border-border mt-12 scroll-mt-24 rounded-2xl border px-5 py-6 sm:px-8 sm:py-8"
+      >
+        <div className="mb-5 flex items-start gap-3">
+          <span className="bg-secondary text-foreground grid size-10 shrink-0 place-items-center rounded-lg">
+            <Clock className="size-5" />
+          </span>
+          <div>
+            <h2 className="text-foreground text-lg font-bold tracking-tight sm:text-xl">
+              Opening hours
+            </h2>
+            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+              Visit us in Båstad, or message us if you need a special time.
+            </p>
+          </div>
+        </div>
+        <StoreHours />
+      </section>
 
       <div className="border-border bg-card/40 mt-14 overflow-hidden rounded-2xl border">
         <nav

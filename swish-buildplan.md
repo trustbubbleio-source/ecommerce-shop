@@ -2,7 +2,7 @@
 
 Mål: erbjuda **Swish via Stripe** i den fysiska butiken, så att betalning, kvitto och dagskassa landar i samma Stripe-konto som kortköp.
 
-Status: planerad (ingen Swish-kod ännu).
+Status: **Fas 1–2 implementerad i kod** (card + Swish på till-UI). Fas 0 (aktivera Swish i Stripe Dashboard) kvar för live.
 
 **Förarbete klart:** storefront/till/admin-listor defaultar till **SEK-visning** (katalog lagras fortfarande i EUR). Se `DEFAULT_DISPLAY_CURRENCY` i `packages/shared/src/currency.ts`.
 
@@ -157,18 +157,18 @@ CHECKOUT_INSTORE_CANCEL_URL=https://.../admin/instore/cancel
 
 ### Fas 1 — Backend Swish till-session
 
-- [ ] Schema + SEK-prissättning för in_store Swish
-- [ ] `createInstoreSwishCheckout`
-- [ ] Dela `sell-in-store` (card_manual vs swish)
-- [ ] Webhook: in_store → fulfilled efter betald
-- [ ] Tester: hermetiska API-tester med fake Stripe (samma DI-mönster)
+- [x] Schema + SEK-prissättning för in_store Swish
+- [x] `createInstoreSwishCheckout`
+- [x] Dela `sell-in-store` (card_manual vs swish)
+- [x] Webhook: in_store → fulfilled efter betald (`markPaidBySession`)
+- [x] Tester: hermetiska API-tester med fake Stripe (samma DI-mönster)
 
 ### Fas 2 — Till-UI
 
-- [ ] Val Kort / Swish
-- [ ] Redirect till Checkout / visa länk
-- [ ] Success/cancel-vyer för admin
-- [ ] Visa SEK-pris tydligt
+- [x] Val Kort / Swish
+- [x] Redirect till Checkout / visa länk
+- [x] Success/cancel-vyer för admin
+- [x] Visa SEK-pris tydligt
 
 ### Fas 3 — Drift & dagskassa
 

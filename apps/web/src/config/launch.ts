@@ -2,9 +2,9 @@ import { PURCHASES_LOCKED_UNTIL_LAUNCH } from '@akknerds/shared';
 import { useAuthStore } from '../store/auth';
 
 /**
- * Temporary pre-launch gate (remove or set `PURCHASES_LOCKED_UNTIL_LAUNCH` false on Oct 31).
+ * Pre-launch purchase gate. Off now that the shop is live —
+ * keep labels for any leftover UI that still reads PRELAUNCH while locked.
  * Unit tests skip the shopping gate so cart flows keep working.
- * Admins can still purchase while the public sees the Oct 31 lock.
  */
 export const PRELAUNCH = {
   active: PURCHASES_LOCKED_UNTIL_LAUNCH,
@@ -12,16 +12,12 @@ export const PRELAUNCH = {
   buttonLabel: 'Available Oct 31',
   /** Compact label for narrow product cards / mobile. */
   buttonLabelShort: 'Oct 31',
-  description: 'Purchases open October 31, 2026.',
+  description: 'Purchases are open.',
   homeEyebrow: 'Physical store',
-  homeEyebrow2: 'Webshop',
-  homeTitle: 'We go live October 31',
+  homeEyebrow2: 'Open now',
+  homeTitle: "We're open",
   homeBody:
-    'One More Rip opens its online shop and physical store on October 31, 2026. Browse the catalogue now, purchases unlock on launch day.',
-  /** S3/CloudFront object key for the storefront photo on the home announcement. */
-  storeImage: 'storeImageFront.png',
-  /** S3/CloudFront object key for the looping store video on the home hero. */
-  storeVideo: 'store.MP4',
+    'One More Rip is open to the public — online and in our Båstad store. Come rip packs, browse sealed product, and pick up in person.',
 } as const;
 
 export function isPrelaunchActive(): boolean {

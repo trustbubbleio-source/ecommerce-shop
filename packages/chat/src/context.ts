@@ -16,8 +16,8 @@ export interface ChatContext {
   tradeEmail: string;
   freeShippingLabel: string;
   storeLine: string;
-  /** Human-readable launch / store opening date, e.g. "October 31, 2026". */
-  launchDateLabel: string;
+  /** Compact weekly hours for the physical store. */
+  storeHoursSummary: string;
   supportHours: string;
 }
 
@@ -31,7 +31,7 @@ export function createChatContext(input: {
   partnerEmail?: string;
   tradeEmail?: string;
   storeLine?: string;
-  launchDateLabel?: string;
+  storeHoursSummary?: string;
   supportHours?: string;
 }): ChatContext {
   return {
@@ -45,7 +45,9 @@ export function createChatContext(input: {
     tradeEmail: input.tradeEmail ?? input.supportEmail,
     freeShippingLabel: formatMoney(FREE_SHIPPING_THRESHOLD, 'sek'),
     storeLine: input.storeLine ?? 'Båstad, Sweden',
-    launchDateLabel: input.launchDateLabel ?? 'October 31, 2026',
+    storeHoursSummary:
+      input.storeHoursSummary ??
+      'Tue–Thu 13:00–19:00, Fri 13:00–20:00, Sat 11:00–15:00; closed Mon & Sun. Special times by appointment.',
     supportHours: input.supportHours ?? 'Monday–Friday, typically within one business day',
   };
 }

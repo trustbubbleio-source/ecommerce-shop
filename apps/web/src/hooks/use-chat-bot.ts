@@ -7,12 +7,10 @@ import {
 } from '@akknerds/chat';
 import { formatMoney } from '@akknerds/shared';
 import { useCallback, useRef } from 'react';
-import { PRELAUNCH } from '../config/launch';
+import { storeHoursSummary } from '../components/common/store-hours';
 import { SITE } from '../config/site';
 import { api } from '@akknerds/api-client';
 import { useChatStore } from '../store/chat';
-
-const launchDateLabel = PRELAUNCH.description.replace(/^Purchases open\s+/i, '').replace(/\.$/, '');
 
 const chatContext = createChatContext({
   brandName: SITE.name,
@@ -24,7 +22,7 @@ const chatContext = createChatContext({
   partnerEmail: SITE.email.partner,
   tradeEmail: SITE.email.trade,
   storeLine: SITE.store.line,
-  launchDateLabel,
+  storeHoursSummary: storeHoursSummary(),
   supportHours: SITE.supportHours,
 });
 

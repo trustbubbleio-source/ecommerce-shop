@@ -64,6 +64,17 @@ export interface CheckoutResult {
   url: string;
 }
 
+export interface InstoreSwishCheckoutOptions {
+  /** Product slug for admin till return URLs. */
+  slug: string;
+}
+
+/** Swish reference: 1–35 letters, numbers, or hyphens. */
+export function swishPaymentReference(orderId: string): string {
+  const cleaned = orderId.replace(/[^a-zA-Z0-9-]/g, '-').replace(/-+/g, '-');
+  return cleaned.slice(0, 35) || 'order';
+}
+
 function invoicePdfUrl(invoice: string | StripeInvoiceLike | null | undefined): string | null {
   if (!invoice || typeof invoice === 'string') return null;
   return invoice.invoice_pdf || null;
@@ -171,6 +182,75 @@ export class PaymentService {
         invoice_data: {
           description: `One More Rip order ${order.id}`,
           metadata: { orderId: order.id },
+          footer: 'One More Rip · Hallandsvägen 21, 269 36 Båstad, Sweden',
+        },
+      },
+    });
+
+    if (!session.url) {
+      throw new Error('Stripe did not return a checkout URL');
+    }
+    return { sessionId: session.id, url: session.url };
+  }
+
+  /**
+   * In-store Swish: hosted Checkout in SEK. Dynamic payment methods (no
+   * payment_method_types) — enable Swish in the Dashboard. Optional PMC can
+   * narrow methods to Swish for till use.
+   */
+  async createInstoreSwishCheckout(
+    order: Order,
+    options: InstoreSwishCheckoutOptions,
+  ): Promise<CheckoutResult> {
+    const base = this.env.instoreCheckoutBaseUrl;
+    const slug = encodeURIComponent(options.slug);
+    const successUrl = `${base}/admin/instore/${slug}?paid=1&order_id=${encodeURIComponent(order.id)}&session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${base}/admin/instore/${slug}?cancelled=1&order_id=${encodeURIComponent(order.id)}`;
+
+    if (!this.client) {
+      return {
+        sessionId: `cs_mock_${order.id}`,
+        url: `${base}/admin/instore/${slug}?paid=1&order_id=${encodeURIComponent(order.id)}&mock=1`,
+      };
+    }
+
+    if (order.currency !== 'sek') {
+      throw new Error('In-store Swish checkout requires SEK');
+    }
+
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = order.lines.map((line) => ({
+      quantity: line.quantity,
+      price_data: {
+        currency: 'sek',
+        unit_amount: line.unitPrice,
+        product_data: { name: line.name },
+      },
+    }));
+
+    const session = await this.client.checkout.sessions.create({
+      mode: 'payment',
+      line_items: lineItems,
+      ...(order.email.includes('@') ? { customer_email: order.email } : {}),
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata: {
+        orderId: order.id,
+        channel: 'in_store',
+      },
+      payment_intent_data: {
+        metadata: { orderId: order.id, channel: 'in_store' },
+      },
+      payment_method_options: {
+        swish: { reference: swishPaymentReference(order.id) },
+      },
+      ...(this.env.stripeInstorePaymentMethodConfig
+        ? { payment_method_configurations: this.env.stripeInstorePaymentMethodConfig }
+        : {}),
+      invoice_creation: {
+        enabled: true,
+        invoice_data: {
+          description: `One More Rip in-store ${order.id}`,
+          metadata: { orderId: order.id, channel: 'in_store' },
           footer: 'One More Rip · Hallandsvägen 21, 269 36 Båstad, Sweden',
         },
       },

@@ -22,7 +22,7 @@ export function checkoutRoutes(deps: AppDeps) {
     const discountCode = savedUser?.profile.discountCode ?? null;
 
     if (!canPurchase(savedUser?.role)) {
-      return c.json({ error: 'Purchases open October 31, 2026.' }, 403);
+      return c.json({ error: 'Purchases are temporarily unavailable.' }, 403);
     }
 
     const priced = await priceCartAsync(

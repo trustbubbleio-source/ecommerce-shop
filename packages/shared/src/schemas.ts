@@ -345,6 +345,13 @@ export const updateProductInputSchema = createProductInputSchema;
 /** Decrement catalogue stock after an in-store (POS) sale. */
 export const sellInStoreInputSchema = z.object({
   quantity: z.number().int().min(1).max(20).default(1),
+  /**
+   * `card_manual` — record fulfilled sale; staff take card separately.
+   * `swish` — pending Stripe Checkout (SEK) until webhook settles.
+   */
+  paymentMethod: z.enum(['card_manual', 'swish']).default('card_manual'),
+  /** Optional email for Stripe receipt on Swish checkout. */
+  customerEmail: z.string().email().optional(),
 });
 
 export type SellInStoreInput = z.infer<typeof sellInStoreInputSchema>;

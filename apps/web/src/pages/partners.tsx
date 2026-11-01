@@ -69,8 +69,8 @@ export function PartnersPage() {
             We’re building a collector shop — and we want the right partners beside us.
           </h2>
           <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-relaxed sm:text-base">
-            We run an online catalogue and open our physical store in Båstad on October 31, 2026. Right
-            now we&apos;re actively looking for wholesale supply, product sponsorship, and creative
+            We run an online catalogue and a physical store in Båstad, open to the public. Right now
+            we&apos;re actively looking for wholesale supply, product sponsorship, and creative
             collaborations that make sense for the TCG community — not one-off spam, real long-term
             fits. Wholesale & trade: {SITE.email.trade}. Sponsorships & collabs: {SITE.email.partner}.
           </p>

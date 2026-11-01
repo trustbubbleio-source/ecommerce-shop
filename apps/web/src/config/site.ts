@@ -45,6 +45,25 @@ export const SITE = {
     /** Approx. pin for Contact map (Hallandsvägen / Malen, Båstad). */
     lat: 56.4294,
     lng: 12.8478,
+    /** S3/CloudFront object key for the storefront photo. */
+    image: 'storeImageFront.png',
+    /** S3/CloudFront object key for the looping store video on the home hero. */
+    video: 'store.MP4',
+    /**
+     * Weekly opening hours. `open: null` means closed that day.
+     * Times are local (Båstad / Europe/Stockholm).
+     */
+    hours: [
+      { day: 'Monday', open: null },
+      { day: 'Tuesday', open: '13:00–19:00' },
+      { day: 'Wednesday', open: '13:00–19:00' },
+      { day: 'Thursday', open: '13:00–19:00' },
+      { day: 'Friday', open: '13:00–20:00' },
+      { day: 'Saturday', open: '11:00–15:00' },
+      { day: 'Sunday', open: null },
+    ] as const,
+    hoursNote:
+      "Need a special time? Get in touch. We're very flexible and can often open the store by appointment.",
   },
   /** Public support hours for customer service. */
   supportHours: 'Monday–Friday, typically within one business day',

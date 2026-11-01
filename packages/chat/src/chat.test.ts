@@ -12,7 +12,8 @@ const ctx = createChatContext({
   partnerEmail: 'partner@onemorerip.cards',
   tradeEmail: 'trade@onemorerip.cards',
   storeLine: 'Hallandsvägen 21, 269 36 Båstad, Sweden',
-  launchDateLabel: 'October 31, 2026',
+  storeHoursSummary:
+    'Tue–Thu 13:00–19:00, Fri 13:00–20:00, Sat 11:00–15:00; closed Mon & Sun. Special times by appointment.',
 });
 
 describe('matchIntent', () => {
@@ -58,10 +59,10 @@ describe('matchIntent', () => {
     expect(result.reply).toContain(ctx.partnerEmail);
   });
 
-  it('answers store opening / Båstad', () => {
+  it('answers store hours / Båstad', () => {
     const result = matchIntent('When does the Båstad store open?', ctx);
     expect(result.intentId).toBe('store');
-    expect(result.reply).toContain(ctx.launchDateLabel);
+    expect(result.reply).toContain(ctx.storeHoursSummary);
     expect(result.reply).toContain('Hallandsvägen');
   });
 

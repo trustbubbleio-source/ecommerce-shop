@@ -110,6 +110,10 @@ export class OrderRepository implements IOrderRepository {
     if (!orderId) return undefined;
     const order = this.byId.get(orderId);
     if (!order || order.status !== 'pending') return undefined;
+    // In-store Swish: hand over immediately (no packing/shipping).
+    if (order.channel === 'in_store') {
+      return applyStatus(order, 'fulfilled');
+    }
     return applyStatus(order, 'paid');
   }
 

@@ -10,6 +10,13 @@ export interface Env {
   stripeWebhookSecret: string;
   checkoutSuccessUrl: string;
   checkoutCancelUrl: string;
+  /**
+   * Public web origin used to build in-store Swish success/cancel URLs
+   * (`/admin/instore/:slug?...`). Defaults to the first WEB_ORIGIN.
+   */
+  instoreCheckoutBaseUrl: string;
+  /** Optional Stripe Dashboard payment method configuration for in-store Checkout. */
+  stripeInstorePaymentMethodConfig?: string;
   /** Whether a real Stripe key is configured; otherwise checkout runs in mock mode. */
   stripeEnabled: boolean;
   /** Explicit opt-in to mock payments in production (prelaunch / emergency only). */
@@ -131,17 +138,26 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const bucket = source.AWS_BUCKET ?? '';
   const resendApiKey = source.RESEND_API_KEY ?? '';
   const googleClientId = source.GOOGLE_CLIENT_ID ?? '';
+  const webOrigins = (source.WEB_ORIGIN ?? 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const instoreCheckoutBaseUrl = (
+    source.INSTORE_CHECKOUT_BASE_URL ??
+    webOrigins[0] ??
+    'http://localhost:5173'
+  ).replace(/\/$/, '');
+  const pmc = source.STRIPE_INSTORE_PAYMENT_METHOD_CONFIG?.trim();
   return {
     port: Number.parseInt(source.PORT ?? '4000', 10),
-    webOrigins: (source.WEB_ORIGIN ?? 'http://localhost:5173')
-      .split(',')
-      .map((origin) => origin.trim())
-      .filter(Boolean),
+    webOrigins,
     jwtSecret: source.JWT_SECRET ?? DEV_JWT_SECRET,
     stripeSecretKey,
     stripeWebhookSecret: source.STRIPE_WEBHOOK_SECRET ?? '',
     checkoutSuccessUrl: source.CHECKOUT_SUCCESS_URL ?? 'http://localhost:5173/checkout/success',
     checkoutCancelUrl: source.CHECKOUT_CANCEL_URL ?? 'http://localhost:5173/cart',
+    instoreCheckoutBaseUrl,
+    stripeInstorePaymentMethodConfig: pmc || undefined,
     stripeEnabled: isStripeSecret(stripeSecretKey),
     allowMockPayments: truthyFlag(source.ALLOW_MOCK_PAYMENTS),
     databaseEnabled: isDatabaseConfigured(source),

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import footerLogo from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
 import { SERVICES_NAV, SHOP_NAV, SOCIALS_NAV, SITE } from '../../config/site';
+import { PaymentMethods } from './payment-methods';
 
 const SHOP_LINKS = SHOP_NAV.filter((link) => link.to !== '/shop');
 
@@ -104,29 +105,36 @@ export function Footer() {
       </div>
 
       <div className="border-border border-t">
-        <div className="text-muted-foreground container flex flex-col items-center justify-between gap-3 py-6 text-xs sm:flex-row">
-          <p>{`© ${new Date().getFullYear()} ${SITE.legalName}. All rights reserved.`}</p>
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-            <Link to="/shipping" className="hover:text-foreground hover:underline">
-              Shipping
-            </Link>
-            <Link to="/returns" className="hover:text-foreground hover:underline">
-              Returns
-            </Link>
-            <Link to="/terms" className="hover:text-foreground hover:underline">
-              Terms
-            </Link>
-            <Link to="/privacy" className="hover:text-foreground hover:underline">
-              Privacy
-            </Link>
-            <Link to="/cookies" className="hover:text-foreground hover:underline">
-              Cookies
-            </Link>
-            <Link to="/imprint" className="hover:text-foreground hover:underline">
-              Company
-            </Link>
-            <p>Pokémon and related marks are trademarks of their respective owners.</p>
+        <div className="container flex flex-col items-center gap-5 py-6">
+          <div className="flex w-full flex-col items-center gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+            <div className="text-muted-foreground flex max-w-xl flex-col items-center gap-2 text-center text-xs lg:items-start lg:text-left">
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 lg:justify-start">
+                <Link to="/shipping" className="hover:text-foreground hover:underline">
+                  Shipping
+                </Link>
+                <Link to="/returns" className="hover:text-foreground hover:underline">
+                  Returns
+                </Link>
+                <Link to="/terms" className="hover:text-foreground hover:underline">
+                  Terms
+                </Link>
+                <Link to="/privacy" className="hover:text-foreground hover:underline">
+                  Privacy
+                </Link>
+                <Link to="/cookies" className="hover:text-foreground hover:underline">
+                  Cookies
+                </Link>
+                <Link to="/imprint" className="hover:text-foreground hover:underline">
+                  Company
+                </Link>
+              </div>
+              <p>Pokémon and related marks are trademarks of their respective owners.</p>
+            </div>
+            <PaymentMethods className="w-full lg:w-auto" />
           </div>
+          <p className="text-muted-foreground text-center text-xs">
+            {`© ${new Date().getFullYear()} ${SITE.legalName}. All rights reserved.`}
+          </p>
         </div>
       </div>
     </footer>

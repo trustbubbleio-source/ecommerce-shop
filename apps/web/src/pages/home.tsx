@@ -10,18 +10,17 @@ import { Link } from 'react-router-dom';
 import { DocumentMeta } from '../components/common/document-meta';
 import { NewsletterSubscribe } from '../components/common/newsletter-subscribe';
 import { SectionHeader } from '../components/common/section';
+import { TodaysStoreHours } from '../components/common/store-hours';
 // import { HeroClassic } from '../components/home/hero-classic'; // previous header — swap with HeroVideo to restore
 import { HeroVideo } from '../components/home/hero-video';
 import { ProductGrid } from '../components/product/product-grid';
-import { PRELAUNCH, isPrelaunchActive } from '../config/launch';
+import { isPrelaunchActive } from '../config/launch';
 import { CATEGORY_TILES, SITE } from '../config/site';
 import { useFormatMoney } from '../hooks/use-format-money';
 import { useProducts } from '../hooks/use-products';
 
-function LaunchAnnouncement() {
-  if (!PRELAUNCH.active) return null;
-
-  const storeImage = resolveAssetUrl(PRELAUNCH.storeImage, import.meta.env.VITE_ASSET_CDN_URL);
+function StoreOpenAnnouncement() {
+  const storeImage = resolveAssetUrl(SITE.store.image, import.meta.env.VITE_ASSET_CDN_URL);
 
   return (
     <section className="container py-12">
@@ -38,21 +37,21 @@ function LaunchAnnouncement() {
         <div className="relative grid lg:grid-cols-2">
           <div className="flex flex-col justify-center gap-4 px-6 py-10 sm:px-10 sm:py-14">
             <span className="border-border bg-secondary text-foreground inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
-              {PRELAUNCH.homeEyebrow}
+              Open to the public
             </span>
             <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-              {PRELAUNCH.homeTitle}
+              We&apos;re open in Båstad
             </h2>
             <p className="text-muted-foreground max-w-md text-base leading-relaxed sm:text-lg">
-              {PRELAUNCH.homeBody}
-            </p>
-            <p className="text-foreground text-sm font-semibold tracking-wide">
-              Online shop · Physical store · October 31, 2026
+              The shop is live, online and in store. Walk in, rip packs, browse sealed product, or
+              grab singles in person.
             </p>
             <p className="text-muted-foreground inline-flex items-start gap-2 text-sm">
               <MapPin className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />
               <span>{SITE.store.line}</span>
             </p>
+
+            <TodaysStoreHours />
           </div>
 
           {storeImage && (
@@ -194,7 +193,7 @@ export function HomePage() {
       {/* Swap to <HeroClassic /> to restore the previous aurora/series header */}
       <HeroVideo />
       <ValueProps />
-      <LaunchAnnouncement />
+      <StoreOpenAnnouncement />
       <Categories />
 
       <section className="container py-12">
