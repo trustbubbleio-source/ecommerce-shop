@@ -325,9 +325,9 @@ export const PRODUCTS: Product[] = [
   }),
   defineProduct({
     id: 'sc-giratina-vstar',
-    name: 'Giratina VSTAR — Lost Origin (Secret Rare)',
+    name: 'Giratina VSTAR — Lost Origin (Hyper Rare)',
     description:
-      'Giratina VSTAR gold Secret Rare from Lost Origin. A coveted Lost Zone icon in collector-grade condition.',
+      'Giratina VSTAR gold Hyper Rare from Lost Origin. A coveted Lost Zone icon in collector-grade condition.',
     category: 'single-card',
     set: 'Lost Origin',
     series: 'Sword & Shield',
@@ -336,7 +336,7 @@ export const PRODUCTS: Product[] = [
     stock: 3,
     rating: 5,
     reviewCount: 19,
-    rarity: 'secret-rare',
+    rarity: 'hyper-rare',
     condition: 'mint',
     cardNumber: '201/196',
     tags: ['giratina', 'gold', 'chase'],

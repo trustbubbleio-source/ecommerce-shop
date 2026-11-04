@@ -44,17 +44,20 @@ const RARITY_TO_PRISMA = {
   common: PrismaCardRarity.common,
   uncommon: PrismaCardRarity.uncommon,
   rare: PrismaCardRarity.rare,
-  'holo-rare': PrismaCardRarity.holo_rare,
+  'double-rare': PrismaCardRarity.double_rare,
   'ultra-rare': PrismaCardRarity.ultra_rare,
-  'secret-rare': PrismaCardRarity.secret_rare,
   'illustration-rare': PrismaCardRarity.illustration_rare,
+  'special-illustration-rare': PrismaCardRarity.special_illustration_rare,
+  'hyper-rare': PrismaCardRarity.hyper_rare,
+  promo: PrismaCardRarity.promo,
 } as const satisfies Record<CardRarity, PrismaCardRarity>;
 
 const CONDITION_TO_PRISMA = {
   mint: PrismaCardCondition.mint,
   'near-mint': PrismaCardCondition.near_mint,
-  'lightly-played': PrismaCardCondition.lightly_played,
-  'moderately-played': PrismaCardCondition.moderately_played,
+  excellent: PrismaCardCondition.excellent,
+  good: PrismaCardCondition.good,
+  'light-played': PrismaCardCondition.light_played,
 } as const satisfies Record<CardCondition, PrismaCardCondition>;
 
 const LANGUAGE_TO_PRISMA = {

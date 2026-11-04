@@ -47,7 +47,7 @@ describe('productPreviewBadge', () => {
       productPreviewBadge({
         category: 'single-card',
         cardNumber: '178/165',
-        rarity: 'secret-rare',
+        rarity: 'hyper-rare',
       }),
     ).toBe('178/165');
   });

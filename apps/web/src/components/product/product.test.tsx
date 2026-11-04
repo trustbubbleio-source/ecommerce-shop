@@ -49,7 +49,7 @@ describe('ProductCard', () => {
         product={makeProduct({
           category: 'single-card',
           cardNumber: '178/165',
-          rarity: 'secret-rare',
+          rarity: 'hyper-rare',
           isNew: false,
         })}
       />,

@@ -243,13 +243,14 @@ export const CHAT_INTENTS: ChatIntent[] = [
       'singles',
       'condition',
       'near mint',
-      'lightly played',
+      'light played',
+      'excellent',
       'raw card',
       'card condition',
     ],
     weight: 1.2,
     reply:
-      'Singles are graded in-house as Mint, Near Mint, Lightly Played, or Moderately Played — shown on the product page. We aim for Near Mint or better on chase cards unless stated otherwise. Browse Singles in the shop and filter by language or condition. You can also search by illustrator/artist when that info is on the listing.',
+      'Singles are graded in-house as Mint, Near Mint, Excellent, Good, or Light played — shown on the product page. We aim for Near Mint or better on chase cards unless stated otherwise. Browse Singles in the shop and filter by language or condition. You can also search by illustrator/artist when that info is on the listing.',
     suggestions: ['Find a card', 'Search by artist', 'Graded slabs'],
     links: [
       { label: 'Singles', href: '/shop?category=single-card' },

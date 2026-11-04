@@ -120,7 +120,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         heading: 'Every single is inspected and graded',
         paragraphs: [
-          'Raw singles are checked by hand under good light before they are listed. We grade in-house as Mint, Near Mint, Lightly Played, or Moderately Played, and the condition you see on the product page is the condition you receive.',
+          'Raw singles are checked by hand under good light before they are listed. We grade in-house as Mint, Near Mint, Excellent, Good, or Light played, and the condition you see on the product page is the condition you receive.',
           'When a card is not up to standard, we say so plainly in the listing rather than hiding it in the photos. No surprises when the parcel arrives.',
         ],
       },

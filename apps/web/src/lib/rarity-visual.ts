@@ -9,10 +9,12 @@ const RARITY_VISUAL: Record<CardRarity, RarityVisual> = {
   common: { kind: 'common' },
   uncommon: { kind: 'uncommon' },
   rare: { kind: 'stars', tier: 1 },
-  'holo-rare': { kind: 'stars', tier: 1 },
+  'double-rare': { kind: 'stars', tier: 1 },
   'illustration-rare': { kind: 'stars', tier: 1 },
+  promo: { kind: 'stars', tier: 1 },
   'ultra-rare': { kind: 'stars', tier: 2 },
-  'secret-rare': { kind: 'stars', tier: 3 },
+  'special-illustration-rare': { kind: 'stars', tier: 2 },
+  'hyper-rare': { kind: 'stars', tier: 3 },
 };
 
 /** Maps a product rarity slug (or label) to the icon we render in the UI. */

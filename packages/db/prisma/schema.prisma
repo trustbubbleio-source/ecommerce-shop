@@ -247,17 +247,20 @@ enum CardRarity {
   common
   uncommon
   rare
-  holo_rare          @map("holo-rare")
-  ultra_rare         @map("ultra-rare")
-  secret_rare        @map("secret-rare")
-  illustration_rare  @map("illustration-rare")
+  double_rare                   @map("double-rare")
+  ultra_rare                    @map("ultra-rare")
+  illustration_rare             @map("illustration-rare")
+  special_illustration_rare     @map("special-illustration-rare")
+  hyper_rare                    @map("hyper-rare")
+  promo
 }
 
 enum CardCondition {
   mint
   near_mint          @map("near-mint")
-  lightly_played     @map("lightly-played")
-  moderately_played  @map("moderately-played")
+  excellent
+  good
+  light_played       @map("light-played")
 }
 
 enum ProductLanguage {

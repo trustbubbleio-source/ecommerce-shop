@@ -43,18 +43,21 @@ const CATEGORY_LABELS: Record<string, string> = {
 const CONDITION_LABELS: Record<string, string> = {
   mint: 'Mint',
   'near-mint': 'Near Mint',
-  'lightly-played': 'Lightly Played',
-  'moderately-played': 'Moderately Played',
+  excellent: 'Excellent',
+  good: 'Good',
+  'light-played': 'Light played',
 };
 
 const RARITY_LABELS: Record<string, string> = {
   common: 'Common',
   uncommon: 'Uncommon',
   rare: 'Rare',
-  'holo-rare': 'Holo Rare',
+  'double-rare': 'Double Rare',
   'ultra-rare': 'Ultra Rare',
-  'secret-rare': 'Secret Rare',
   'illustration-rare': 'Illustration Rare',
+  'special-illustration-rare': 'Special Illustration Rare',
+  'hyper-rare': 'Hyper Rare',
+  promo: 'Promo',
 };
 
 const LANGUAGE_LABELS: Record<string, string> = {

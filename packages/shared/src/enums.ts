@@ -38,10 +38,12 @@ export const CARD_RARITIES = [
   'common',
   'uncommon',
   'rare',
-  'holo-rare',
+  'double-rare',
   'ultra-rare',
-  'secret-rare',
   'illustration-rare',
+  'special-illustration-rare',
+  'hyper-rare',
+  'promo',
 ] as const;
 
 export type CardRarity = (typeof CARD_RARITIES)[number];
@@ -49,8 +51,9 @@ export type CardRarity = (typeof CARD_RARITIES)[number];
 export const CARD_CONDITIONS = [
   'mint',
   'near-mint',
-  'lightly-played',
-  'moderately-played',
+  'excellent',
+  'good',
+  'light-played',
 ] as const;
 
 export type CardCondition = (typeof CARD_CONDITIONS)[number];

@@ -116,7 +116,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What condition are single cards in?',
         answer:
-          'Singles are graded in-house as Mint, Near Mint, Lightly Played, or Moderately Played. The condition is shown on the product page and in your order details. We aim for Near Mint or better on all chase cards unless stated otherwise.',
+          'Singles are graded in-house as Mint, Near Mint, Excellent, Good, or Light played. The condition is shown on the product page and in your order details. We aim for Near Mint or better on all chase cards unless stated otherwise.',
       },
       {
         question: 'Will my booster box be shipped with outer shrink?',
