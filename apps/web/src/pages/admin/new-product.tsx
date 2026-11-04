@@ -21,6 +21,7 @@ import {
   type ProductSeries,
   type ProductSet,
   type ProductTag,
+  parseSekMajorToOre,
 } from '@akknerds/shared';
 import {
   Button,
@@ -38,12 +39,13 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ImagePlus, Sparkles, X } from 'lucide-react';
 import { type FormEvent, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ProductTagPicker } from '../../components/admin/product-tag-picker';
 import { ProductVisibilityFields } from '../../components/admin/product-visibility-fields';
 import { SingleCardPriceField } from '../../components/admin/single-card-price-field';
 import { useSingleCardAutoCopy } from '../../hooks/use-single-card-auto-copy';
 import { ApiError, api } from '@akknerds/api-client';
+import { adminProductsReturnPath } from '../../lib/admin-products-list';
 
 interface ImageDraft {
   previewUrl: string;
@@ -111,7 +113,7 @@ function buildCreateProductDraft(
   values: typeof defaultValues,
   imageCount: number,
 ): CreateProductInput {
-  const price = Number.parseFloat(values.price);
+  const priceOre = parseSekMajorToOre(values.price);
   const stock = Number.parseInt(values.stock, 10);
   return {
     name: values.name,
@@ -119,7 +121,7 @@ function buildCreateProductDraft(
     category: values.category,
     series: values.series as ProductSeries,
     set: values.set as ProductSet,
-    price: Number.isFinite(price) ? Math.round(price * 100) : 0,
+    price: Number.isFinite(priceOre) ? priceOre : 0,
     stock: Number.isFinite(stock) ? stock : -1,
     accent: values.accent,
     images: imageCount > 0 ? Array.from({ length: imageCount }, () => 'pending') : [],
@@ -139,6 +141,8 @@ function buildCreateProductDraft(
 
 export function AdminNewProductPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const listPath = adminProductsReturnPath(location.state);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [values, setValues] = useState(defaultValues);
@@ -165,7 +169,10 @@ export function AdminNewProductPage() {
         category: values.category,
         series: values.series as ProductSeries,
         set: values.set as ProductSet,
-        price: Math.round(Number.parseFloat(values.price) * 100),
+        price: (() => {
+          const ore = parseSekMajorToOre(values.price);
+          return Number.isFinite(ore) ? ore : 0;
+        })(),
         stock: Number.parseInt(values.stock, 10),
         accent: values.accent,
         images: keys,
@@ -199,7 +206,7 @@ export function AdminNewProductPage() {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       toast({ title: 'Product created', variant: 'success' });
-      navigate('/admin');
+      navigate(listPath);
     },
     onError: (error) => {
       if (error instanceof Error && error.message === 'validation') return;
@@ -571,18 +578,18 @@ export function AdminNewProductPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <Field
-                label="Price (SEK)"
+                label="Price (kr)"
                 error={errors.price}
                 required
                 hint={
                   values.category === 'single-card'
-                    ? 'Use the wand to load today’s Cardmarket trend price (via TCGdex).'
-                    : undefined
+                    ? 'Kronor as customers pay. Wand loads Cardmarket trend in SEK.'
+                    : 'Kronor as customers pay, e.g. 399 or 1499.00 — not öre.'
                 }
               >
                 {(props) => (
                   <SingleCardPriceField
-                    inputProps={{ ...props, placeholder: '19.99' }}
+                    inputProps={{ ...props, placeholder: '399.00' }}
                     price={values.price}
                     onPriceChange={(price) => setValues((v) => ({ ...v, price }))}
                     context={values}
@@ -636,7 +643,7 @@ export function AdminNewProductPage() {
             Create product
           </Button>
           <Button type="button" variant="outline" asChild>
-            <Link to="/admin">Cancel</Link>
+            <Link to={listPath}>Cancel</Link>
           </Button>
         </div>
       </form>

@@ -195,8 +195,8 @@ export function orderCarrierDetails(order: Order): OrderCarrierDetails {
     };
   }
 
-  const thresholdEligible = hasCarrierTracking(order.subtotal, order.currency);
-  const threshold = formatMoney(FREE_SHIPPING_THRESHOLD, order.currency);
+  const thresholdEligible = hasCarrierTracking(order.subtotal);
+  const threshold = formatMoney(FREE_SHIPPING_THRESHOLD);
   const trackingUrl = safeHttpUrl(order.trackingUrl);
   const savedCarrier = order.carrierName?.trim() || '';
   // Admin may add carrier/tracking even below the free-shipping threshold.

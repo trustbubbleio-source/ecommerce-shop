@@ -61,7 +61,19 @@ export function toSekOre(amount: number, storedCurrency: string | undefined | nu
   return Math.round(amount);
 }
 
-/** Format SEK öre (or convert legacy EUR cents) for display. */
+/**
+ * Parse a kronor amount from admin forms (`399`, `399.00`, `399,00`, `1 299`).
+ * Returns SEK öre, or `NaN` when empty/invalid.
+ */
+export function parseSekMajorToOre(raw: string): number {
+  const cleaned = raw.trim().replace(/\s/g, '').replace(',', '.');
+  if (!cleaned) return Number.NaN;
+  const major = Number.parseFloat(cleaned);
+  if (!Number.isFinite(major) || major < 0) return Number.NaN;
+  return Math.round(major * 100);
+}
+
+/** Format SEK öre for display (converts legacy EUR cents when `storedCurrency` is eur). */
 export function formatMoney(
   amount: number,
   storedCurrency: string = BASE_CURRENCY,

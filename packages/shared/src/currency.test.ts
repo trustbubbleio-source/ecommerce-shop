@@ -6,6 +6,7 @@ import {
   convertFromEur,
   formatMoney,
   normalizeCurrency,
+  parseSekMajorToOre,
   toSekOre,
 } from './currency.js';
 
@@ -27,5 +28,13 @@ describe('currency', () => {
   it('formats SEK öre', () => {
     expect(formatMoney(1130)).toMatch(/11[,.]30/);
     expect(formatMoney(100, 'eur')).toMatch(/11[,.]30|11\.30/);
+  });
+
+  it('parses kronor form input into öre', () => {
+    expect(parseSekMajorToOre('4000')).toBe(400_000);
+    expect(parseSekMajorToOre('399.50')).toBe(39_950);
+    expect(parseSekMajorToOre('399,50')).toBe(39_950);
+    expect(parseSekMajorToOre('1 299')).toBe(129_900);
+    expect(parseSekMajorToOre('')).toBeNaN();
   });
 });

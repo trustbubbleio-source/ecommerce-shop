@@ -74,7 +74,7 @@ describe('Admin products', () => {
     expect(await screen.findByText('Listing 10')).toBeInTheDocument();
     expect(spy).toHaveBeenCalledWith(expect.objectContaining({ offset: 10, limit: 10 }));
 
-    await userEvent.type(screen.getByRole('searchbox', { name: 'Search products' }), 'charizard');
+    await userEvent.type(screen.getByRole('textbox', { name: 'Search products' }), 'charizard');
     await waitFor(() => {
       expect(spy).toHaveBeenCalledWith(expect.objectContaining({ search: 'charizard' }));
     });

@@ -1,13 +1,14 @@
 import {
-  formatPrice,
+  formatMoney,
   type ProductSeries,
   type ProductSet,
 } from '@akknerds/shared';
-import { Button, Input, Spinner, useToast, type InputProps } from '@akknerds/ui';
+import { Button, Spinner, useToast, type InputProps } from '@akknerds/ui';
 import { useMutation } from '@tanstack/react-query';
 import { Wand2 } from 'lucide-react';
 import type { ProductFormValues } from '../../pages/admin/product-form-common';
 import { ApiError, api } from '@akknerds/api-client';
+import { SekPriceField } from './sek-price-field';
 
 type PriceFetchContext = Pick<
   ProductFormValues,
@@ -22,7 +23,7 @@ export function canAutoFetchCardPrice(context: PriceFetchContext): boolean {
   );
 }
 
-const AUTO_PRICE_TITLE = 'Load Cardmarket trend price via TCGdex';
+const AUTO_PRICE_TITLE = 'Load Cardmarket trend price via TCGdex (SEK)';
 const AUTO_PRICE_DISABLED_HINT =
   'Set series, set, card number and English or Japanese language to auto-load price';
 
@@ -53,10 +54,11 @@ export function SingleCardPriceField({
         language: 'english',
       }),
     onSuccess: (result) => {
+      // API returns SEK öre — show kronor in the form.
       onPriceChange((result.priceCents / 100).toFixed(2));
       toast({
         title: 'Price loaded',
-        description: `${result.cardName} — ${formatPrice(result.priceCents)} ungraded`,
+        description: `${result.cardName} — ${formatMoney(result.priceCents)} ungraded`,
         variant: 'success',
       });
     },
@@ -71,36 +73,29 @@ export function SingleCardPriceField({
 
   if (!showAutoButton) {
     return (
-      <Input
-        {...inputProps}
-        inputMode="decimal"
-        value={price}
-        onChange={(event) => onPriceChange(event.target.value)}
-      />
+      <SekPriceField inputProps={inputProps} price={price} onPriceChange={onPriceChange} />
     );
   }
 
   return (
-    <div className="flex gap-2">
-      <Input
-        {...inputProps}
-        className="min-w-0 flex-1"
-        inputMode="decimal"
-        value={price}
-        onChange={(event) => onPriceChange(event.target.value)}
-      />
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        className="size-10 shrink-0"
-        disabled={!canFetch || fetchPrice.isPending}
-        title={canFetch ? AUTO_PRICE_TITLE : AUTO_PRICE_DISABLED_HINT}
-        aria-label={AUTO_PRICE_TITLE}
-        onClick={() => fetchPrice.mutate()}
-      >
-        {fetchPrice.isPending ? <Spinner /> : <Wand2 className="size-4" />}
-      </Button>
-    </div>
+    <SekPriceField
+      inputProps={inputProps}
+      price={price}
+      onPriceChange={onPriceChange}
+      trailing={
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="size-10 shrink-0"
+          disabled={!canFetch || fetchPrice.isPending}
+          title={canFetch ? AUTO_PRICE_TITLE : AUTO_PRICE_DISABLED_HINT}
+          aria-label={AUTO_PRICE_TITLE}
+          onClick={() => fetchPrice.mutate()}
+        >
+          {fetchPrice.isPending ? <Spinner /> : <Wand2 className="size-4" />}
+        </Button>
+      }
+    />
   );
 }

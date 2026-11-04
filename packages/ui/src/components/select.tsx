@@ -14,14 +14,13 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 /** Native select (best-in-class on mobile) styled to match the design system. */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, options, ...props }, ref) => (
-    <div className="relative inline-flex w-full">
+    <div className={cn('relative inline-flex w-full min-w-0', className)}>
       <select
         ref={ref}
         className={cn(
           'border-input bg-background text-foreground h-11 w-full appearance-none rounded-lg border pl-3.5 pr-10 text-sm font-medium shadow-sm transition-colors',
           'focus-visible:border-ring focus-visible:ring-ring/40 focus-visible:outline-none focus-visible:ring-2',
           'disabled:cursor-not-allowed disabled:opacity-50',
-          className,
         )}
         {...props}
       >

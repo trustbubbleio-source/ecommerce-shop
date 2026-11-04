@@ -26,9 +26,29 @@ import {
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { ArrowDown, ArrowUp, ArrowUpDown, Boxes, ImagePlus, Package, RefreshCw, Search, Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { adminProductsListState } from '../../lib/admin-products-list';
 
 type SortDir = 'asc' | 'desc';
+
+const SORT_KEYS: AdminProductSortKey[] = ['name', 'category', 'price', 'stock', 'status'];
+
+function parseSortKey(value: string | null): AdminProductSortKey {
+  return value && (SORT_KEYS as string[]).includes(value)
+    ? (value as AdminProductSortKey)
+    : 'name';
+}
+
+function parseSortDir(value: string | null): SortDir {
+  return value === 'desc' ? 'desc' : 'asc';
+}
+
+function parseCategory(value: string | null): ProductCategory | 'all' {
+  if (!value || value === 'all') return 'all';
+  return (PRODUCT_CATEGORIES as readonly string[]).includes(value)
+    ? (value as ProductCategory)
+    : 'all';
+}
 
 const EMPTY_CATALOG_STATS: CatalogStats = {
   listings: 0,
@@ -121,18 +141,59 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
 }
 
 export function AdminProductsPage() {
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState<ProductCategory | 'all'>('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const qFromUrl = searchParams.get('q') ?? '';
+  const category = parseCategory(searchParams.get('category'));
+  const page = Math.max(0, Number.parseInt(searchParams.get('page') ?? '0', 10) || 0);
+  const sortKey = parseSortKey(searchParams.get('sort'));
+  const sortDir = parseSortDir(searchParams.get('dir'));
+
+  const [search, setSearch] = useState(qFromUrl);
   const debouncedSearch = useDebouncedValue(search.trim(), 280);
-  const [page, setPage] = useState(0);
-  const [sortKey, setSortKey] = useState<AdminProductSortKey>('name');
-  const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
+  // Keep the text field in sync when returning via browser back / shared URL.
   useEffect(() => {
-    setPage(0);
-  }, [debouncedSearch, category]);
+    setSearch(qFromUrl);
+  }, [qFromUrl]);
+
+  // Write debounced search into the URL (and reset page when the query changes).
+  useEffect(() => {
+    if (debouncedSearch === qFromUrl) return;
+    const next = new URLSearchParams(searchParams);
+    if (debouncedSearch) next.set('q', debouncedSearch);
+    else next.delete('q');
+    next.delete('page');
+    setSearchParams(next, { replace: true });
+  }, [debouncedSearch, qFromUrl, searchParams, setSearchParams]);
+
+  const patchList = (patch: {
+    category?: ProductCategory | 'all';
+    page?: number;
+    sort?: AdminProductSortKey;
+    dir?: SortDir;
+  }) => {
+    const next = new URLSearchParams(searchParams);
+    if (patch.category !== undefined) {
+      if (patch.category === 'all') next.delete('category');
+      else next.set('category', patch.category);
+      next.delete('page');
+    }
+    if (patch.page !== undefined) {
+      if (patch.page > 0) next.set('page', String(patch.page));
+      else next.delete('page');
+    }
+    if (patch.sort !== undefined) {
+      if (patch.sort === 'name') next.delete('sort');
+      else next.set('sort', patch.sort);
+    }
+    if (patch.dir !== undefined) {
+      if (patch.dir === 'asc') next.delete('dir');
+      else next.set('dir', patch.dir);
+    }
+    setSearchParams(next, { replace: true });
+  };
 
   const products = useQuery({
     queryKey: ['admin', 'products', { search: debouncedSearch, category, page, sortKey, sortDir }],
@@ -177,14 +238,14 @@ export function AdminProductsPage() {
   const shownPage = Math.floor(offset / ADMIN_PRODUCTS_PAGE_SIZE);
 
   const toggleSort = (key: AdminProductSortKey) => {
-    setPage(0);
     if (sortKey === key) {
-      setSortDir((dir) => (dir === 'asc' ? 'desc' : 'asc'));
+      patchList({ dir: sortDir === 'asc' ? 'desc' : 'asc', page: 0 });
       return;
     }
-    setSortKey(key);
-    setSortDir('asc');
+    patchList({ sort: key, dir: 'asc', page: 0 });
   };
+
+  const listState = adminProductsListState(searchParams.toString() ? `?${searchParams}` : '');
 
   const cdn = import.meta.env.VITE_ASSET_CDN_URL;
 
@@ -226,7 +287,7 @@ export function AdminProductsPage() {
             {priceSync.isPending ? 'Syncing prices…' : 'Sync single-card prices'}
           </Button>
           <Button asChild>
-            <Link to="/admin/new">
+            <Link to="/admin/new" state={listState}>
               <ImagePlus className="size-4" />
               Add product
             </Link>
@@ -242,31 +303,40 @@ export function AdminProductsPage() {
 
       <CatalogStatsRow stats={catalogStats} isLoading={products.isLoading && !products.data} />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">{title}</h2>
-        <div className="flex min-w-0 w-full flex-col gap-2 sm:max-w-xl sm:flex-row">
-          <Select
-            aria-label="Product type"
-            value={category}
-            onChange={(event) => setCategory(event.target.value as ProductCategory | 'all')}
-            options={[
-              { value: 'all', label: 'All types' },
-              ...PRODUCT_CATEGORIES.map((value) => ({
-                value,
-                label: categoryLabel(value),
-              })),
-            ]}
-            className="sm:max-w-[14rem] sm:shrink-0"
-          />
-          <div className="relative min-w-0 flex-1">
-            <Search className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+        <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="w-full shrink-0 sm:w-56">
+            <Select
+              aria-label="Product type"
+              value={category}
+              onChange={(event) =>
+                patchList({ category: event.target.value as ProductCategory | 'all' })
+              }
+              options={[
+                { value: 'all', label: 'All types' },
+                ...PRODUCT_CATEGORIES.map((value) => ({
+                  value,
+                  label: categoryLabel(value),
+                })),
+              ]}
+            />
+          </div>
+          <div className="relative min-w-0 w-full flex-1">
+            <Search
+              className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
+              aria-hidden
+            />
             <Input
-              type="search"
+              type="text"
+              inputMode="search"
+              autoComplete="off"
+              spellCheck={false}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search name, Pokémon, set…"
               aria-label="Search products"
-              className="pl-9"
+              className="caret-foreground text-foreground placeholder:text-muted-foreground min-w-0 pl-9"
             />
           </div>
         </div>
@@ -314,6 +384,7 @@ export function AdminProductsPage() {
                           <td className="px-4 py-3">
                             <Link
                               to={`/admin/products/${product.id}`}
+                              state={listState}
                               className="flex items-center gap-3"
                             >
                               <div
@@ -348,6 +419,7 @@ export function AdminProductsPage() {
                           <td className="px-4 py-3">
                             <Link
                               to={`/admin/products/${product.id}`}
+                              state={listState}
                               className="hover:text-foreground block"
                             >
                               {categoryLabel(product.category)}
@@ -356,6 +428,7 @@ export function AdminProductsPage() {
                           <td className="px-4 py-3 font-medium">
                             <Link
                               to={`/admin/products/${product.id}`}
+                              state={listState}
                               className="hover:text-foreground block"
                             >
                               {formatMoney(product.price, 'sek')}
@@ -364,13 +437,18 @@ export function AdminProductsPage() {
                           <td className="px-4 py-3">
                             <Link
                               to={`/admin/products/${product.id}`}
+                              state={listState}
                               className="hover:text-foreground block"
                             >
                               {product.stock}
                             </Link>
                           </td>
                           <td className="px-4 py-3">
-                            <Link to={`/admin/products/${product.id}`} className="block">
+                            <Link
+                              to={`/admin/products/${product.id}`}
+                              state={listState}
+                              className="block"
+                            >
                               <div className="flex flex-wrap gap-1">
                                 {product.inactive && <Badge variant="destructive">Inactive</Badge>}
                                 {!product.inactive && product.storeOnly && (
@@ -402,7 +480,7 @@ export function AdminProductsPage() {
                     variant="outline"
                     size="sm"
                     disabled={page === 0 || products.isFetching}
-                    onClick={() => setPage((current) => Math.max(0, current - 1))}
+                    onClick={() => patchList({ page: Math.max(0, page - 1) })}
                   >
                     Previous
                   </Button>
@@ -411,7 +489,7 @@ export function AdminProductsPage() {
                     variant="outline"
                     size="sm"
                     disabled={!products.data?.hasMore || products.isFetching}
-                    onClick={() => setPage((current) => current + 1)}
+                    onClick={() => patchList({ page: page + 1 })}
                   >
                     Next
                   </Button>

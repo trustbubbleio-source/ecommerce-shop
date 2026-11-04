@@ -4,6 +4,7 @@ import {
   type CreateProductInput,
   conditionLabel,
   isCardStyleCategory,
+  parseSekMajorToOre,
   rarityLabel,
   type ProductCategory,
   type ProductLanguage,
@@ -147,7 +148,7 @@ export function buildProductDraft(
   values: ProductFormValues,
   imageCount: number,
 ): CreateProductInput {
-  const price = Number.parseFloat(values.price);
+  const priceOre = parseSekMajorToOre(values.price);
   const stock = Number.parseInt(values.stock, 10);
   return {
     name: values.name,
@@ -155,7 +156,7 @@ export function buildProductDraft(
     category: values.category,
     series: values.series as ProductSeries,
     set: values.set as ProductSet,
-    price: Number.isFinite(price) ? Math.round(price * 100) : 0,
+    price: Number.isFinite(priceOre) ? priceOre : 0,
     stock: Number.isFinite(stock) ? stock : -1,
     accent: values.accent,
     images: imageCount > 0 ? Array.from({ length: imageCount }, () => 'pending') : [],

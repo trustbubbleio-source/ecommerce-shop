@@ -46,13 +46,14 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ImagePlus, Sparkles, Trash2, X } from 'lucide-react';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useSingleCardAutoCopy } from '../../hooks/use-single-card-auto-copy';
 import { ApiError, api } from '@akknerds/api-client';
 import { ProductTagPicker, normalizeProductTags } from '../../components/admin/product-tag-picker';
 import { ProductVisibilityFields } from '../../components/admin/product-visibility-fields';
 import { SingleCardPriceField } from '../../components/admin/single-card-price-field';
 import { ProductQrPanel } from '../../components/product/product-qr-panel';
+import { adminProductsReturnPath } from '../../lib/admin-products-list';
 import {
   PRODUCT_NAME_GUIDE,
   buildProductDraft,
@@ -96,6 +97,8 @@ function productToImageDrafts(product: Product, cdn?: string): ImageDraft[] {
 export function AdminEditProductPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const listPath = adminProductsReturnPath(location.state);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const cdn = import.meta.env.VITE_ASSET_CDN_URL;
@@ -149,7 +152,7 @@ export function AdminEditProductPage() {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'product', id] });
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       toast({ title: 'Product updated', variant: 'success' });
-      navigate('/admin');
+      navigate(listPath);
     },
     onError: (error) => {
       if (error instanceof Error && error.message === 'validation') return;
@@ -171,7 +174,7 @@ export function AdminEditProductPage() {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       toast({ title: 'Product deleted', variant: 'success' });
-      navigate('/admin');
+      navigate(listPath);
     },
     onError: (error) => {
       toast({
@@ -267,7 +270,7 @@ export function AdminEditProductPage() {
       <div className="mx-auto flex max-w-2xl flex-col gap-4">
         <h1 className="text-2xl font-extrabold tracking-tight">Product not found</h1>
         <Button variant="outline" asChild>
-          <Link to="/admin">Back to products</Link>
+          <Link to={listPath}>Back to products</Link>
         </Button>
       </div>
     );
@@ -537,13 +540,13 @@ export function AdminEditProductPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <Field
-                label="Price (SEK)"
+                label="Price (kr)"
                 error={errors.price}
                 required
                 hint={
                   values.category === 'single-card'
-                    ? 'Use the wand to load today’s Cardmarket trend price (via TCGdex).'
-                    : undefined
+                    ? 'Kronor as customers pay. Wand loads Cardmarket trend in SEK.'
+                    : 'Kronor as customers pay, e.g. 399 or 1499.00 — not öre.'
                 }
               >
                 {(props) => (
@@ -603,7 +606,7 @@ export function AdminEditProductPage() {
             Save changes
           </Button>
           <Button type="button" variant="outline" asChild>
-            <Link to="/admin">Cancel</Link>
+            <Link to={listPath}>Cancel</Link>
           </Button>
         </div>
 
