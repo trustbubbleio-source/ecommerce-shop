@@ -13,6 +13,7 @@ import { authOptional, requireAuth } from './middleware/auth.js';
 import { createMemoryRepositories } from './repositories/factory.js';
 import { authRoutes } from './routes/auth.js';
 import { adminRoutes } from './routes/admin.js';
+import { adminDiscountRoutes } from './routes/admin-discounts.js';
 import { adminOrderRoutes } from './routes/admin-orders.js';
 import { checkoutRoutes } from './routes/checkout.js';
 import { contactRoutes } from './routes/contact.js';
@@ -49,6 +50,7 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
     newsletter: overrides.newsletter ?? memory.newsletter,
     restorationSubmissions: overrides.restorationSubmissions ?? memory.restorationSubmissions,
     notifications: overrides.notifications ?? memory.notifications,
+    discounts: overrides.discounts ?? memory.discounts,
     payments: overrides.payments ?? new PaymentService(env),
     storage: overrides.storage ?? new StorageService(env.storage),
     email: overrides.email ?? new EmailService(env),
@@ -88,6 +90,7 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
   api.route('/auth', authRoutes(deps));
   api.route('/admin', adminRoutes(deps));
   api.route('/admin/orders', adminOrderRoutes(deps));
+  api.route('/admin/discounts', adminDiscountRoutes(deps));
   api.route('/checkout', checkoutRoutes(deps));
   api.route('/orders', orderRoutes(deps));
   api.route('/notifications', notificationRoutes(deps));

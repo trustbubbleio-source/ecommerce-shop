@@ -181,6 +181,10 @@ export const routes: RouteObject[] = [
             element: lazyNamed(() => import('./pages/admin/submissions'), 'AdminSubmissionsPage'),
           },
           {
+            path: 'discounts',
+            element: lazyNamed(() => import('./pages/admin/discounts'), 'AdminDiscountsPage'),
+          },
+          {
             path: 'new',
             element: lazyNamed(() => import('./pages/admin/new-product'), 'AdminNewProductPage'),
           },

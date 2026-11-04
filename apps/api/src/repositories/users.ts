@@ -100,6 +100,18 @@ export class UserRepository implements IUserRepository {
     return this.byGoogleSub.get(googleSub);
   }
 
+  async search(query: string, limit = 20): Promise<Array<{ id: string; email: string; name: string }>> {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return [...this.byId.values()]
+      .filter(
+        (user) =>
+          user.email.includes(q) || user.name.toLowerCase().includes(q),
+      )
+      .slice(0, limit)
+      .map((user) => ({ id: user.id, email: user.email, name: user.name }));
+  }
+
   private save(user: StoredUser): StoredUser {
     this.byId.set(user.id, user);
     this.byEmail.set(user.email, user);

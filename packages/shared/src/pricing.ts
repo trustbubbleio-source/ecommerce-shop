@@ -5,7 +5,13 @@ import {
   normalizeCurrency,
   type SupportedCurrency,
 } from './currency.js';
-import { applyDiscountCode } from './discounts.js';
+import {
+  applyDiscountDef,
+  findDiscountCode,
+  normalizeDiscountCode,
+  type ApplyDiscountOptions,
+  type DiscountCodeDef,
+} from './discounts.js';
 
 /** Free shipping kicks in at or above this subtotal (EUR cents). */
 export const FREE_SHIPPING_THRESHOLD = 7500;
@@ -58,12 +64,12 @@ export interface PricedCart {
 function finalizeCart(
   lines: OrderLine[],
   currency: SupportedCurrency,
-  discountCode?: string | null,
-  hasCompletedOrder = false,
+  discountDef: DiscountCodeDef | null | undefined,
+  options: ApplyDiscountOptions = {},
 ): PricedCart {
   const subtotal = calcSubtotal(lines);
   const baseShipping = calcShipping(subtotal);
-  const applied = applyDiscountCode(subtotal, baseShipping, discountCode, { hasCompletedOrder });
+  const applied = applyDiscountDef(discountDef, subtotal, baseShipping, options);
   const shipping = applied?.shipping ?? baseShipping;
   const discount = applied?.amount ?? 0;
   return toDisplayCurrency(
@@ -116,7 +122,7 @@ export function priceCart(
   lookup: (productId: string) => Product | undefined,
   currency: string = BASE_CURRENCY,
   discountCode?: string | null,
-  hasCompletedOrder = false,
+  options: ApplyDiscountOptions = {},
 ): PricedCart {
   const lines: OrderLine[] = [];
 
@@ -133,8 +139,18 @@ export function priceCart(
     });
   }
 
-  return finalizeCart(lines, normalizeCurrency(currency), discountCode, hasCompletedOrder);
+  return finalizeCart(
+    lines,
+    normalizeCurrency(currency),
+    findDiscountCode(discountCode),
+    options,
+  );
 }
+
+export type PriceCartAsyncOptions = ApplyDiscountOptions & {
+  /** Resolve admin/DB codes when the built-in catalogue misses. */
+  resolveDiscount?: (code: string) => Promise<DiscountCodeDef | undefined>;
+};
 
 /** Async variant for database-backed product lookups. */
 export async function priceCartAsync(
@@ -142,7 +158,7 @@ export async function priceCartAsync(
   lookup: (productId: string) => Promise<Product | undefined>,
   currency: string = BASE_CURRENCY,
   discountCode?: string | null,
-  hasCompletedOrder = false,
+  options: PriceCartAsyncOptions = {},
 ): Promise<PricedCart> {
   const lines: OrderLine[] = [];
 
@@ -159,5 +175,10 @@ export async function priceCartAsync(
     });
   }
 
-  return finalizeCart(lines, normalizeCurrency(currency), discountCode, hasCompletedOrder);
+  let discountDef = findDiscountCode(discountCode);
+  if (!discountDef && discountCode && options.resolveDiscount) {
+    discountDef = await options.resolveDiscount(normalizeDiscountCode(discountCode));
+  }
+
+  return finalizeCart(lines, normalizeCurrency(currency), discountDef, options);
 }

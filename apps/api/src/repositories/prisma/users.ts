@@ -108,6 +108,26 @@ export class PrismaUserRepository implements UserRepository {
     return toStored(row);
   }
 
+  async search(
+    query: string,
+    limit = 20,
+  ): Promise<Array<{ id: string; email: string; name: string }>> {
+    const q = query.trim();
+    if (!q) return [];
+    const rows = await prisma.user.findMany({
+      where: {
+        OR: [
+          { email: { contains: q, mode: 'insensitive' } },
+          { name: { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      take: limit,
+      orderBy: { email: 'asc' },
+      select: { id: true, email: true, name: true },
+    });
+    return rows;
+  }
+
   async create(input: {
     email: string;
     name: string;

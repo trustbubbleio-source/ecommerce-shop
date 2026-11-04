@@ -1,6 +1,5 @@
 import {
   findDiscountCode,
-  isManualDiscountAllowed,
   isWelcomeDiscountCode,
   updateProfileInputSchema,
 } from '@akknerds/shared';
@@ -26,8 +25,9 @@ export function AccountDiscountPage() {
 
   if (!user) return null;
 
-  const saved = findDiscountCode(user.profile.discountCode);
-  const welcomeActive = isWelcomeDiscountCode(user.profile.discountCode);
+  const savedBuiltin = findDiscountCode(user.profile.discountCode);
+  const savedCode = user.profile.discountCode;
+  const welcomeActive = isWelcomeDiscountCode(savedCode);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -39,14 +39,6 @@ export function AccountDiscountPage() {
     }
 
     const nextCode = parsed.data.discountCode ?? null;
-    if (nextCode != null && !findDiscountCode(nextCode)) {
-      setError('That discount code is not valid.');
-      return;
-    }
-    if (nextCode != null && !isManualDiscountAllowed(nextCode)) {
-      setError('That welcome offer is applied automatically for new accounts only.');
-      return;
-    }
 
     try {
       await updateProfile.mutateAsync({ discountCode: nextCode });
@@ -94,14 +86,16 @@ export function AccountDiscountPage() {
             </div>
           </div>
 
-          {welcomeActive && saved && (
+          {welcomeActive && savedBuiltin && (
             <Alert variant="success">
-              Welcome offer active: {saved.label}. Applies once on your first paid order.
+              Welcome offer active: {savedBuiltin.label}. Applies once on your first paid order.
             </Alert>
           )}
-          {saved && !welcomeActive && (
+          {savedCode && !welcomeActive && (
             <Alert variant="success">
-              Active: <span className="font-semibold">{saved.code}</span> — {saved.label}
+              Active:{' '}
+              <span className="font-semibold">{savedCode}</span>
+              {savedBuiltin ? ` · ${savedBuiltin.label}` : ' · personal offer from the shop'}
             </Alert>
           )}
 

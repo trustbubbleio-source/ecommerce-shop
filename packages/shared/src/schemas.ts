@@ -355,3 +355,61 @@ export const sellInStoreInputSchema = z.object({
 });
 
 export type SellInStoreInput = z.infer<typeof sellInStoreInputSchema>;
+
+export const DISCOUNT_KINDS = ['percent', 'fixed', 'free_shipping'] as const;
+
+/** Admin creates a general or user-scoped promo code. */
+export const createDiscountCodeInputSchema = z
+  .object({
+    code: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .min(2, 'Code is too short')
+      .max(40, 'Code is too long')
+      .regex(/^[A-Z0-9_-]+$/, 'Use letters, numbers, _ or - only'),
+    label: z.string().trim().min(1, 'Label is required').max(80, 'Label is too long'),
+    kind: z.enum(DISCOUNT_KINDS),
+    value: z.number().int().min(0).max(100_000),
+    allowedEmail: z
+      .string()
+      .trim()
+      .email('Enter a valid email')
+      .optional()
+      .nullable()
+      .transform((v) => (v === '' || v == null ? null : v.toLowerCase())),
+    allowedUserId: z
+      .string()
+      .trim()
+      .min(1)
+      .optional()
+      .nullable()
+      .transform((v) => (v === '' || v == null ? null : v)),
+    /** When true and a user is targeted, save the code on their profile. */
+    assignToUser: z.boolean().optional().default(false),
+  })
+  .superRefine((data, ctx) => {
+    if (data.kind === 'percent' && (data.value < 1 || data.value > 100)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Percent must be between 1 and 100',
+        path: ['value'],
+      });
+    }
+    if (data.kind === 'fixed' && data.value < 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Fixed amount must be at least 1 (EUR cent)',
+        path: ['value'],
+      });
+    }
+    if (data.kind === 'free_shipping' && data.value !== 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Free shipping codes use value 0',
+        path: ['value'],
+      });
+    }
+  });
+
+export type CreateDiscountCodeInput = z.infer<typeof createDiscountCodeInputSchema>;

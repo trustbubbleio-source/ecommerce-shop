@@ -1,6 +1,7 @@
 import type { OrderStatus } from '@akknerds/shared';
-import { isWelcomeDiscountCode } from '@akknerds/shared';
+import { shouldClearDiscountAfterPurchase } from '@akknerds/shared';
 import type { AppDeps } from '../context.js';
+import { resolveDiscountDef } from './resolve-discount.js';
 
 const COMPLETED: ReadonlySet<OrderStatus> = new Set(['paid', 'fulfilled']);
 
@@ -9,13 +10,20 @@ export async function userHasCompletedOrder(deps: AppDeps, userId: string): Prom
   return orders.some((order) => COMPLETED.has(order.status));
 }
 
-/** Drop the signup welcome offer after the member's first completed purchase. */
+/**
+ * Clear profile-saved promos after a paid order when the definition says so
+ * (welcome offer, personal thank-you codes, etc.).
+ */
 export async function clearWelcomeDiscountAfterPurchase(
   deps: AppDeps,
   userId: string | undefined,
 ): Promise<void> {
   if (!userId) return;
   const user = await deps.users.findById(userId);
-  if (!user || !isWelcomeDiscountCode(user.profile.discountCode)) return;
+  const code = user?.profile.discountCode;
+  if (!user || !code) return;
+
+  const def = await resolveDiscountDef(deps, code);
+  if (!def || !shouldClearDiscountAfterPurchase(def)) return;
   await deps.users.updateProfile(userId, { discountCode: null });
 }

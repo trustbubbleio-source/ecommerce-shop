@@ -5,6 +5,7 @@ import type { TokenPayload } from './lib/jwt.js';
 import type { PaymentService } from './lib/payments.js';
 import type { StorageService } from './lib/storage.js';
 import type {
+  DiscountRepository,
   FavoriteRepository,
   NotificationRepository,
   OrderRepository,
@@ -28,6 +29,7 @@ export interface AppDeps {
   newsletter: NewsletterRepository;
   restorationSubmissions: RestorationSubmissionRepository;
   notifications: NotificationRepository;
+  discounts: DiscountRepository;
   payments: PaymentService;
   storage: StorageService;
   email: EmailService;

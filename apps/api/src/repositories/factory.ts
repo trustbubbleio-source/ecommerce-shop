@@ -1,5 +1,6 @@
 import type { Env } from '../env.js';
 import type {
+  DiscountRepository,
   FavoriteRepository,
   NotificationRepository,
   OrderRepository,
@@ -10,6 +11,7 @@ import type {
   RestorationSubmissionRepository,
   WantListRepository,
 } from './interfaces.js';
+import { MemoryDiscountRepository } from './discounts.js';
 import { FavoriteRepository as MemoryFavoriteRepository } from './favorites.js';
 import { MemoryNotificationRepository } from './notifications.js';
 import { OrderRepository as MemoryOrderRepository } from './orders.js';
@@ -19,6 +21,7 @@ import { UserRepository as MemoryUserRepository } from './users.js';
 import { MemoryNewsletterRepository } from './newsletter.js';
 import { RestorationSubmissionRepository as MemoryRestorationSubmissionRepository } from './restoration.js';
 import { WantListRepository as MemoryWantListRepository } from './want-list.js';
+import { PrismaDiscountRepository } from './prisma/discounts.js';
 import { PrismaFavoriteRepository } from './prisma/favorites.js';
 import { PrismaNotificationRepository } from './prisma/notifications.js';
 import { PrismaOrderRepository } from './prisma/orders.js';
@@ -39,6 +42,7 @@ export interface DataRepositories {
   newsletter: NewsletterRepository;
   restorationSubmissions: RestorationSubmissionRepository;
   notifications: NotificationRepository;
+  discounts: DiscountRepository;
 }
 
 export function createMemoryRepositories(): DataRepositories {
@@ -54,6 +58,7 @@ export function createMemoryRepositories(): DataRepositories {
     newsletter: new MemoryNewsletterRepository(),
     restorationSubmissions: new MemoryRestorationSubmissionRepository(),
     notifications: new MemoryNotificationRepository(),
+    discounts: new MemoryDiscountRepository(),
   };
 }
 
@@ -69,6 +74,7 @@ export function createRepositories(env: Env): DataRepositories {
       newsletter: new PrismaNewsletterRepository(),
       restorationSubmissions: new PrismaRestorationSubmissionRepository(),
       notifications: new PrismaNotificationRepository(),
+      discounts: new PrismaDiscountRepository(),
     };
   }
   return createMemoryRepositories();

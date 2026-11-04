@@ -15,6 +15,8 @@ import type {
   GoogleAuthInput,
   LoginInput,
   AdminOrder,
+  CreateDiscountCodeInput,
+  DiscountCodeDef,
   Order,
   Product,
   ProductReview,
@@ -148,6 +150,35 @@ export interface ApiClient {
     input: UpdateOrderFulfillmentInput,
   ): Promise<{ order: Order }>;
   adminCancelOrder(id: string, input: CancelOrderInput): Promise<{ order: Order; emailed: boolean }>;
+  adminListDiscounts(): Promise<{
+    builtin: readonly DiscountCodeDef[];
+    custom: AdminDiscountCode[];
+  }>;
+  adminCreateDiscount(
+    input: CreateDiscountCodeInput,
+  ): Promise<{ discount: AdminDiscountCode; assigned: boolean }>;
+  adminSetDiscountActive(id: string, active: boolean): Promise<{ discount: AdminDiscountCode }>;
+  adminDeleteDiscount(id: string): Promise<{ ok: boolean }>;
+  adminSearchUsers(query: string): Promise<{ users: AdminUserSummary[] }>;
+}
+
+export interface AdminDiscountCode {
+  id: string;
+  code: string;
+  label: string;
+  kind: DiscountCodeDef['kind'];
+  value: number;
+  allowedEmail: string | null;
+  allowedUserId: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminUserSummary {
+  id: string;
+  email: string;
+  name: string;
 }
 
 /**
@@ -380,6 +411,27 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
         method: 'POST',
         body: JSON.stringify(input),
       });
+    },
+    adminListDiscounts() {
+      return request('/admin/discounts');
+    },
+    adminCreateDiscount(input) {
+      return request('/admin/discounts', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      });
+    },
+    adminSetDiscountActive(id, active) {
+      return request(
+        `/admin/discounts/${encodeURIComponent(id)}/active?active=${active ? 'true' : 'false'}`,
+        { method: 'PATCH' },
+      );
+    },
+    adminDeleteDiscount(id) {
+      return request(`/admin/discounts/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    },
+    adminSearchUsers(query) {
+      return request(`/admin/discounts/users?q=${encodeURIComponent(query)}`);
     },
   };
 }

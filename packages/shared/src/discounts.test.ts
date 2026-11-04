@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { applyDiscountCode, findDiscountCode, normalizeDiscountCode } from './discounts.js';
+import {
+  applyDiscountCode,
+  applyDiscountDef,
+  canUserUseDiscount,
+  findDiscountCode,
+  normalizeDiscountCode,
+  type DiscountCodeDef,
+} from './discounts.js';
 
 describe('normalizeDiscountCode', () => {
   it('trims and uppercases', () => {
@@ -42,5 +49,20 @@ describe('applyDiscountCode', () => {
     expect(
       applyDiscountCode(10_000, 599, 'ONEMORERIP10', { hasCompletedOrder: true }),
     ).toBeNull();
+  });
+
+  it('restricts user-scoped codes by email', () => {
+    const def: DiscountCodeDef = {
+      code: 'THANKYOU5',
+      label: '5% thank-you',
+      kind: 'percent',
+      value: 5,
+      allowedEmail: 'emelie@example.com',
+    };
+    expect(canUserUseDiscount(def, { userEmail: 'other@example.com' })).toBe(false);
+    expect(
+      applyDiscountDef(def, 10_000, 599, { userEmail: 'emelie@example.com' })?.amount,
+    ).toBe(500);
+    expect(applyDiscountDef(def, 10_000, 599, { userEmail: 'other@example.com' })).toBeNull();
   });
 });

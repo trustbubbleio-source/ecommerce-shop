@@ -1,5 +1,10 @@
 export { ApiError } from './error.js';
-export { createApiClient, type ApiClient } from './client.js';
+export {
+  createApiClient,
+  type AdminDiscountCode,
+  type AdminUserSummary,
+  type ApiClient,
+} from './client.js';
 export { api, configureApiClient, getApiClient, setAuthToken } from './singleton.js';
 export { toQueryString } from './query.js';
 export {

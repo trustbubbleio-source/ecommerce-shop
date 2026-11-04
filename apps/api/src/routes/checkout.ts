@@ -30,7 +30,12 @@ export function checkoutRoutes(deps: AppDeps) {
       (id) => deps.products.getByIdOrSlug(id),
       input.currency ?? 'sek',
       discountCode,
-      hasCompletedOrder,
+      {
+        hasCompletedOrder,
+        userEmail: savedUser?.email,
+        userId: auth?.sub,
+        resolveDiscount: (code) => deps.discounts.findActiveDef(code),
+      },
     );
 
     if (priced.lines.length === 0) {

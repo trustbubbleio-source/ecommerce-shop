@@ -471,6 +471,23 @@ model NewsletterSubscriber {
   @@map("newsletter_subscribers")
 }
 
+/** Admin-managed promo codes (built-ins live in shared DISCOUNT_CODES). */
+model DiscountCode {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  label         String
+  kind          String
+  value         Int
+  allowedEmail  String?  @map("allowed_email")
+  allowedUserId String?  @map("allowed_user_id")
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([active])
+  @@map("discount_codes")
+}
+
 /** In-app order updates for the customer bell icon. */
 model Notification {
   id        String    @id

@@ -1,8 +1,6 @@
 import {
-  findDiscountCode,
   forgotPasswordInputSchema,
   googleAuthInputSchema,
-  isManualDiscountAllowed,
   loginInputSchema,
   registerInputSchema,
   resetPasswordInputSchema,
@@ -16,6 +14,7 @@ import { validate } from '../lib/http.js';
 import { verifyGoogleIdToken } from '../lib/google-auth.js';
 import { signToken, verifyToken } from '../lib/jwt.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
+import { assertDiscountSavable } from '../lib/resolve-discount.js';
 import { requireAuth } from '../middleware/auth.js';
 import { rateLimit } from '../middleware/rate-limit.js';
 import {
@@ -191,14 +190,13 @@ export function authRoutes(deps: AppDeps) {
   app.patch('/me', requireAuth(), validate('json', updateProfileInputSchema), async (c) => {
     const payload = c.get('user')!;
     const input = c.req.valid('json');
-    if (input.discountCode != null && !findDiscountCode(input.discountCode)) {
-      return c.json({ error: 'That discount code is not valid.' }, 400);
+    const current = await deps.users.findById(payload.sub);
+    if (!current || !isEmailVerified(current)) {
+      return c.json({ error: 'Could not update profile.' }, 400);
     }
-    if (input.discountCode != null && !isManualDiscountAllowed(input.discountCode)) {
-      return c.json(
-        { error: 'That welcome offer is applied automatically for new accounts only.' },
-        400,
-      );
+    if (input.discountCode != null) {
+      const check = await assertDiscountSavable(deps, input.discountCode, current);
+      if (!check.ok) return c.json({ error: check.error }, check.status);
     }
     const user = await deps.users.updateProfile(payload.sub, input);
     if (!user || !isEmailVerified(user)) {

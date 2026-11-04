@@ -3,6 +3,8 @@ import type {
   AppNotification,
   CatalogStats,
   CreateProductInput,
+  DiscountCodeDef,
+  DiscountKind,
   FulfillmentStep,
   NotificationType,
   Order,
@@ -38,10 +40,18 @@ export interface CreateOrderInput {
   fulfillmentStep?: import('@akknerds/shared').FulfillmentStep;
 }
 
+export interface AdminUserSummary {
+  id: string;
+  email: string;
+  name: string;
+}
+
 export interface UserRepository {
   findByEmail(email: string): Promise<StoredUser | undefined>;
   findById(id: string): Promise<StoredUser | undefined>;
   findByGoogleSub(googleSub: string): Promise<StoredUser | undefined>;
+  /** Admin user picker — email/name contains query (case-insensitive). */
+  search(query: string, limit?: number): Promise<AdminUserSummary[]>;
   create(input: {
     email: string;
     name: string;
@@ -55,6 +65,35 @@ export interface UserRepository {
   updateProfile(userId: string, input: UpdateProfileInput): Promise<StoredUser | undefined>;
   linkGoogle(userId: string, googleSub: string): Promise<StoredUser | undefined>;
   markEmailVerified(userId: string): Promise<StoredUser | undefined>;
+}
+
+export interface StoredDiscountCode {
+  id: string;
+  code: string;
+  label: string;
+  kind: DiscountKind;
+  value: number;
+  allowedEmail: string | null;
+  allowedUserId: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DiscountRepository {
+  list(): Promise<StoredDiscountCode[]>;
+  findByCode(code: string): Promise<StoredDiscountCode | undefined>;
+  findActiveDef(code: string): Promise<DiscountCodeDef | undefined>;
+  create(input: {
+    code: string;
+    label: string;
+    kind: DiscountKind;
+    value: number;
+    allowedEmail?: string | null;
+    allowedUserId?: string | null;
+  }): Promise<StoredDiscountCode>;
+  setActive(id: string, active: boolean): Promise<StoredDiscountCode | undefined>;
+  delete(id: string): Promise<boolean>;
 }
 
 export interface OrderFulfillmentPatch {

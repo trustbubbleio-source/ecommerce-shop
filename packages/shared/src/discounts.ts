@@ -22,11 +22,23 @@ export interface DiscountCodeDef {
   autoAssignOnSignup?: boolean;
   /** Only applied when the member has no paid/fulfilled orders yet. */
   firstOrderOnly?: boolean;
+  /** When set, only this email (case-insensitive) may use the code. */
+  allowedEmail?: string | null;
+  /** When set, only this user id may use the code. */
+  allowedUserId?: string | null;
+  /**
+   * Clear the code from the member profile after a successful paid order.
+   * Defaults to true for user-scoped codes; false for general promos.
+   */
+  clearAfterPurchase?: boolean;
+  /** Admin-managed codes can be deactivated without deleting the row. */
+  active?: boolean;
 }
 
 /** Welcome offer for brand-new accounts — not shown publicly before signup. */
 export const WELCOME_DISCOUNT_CODE = 'ONEMORERIP10';
 
+/** Built-in catalogue (always available). Admin can add more in the database. */
 export const DISCOUNT_CODES: readonly DiscountCodeDef[] = [
   {
     code: WELCOME_DISCOUNT_CODE,
@@ -35,6 +47,7 @@ export const DISCOUNT_CODES: readonly DiscountCodeDef[] = [
     value: 10,
     autoAssignOnSignup: true,
     firstOrderOnly: true,
+    clearAfterPurchase: true,
   },
   { code: 'RIP5', label: '€5 off', kind: 'fixed', value: 500 },
   { code: 'FREESHIP', label: 'Free shipping', kind: 'free_shipping', value: 0 },
@@ -44,6 +57,11 @@ export function normalizeDiscountCode(code: string): string {
   return code.trim().toUpperCase();
 }
 
+export function normalizeDiscountEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+/** Lookup in the built-in catalogue only (sync). */
 export function findDiscountCode(code: string | null | undefined): DiscountCodeDef | undefined {
   if (!code) return undefined;
   const normalized = normalizeDiscountCode(code);
@@ -55,11 +73,36 @@ export function isWelcomeDiscountCode(code: string | null | undefined): boolean 
   return Boolean(def?.autoAssignOnSignup);
 }
 
-export function isManualDiscountAllowed(code: string | null | undefined): boolean {
-  if (code == null) return true;
-  const def = findDiscountCode(code);
+export function isManualDiscountAllowed(def: DiscountCodeDef | null | undefined): boolean {
   if (!def) return false;
   return !def.autoAssignOnSignup;
+}
+
+export function canUserUseDiscount(
+  def: DiscountCodeDef,
+  options: { userEmail?: string | null; userId?: string | null } = {},
+): boolean {
+  if (def.active === false) return false;
+
+  if (def.allowedUserId) {
+    if (!options.userId || options.userId !== def.allowedUserId) return false;
+  }
+  if (def.allowedEmail) {
+    if (
+      !options.userEmail ||
+      normalizeDiscountEmail(options.userEmail) !== normalizeDiscountEmail(def.allowedEmail)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** Whether the profile-saved code should be cleared after a paid order. */
+export function shouldClearDiscountAfterPurchase(def: DiscountCodeDef): boolean {
+  if (def.clearAfterPurchase === true) return true;
+  if (def.clearAfterPurchase === false) return false;
+  return Boolean(def.allowedEmail || def.allowedUserId || def.autoAssignOnSignup);
 }
 
 export interface AppliedDiscount {
@@ -74,21 +117,24 @@ export interface AppliedDiscount {
 export interface ApplyDiscountOptions {
   /** When true, first-order-only codes are skipped. */
   hasCompletedOrder?: boolean;
+  userEmail?: string | null;
+  userId?: string | null;
 }
 
 /**
- * Apply a known discount code to a cart priced in EUR cents.
- * Unknown / empty codes leave amounts unchanged.
+ * Apply a resolved discount definition to a cart priced in EUR cents.
+ * Returns null when the code does not apply for this shopper/cart.
  */
-export function applyDiscountCode(
+export function applyDiscountDef(
+  def: DiscountCodeDef | null | undefined,
   subtotal: number,
   shipping: number,
-  code: string | null | undefined,
   options: ApplyDiscountOptions = {},
 ): AppliedDiscount | null {
-  const def = findDiscountCode(code);
   if (!def || subtotal <= 0) return null;
+  if (def.active === false) return null;
   if (def.firstOrderOnly && options.hasCompletedOrder) return null;
+  if (!canUserUseDiscount(def, options)) return null;
 
   if (def.kind === 'free_shipping') {
     return { code: def.code, label: def.label, amount: 0, shipping: 0 };
@@ -107,4 +153,17 @@ export function applyDiscountCode(
     amount: Math.max(0, amount),
     shipping,
   };
+}
+
+/**
+ * Apply a known built-in discount code to a cart priced in EUR cents.
+ * Unknown / empty codes leave amounts unchanged.
+ */
+export function applyDiscountCode(
+  subtotal: number,
+  shipping: number,
+  code: string | null | undefined,
+  options: ApplyDiscountOptions = {},
+): AppliedDiscount | null {
+  return applyDiscountDef(findDiscountCode(code), subtotal, shipping, options);
 }
