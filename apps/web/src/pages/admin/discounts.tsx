@@ -122,6 +122,7 @@ export function AdminDiscountsPage() {
         <h1 className="text-2xl font-extrabold tracking-tight">Discounts</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           Create shop-wide promos or a personal thank-you code for one customer.
+          Personal codes deactivate automatically after their first paid order.
         </p>
       </div>
 

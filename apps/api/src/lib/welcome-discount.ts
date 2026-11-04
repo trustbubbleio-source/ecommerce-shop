@@ -1,5 +1,5 @@
 import type { OrderStatus } from '@akknerds/shared';
-import { shouldClearDiscountAfterPurchase } from '@akknerds/shared';
+import { findDiscountCode, shouldClearDiscountAfterPurchase } from '@akknerds/shared';
 import type { AppDeps } from '../context.js';
 import { resolveDiscountDef } from './resolve-discount.js';
 
@@ -11,8 +11,9 @@ export async function userHasCompletedOrder(deps: AppDeps, userId: string): Prom
 }
 
 /**
- * Clear profile-saved promos after a paid order when the definition says so
- * (welcome offer, personal thank-you codes, etc.).
+ * After a paid order: drop clear-after-purchase codes from the profile, and
+ * deactivate admin/DB personal codes so they cannot be saved or used again.
+ * Built-in codes (welcome, RIP5, …) stay in the shared catalogue.
  */
 export async function clearWelcomeDiscountAfterPurchase(
   deps: AppDeps,
@@ -25,5 +26,14 @@ export async function clearWelcomeDiscountAfterPurchase(
 
   const def = await resolveDiscountDef(deps, code);
   if (!def || !shouldClearDiscountAfterPurchase(def)) return;
+
+  // Personal/admin codes: turn off so re-entering the code fails.
+  if (!findDiscountCode(code)) {
+    const stored = await deps.discounts.findByCode(code);
+    if (stored?.active) {
+      await deps.discounts.setActive(stored.id, false);
+    }
+  }
+
   await deps.users.updateProfile(userId, { discountCode: null });
 }
