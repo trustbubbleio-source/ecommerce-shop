@@ -134,7 +134,9 @@ export function productRoutes(deps: AppDeps) {
 
   app.get('/:idOrSlug', async (c) => {
     const product = await deps.products.getByIdOrSlug(c.req.param('idOrSlug'));
-    if (!product || product.storeOnly || product.inactive) {
+    // Store-only stays reachable by direct URL / shelf QR (view-only on the web).
+    // Inactive products remain fully offline.
+    if (!product || product.inactive) {
       return c.json({ error: 'Product not found' }, 404);
     }
     return c.json({ product });

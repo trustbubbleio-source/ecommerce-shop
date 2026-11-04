@@ -116,7 +116,7 @@ describe('GET /api/products/:idOrSlug', () => {
     expect(res.status).toBe(404);
   });
 
-  it('hides store-only products from the public catalogue and detail page', async () => {
+  it('hides store-only products from the catalogue but allows detail via QR/direct URL', async () => {
     const { app, deps } = makeApp();
     const created = await deps.products.create({
       name: 'Store Only Sleeves',
@@ -138,10 +138,32 @@ describe('GET /api/products/:idOrSlug', () => {
     const { data: list } = await jsonRequest(app, 'GET', '/api/products?category=accessory');
     expect(list.products.every((p: { id: string }) => p.id !== created.id)).toBe(true);
 
+    const { res, data } = await jsonRequest(app, 'GET', `/api/products/${created.slug}`);
+    expect(res.status).toBe(200);
+    expect(data.product.id).toBe(created.id);
+    expect(data.product.storeOnly).toBe(true);
+  });
+
+  it('returns 404 for inactive products on the public detail page', async () => {
+    const { app, deps } = makeApp();
+    const created = await deps.products.create({
+      name: 'Retired Pack',
+      description: 'Fully offline.',
+      category: 'booster-pack',
+      set: 'Mixed',
+      series: 'Scarlet & Violet',
+      price: 499,
+      stock: 1,
+      accent: '#a855f7',
+      images: ['products/test.png'],
+      inactive: true,
+      language: 'english',
+      rarity: 'common',
+      condition: 'near-mint',
+      releaseDate: '2026-01-01',
+    });
+
     const { res } = await jsonRequest(app, 'GET', `/api/products/${created.slug}`);
     expect(res.status).toBe(404);
-
-    const adminProduct = await deps.products.getByIdOrSlug(created.id);
-    expect(adminProduct?.storeOnly).toBe(true);
   });
 });

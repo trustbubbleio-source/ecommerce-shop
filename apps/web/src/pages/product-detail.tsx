@@ -185,6 +185,7 @@ export function ProductDetailPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{categoryLabel(product.category)}</Badge>
               <Badge variant="muted">{languageLabel(product.language)}</Badge>
+              {product.storeOnly && <Badge variant="muted">Store only</Badge>}
               {product.isNew && <Badge>New</Badge>}
               {product.rarity && (
                 <Badge variant="outline" className="gap-1.5">
@@ -219,7 +220,9 @@ export function ProductDetailPage() {
           <p className="text-muted-foreground leading-relaxed">{product.description}</p>
 
           <div className="flex items-center gap-2 text-sm">
-            {purchaseLocked ? (
+            {product.storeOnly ? (
+              <span className="font-semibold text-amber-400">Available in store only</span>
+            ) : purchaseLocked ? (
               <span className="font-semibold text-amber-400">{PRELAUNCH.description}</span>
             ) : (
               <>
@@ -239,44 +242,53 @@ export function ProductDetailPage() {
 
           <Separator />
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            {!soldOut && !purchaseLocked && (
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">Qty</span>
-                <QuantityStepper
-                  value={quantity}
-                  min={1}
-                  max={Math.max(1, product.stock)}
-                  onChange={setQuantity}
+          {product.storeOnly ? (
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              This listing is for in-store purchases. Ask staff at the till — it cannot be added to
+              an online cart.
+            </p>
+          ) : (
+            <>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                {!soldOut && !purchaseLocked && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium">Qty</span>
+                    <QuantityStepper
+                      value={quantity}
+                      min={1}
+                      max={Math.max(1, product.stock)}
+                      onChange={setQuantity}
+                    />
+                  </div>
+                )}
+                <AddToCartButton
+                  product={product}
+                  quantity={quantity}
+                  size="lg"
+                  className="flex-1"
+                  label="Add to cart"
                 />
               </div>
-            )}
-            <AddToCartButton
-              product={product}
-              quantity={quantity}
-              size="lg"
-              className="flex-1"
-              label="Add to cart"
-            />
-          </div>
 
-          <ul className="mt-2 grid gap-3 text-sm sm:grid-cols-2">
-            <li className="text-muted-foreground flex items-center gap-2">
-              <ShieldCheck className="text-foreground size-4" /> Authentic & sealed
-            </li>
-            <li className="text-muted-foreground flex items-center gap-2">
-              <Truck className="text-foreground size-4" /> Free shipping over {freeShippingLabel}
-            </li>
-            <li className="text-muted-foreground flex items-center gap-2">
-              <RotateCcw className="text-foreground size-4 shrink-0" />
-              <span>
-                14-day withdrawal for unopened sealed goods —{' '}
-                <Link to="/returns" className="text-primary font-medium hover:underline">
-                  see Returns
-                </Link>
-              </span>
-            </li>
-          </ul>
+              <ul className="mt-2 grid gap-3 text-sm sm:grid-cols-2">
+                <li className="text-muted-foreground flex items-center gap-2">
+                  <ShieldCheck className="text-foreground size-4" /> Authentic & sealed
+                </li>
+                <li className="text-muted-foreground flex items-center gap-2">
+                  <Truck className="text-foreground size-4" /> Free shipping over {freeShippingLabel}
+                </li>
+                <li className="text-muted-foreground flex items-center gap-2">
+                  <RotateCcw className="text-foreground size-4 shrink-0" />
+                  <span>
+                    14-day withdrawal for unopened sealed goods —{' '}
+                    <Link to="/returns" className="text-primary font-medium hover:underline">
+                      see Returns
+                    </Link>
+                  </span>
+                </li>
+              </ul>
+            </>
+          )}
 
           <ProductQrPanel
             slug={product.slug}
@@ -287,11 +299,14 @@ export function ProductDetailPage() {
         </div>
       </div>
 
-      <ProductPriceHistory productId={product.id} currentPriceCents={product.price} />
+      {!product.storeOnly && (
+        <>
+          <ProductPriceHistory productId={product.id} currentPriceCents={product.price} />
+          <ProductReviewsSection productSlug={product.slug} />
+        </>
+      )}
 
-      <ProductReviewsSection productSlug={product.slug} />
-
-      {relatedProducts.length > 0 && (
+      {!product.storeOnly && relatedProducts.length > 0 && (
         <section className="mt-16">
           <SectionHeader title="You might also like" />
           <ProductGrid products={relatedProducts} />

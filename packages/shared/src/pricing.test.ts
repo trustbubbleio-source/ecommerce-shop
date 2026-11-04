@@ -124,6 +124,25 @@ describe('priceCart', () => {
     expect(result.lines[0]?.productId).toBe('a');
   });
 
+  it('drops store-only and inactive products from online checkout', () => {
+    const catalog = [
+      makeProduct({ id: 'a', price: 20_000, stock: 5 }),
+      makeProduct({ id: 'store', price: 9_999, stock: 3, storeOnly: true }),
+      makeProduct({ id: 'off', price: 5_000, stock: 2, inactive: true }),
+    ];
+    const byId = (id: string) => catalog.find((p) => p.id === id);
+    const result = priceCart(
+      [
+        { productId: 'store', quantity: 1 },
+        { productId: 'off', quantity: 1 },
+        { productId: 'a', quantity: 1 },
+      ],
+      byId,
+    );
+    expect(result.lines).toHaveLength(1);
+    expect(result.lines[0]?.productId).toBe('a');
+  });
+
   it('floors and floors-to-minimum fractional/low quantities', () => {
     const result = priceCart([{ productId: 'a', quantity: 2.9 }], lookup);
     expect(result.lines[0]?.quantity).toBe(2);

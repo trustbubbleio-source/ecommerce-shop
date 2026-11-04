@@ -85,6 +85,26 @@ describe('ProductDetailPage', () => {
     await waitFor(() => expect(screen.getByText('Product not found')).toBeInTheDocument());
   });
 
+  it('shows store-only products with price but without online cart', async () => {
+    vi.spyOn(api, 'getProduct').mockResolvedValue({
+      product: makeProduct({
+        storeOnly: true,
+        name: 'Store Charizard EX',
+        slug: 'store-charizard-ex',
+      }),
+    });
+    vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
+    renderApp('/product/store-charizard-ex');
+
+    expect(
+      await screen.findByRole('heading', { name: /Store Charizard EX/i }, { timeout: 5_000 }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Available in store only')).toBeInTheDocument();
+    expect(screen.getByText(/cannot be added to an online cart/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Add .* to cart/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('In stock')).not.toBeInTheDocument();
+  });
+
   it('shows a sign-in gate for comments while keeping public ratings', async () => {
     vi.spyOn(api, 'getProduct').mockResolvedValue({
       product: makeProduct({ rating: 4.5, reviewCount: 12 }),
