@@ -13,6 +13,7 @@ import { SectionHeader } from '../components/common/section';
 import { TodaysStoreHours } from '../components/common/store-hours';
 // import { HeroClassic } from '../components/home/hero-classic'; // previous header — swap with HeroVideo to restore
 import { HeroVideo } from '../components/home/hero-video';
+import { StoreExclusiveArrivals } from '../components/home/store-exclusive-arrivals';
 import { ProductGrid } from '../components/product/product-grid';
 import { isPrelaunchActive } from '../config/launch';
 import { CATEGORY_TILES, SITE } from '../config/site';
@@ -194,6 +195,7 @@ export function HomePage() {
       <HeroVideo />
       <ValueProps />
       <StoreOpenAnnouncement />
+      <StoreExclusiveArrivals />
       <Categories />
 
       <section className="container py-12">

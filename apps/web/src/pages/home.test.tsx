@@ -12,6 +12,15 @@ describe('HomePage', () => {
 
     expect(screen.getByRole('heading', { name: /Just one more/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /We.re open in Båstad/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /Delta Reign, in store only/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /Delta Reign ETB/i })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /Delta Reign Blister Pack/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Get directions/i })).toHaveAttribute(
+      'href',
+      expect.stringContaining('maps'),
+    );
     expect(screen.getByRole('link', { name: /See full opening hours/i })).toHaveAttribute(
       'href',
       '/contact#opening-hours',
