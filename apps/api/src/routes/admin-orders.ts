@@ -8,6 +8,7 @@ import {
   notifyOrderCancelledInApp,
   notifyOrderFulfillmentUpdate,
 } from '../lib/order-notifications.js';
+import { enrichOrderForPacking } from '../lib/order-packing.js';
 import { requireAdmin } from '../middleware/admin.js';
 import { requireAuth } from '../middleware/auth.js';
 
@@ -22,7 +23,8 @@ export function adminOrderRoutes(deps: AppDeps) {
   app.get('/:id', requireAuth(), requireAdmin(deps), async (c) => {
     const order = await deps.orders.get(c.req.param('id'));
     if (!order) return c.json({ error: 'Order not found' }, 404);
-    return c.json({ order });
+    const enriched = await enrichOrderForPacking(deps.products, order);
+    return c.json({ order: enriched });
   });
 
   app.patch(

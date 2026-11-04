@@ -14,6 +14,7 @@ import type {
   ForgotPasswordInput,
   GoogleAuthInput,
   LoginInput,
+  AdminOrder,
   Order,
   Product,
   ProductReview,
@@ -141,7 +142,7 @@ export interface ApiClient {
     input: UpdateRestorationStatusInput,
   ): Promise<{ item: RestorationSubmissionAdmin }>;
   adminListOrders(): Promise<{ orders: Order[] }>;
-  adminGetOrder(id: string): Promise<{ order: Order }>;
+  adminGetOrder(id: string): Promise<{ order: AdminOrder }>;
   adminUpdateOrder(
     id: string,
     input: UpdateOrderFulfillmentInput,

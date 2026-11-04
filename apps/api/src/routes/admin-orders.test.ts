@@ -24,6 +24,37 @@ async function loginAdmin(app: ReturnType<typeof makeApp>['app']) {
 }
 
 describe('GET /api/admin/orders', () => {
+  it('enriches order lines with catalogue details for packing', async () => {
+    const { app, deps } = makeApp();
+    await seedAdmin(deps);
+    const token = await loginAdmin(app);
+    const checkout = await jsonRequest(
+      app,
+      'POST',
+      '/api/checkout',
+      {
+        email: 'buyer@example.com',
+        items: [{ productId: 'bb-151', quantity: 1 }],
+        shippingAddress: TEST_SHIPPING_ADDRESS,
+      },
+      { authorization: `Bearer ${token}` },
+    );
+    const orderId = checkout.data.orderId as string;
+
+    const { res, data } = await jsonRequest(app, 'GET', `/api/admin/orders/${orderId}`, undefined, {
+      authorization: `Bearer ${token}`,
+    });
+    expect(res.status).toBe(200);
+    expect(data.order.lines).toHaveLength(1);
+    expect(data.order.lines[0].productId).toBe('bb-151');
+    expect(data.order.lines[0].product).toMatchObject({
+      slug: expect.any(String),
+      category: 'booster-box',
+      set: expect.any(String),
+      series: expect.any(String),
+    });
+  });
+
   it('lists paid orders for an admin', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     const { app, deps } = makeApp();

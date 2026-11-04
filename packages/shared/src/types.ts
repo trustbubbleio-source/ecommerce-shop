@@ -82,6 +82,28 @@ export interface OrderLine {
   quantity: number;
 }
 
+/**
+ * Live catalogue snapshot attached to admin order lines for packing.
+ * `null` when the product was deleted after the sale.
+ */
+export interface AdminOrderLineProduct {
+  slug: string;
+  category: import('./enums.js').ProductCategory;
+  set: import('./enums.js').ProductSet;
+  series: import('./enums.js').ProductSeries;
+  language: import('./enums.js').ProductLanguage;
+  images: string[];
+  image?: string;
+  accent: string;
+  cardNumber?: string;
+  rarity?: import('./enums.js').CardRarity;
+  condition?: import('./enums.js').CardCondition;
+}
+
+export interface AdminOrderLine extends OrderLine {
+  product: AdminOrderLineProduct | null;
+}
+
 export interface Address {
   fullName: string;
   line1: string;
@@ -116,6 +138,9 @@ export interface Order {
   cancelReason?: string;
   createdAt: string;
 }
+
+/** Order payload for admin fulfill/packing views (lines enriched from catalogue). */
+export type AdminOrder = Omit<Order, 'lines'> & { lines: AdminOrderLine[] };
 
 export interface UserProfile {
   phone: string | null;

@@ -8,6 +8,7 @@ import {
   type FulfillmentStep,
 } from '@akknerds/shared';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -19,11 +20,12 @@ import {
   Textarea,
   useToast,
 } from '@akknerds/ui';
-import { ArrowLeft, MapPin, PackageX } from 'lucide-react';
+import { ArrowLeft, ExternalLink, MapPin, PackageX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { OrderInvoiceLink } from '../../components/account/order-invoice-link';
 import { OrderTimeline } from '../../components/account/order-timeline';
+import { OrderPackingLine } from '../../components/admin/order-packing-line';
 import { EmptyState } from '../../components/common/empty-state';
 import { IncludedVatLine } from '../../components/common/included-vat-line';
 import { useAdminCancelOrder, useAdminOrder, useAdminUpdateOrder } from '../../hooks/use-orders';
@@ -33,6 +35,7 @@ import {
   formatOrderDate,
   orderTimeline,
 } from '../../lib/order-progress';
+import { stripeCheckoutSessionUrl } from '../../lib/stripe-dashboard';
 
 export function AdminOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -81,6 +84,9 @@ export function AdminOrderDetailPage() {
   const currentStep = order.fulfillmentStep ?? defaultFulfillmentStep(order.status);
   const tracked = hasCarrierTracking(order.subtotal, order.currency);
   const timeline = orderTimeline(order.status, order.fulfillmentStep);
+  const stripeUrl = order.stripeSessionId
+    ? stripeCheckoutSessionUrl(order.stripeSessionId)
+    : null;
 
   const save = (fulfillmentStep: FulfillmentStep) => {
     update.mutate(
@@ -110,7 +116,29 @@ export function AdminOrderDetailPage() {
         >
           <ArrowLeft className="size-4" /> Orders
         </Link>
-        <h1 className="text-2xl font-extrabold tracking-tight">Fulfill order</h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-2xl font-extrabold tracking-tight">Fulfill order</h1>
+          {order.status === 'cancelled' ? (
+            <Badge variant="destructive">Cancelled</Badge>
+          ) : order.status === 'pending' ? (
+            <Badge variant="muted">Pending</Badge>
+          ) : paid && stripeUrl ? (
+            <a
+              href={stripeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex"
+              aria-label="Open payment in Stripe Dashboard"
+            >
+              <Badge variant="success" className="hover:bg-success/25 gap-1">
+                Paid
+                <ExternalLink className="size-3" aria-hidden />
+              </Badge>
+            </a>
+          ) : paid ? (
+            <Badge variant="success">Paid</Badge>
+          ) : null}
+        </div>
         <p className="text-muted-foreground mt-1 font-mono text-xs">{order.id}</p>
         <p className="text-muted-foreground text-sm">
           {formatOrderDate(order.createdAt)} · {order.email}
@@ -307,20 +335,14 @@ export function AdminOrderDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Items</CardTitle>
+          <CardTitle>Items to pack</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          {order.lines.map((line) => (
-            <div key={line.productId} className="flex justify-between gap-3 text-sm">
-              <div>
-                <p className="font-medium">{line.name}</p>
-                <p className="text-muted-foreground text-xs">Qty {line.quantity}</p>
-              </div>
-              <span className="font-semibold">
-                {formatPrice(line.unitPrice * line.quantity, order.currency)}
-              </span>
-            </div>
-          ))}
+          <div className="flex flex-col">
+            {order.lines.map((line) => (
+              <OrderPackingLine key={line.productId} line={line} currency={order.currency} />
+            ))}
+          </div>
           <div className="border-border flex justify-between border-t pt-3 text-base font-bold">
             <span>Total</span>
             <span>{formatPrice(order.total, order.currency)}</span>
