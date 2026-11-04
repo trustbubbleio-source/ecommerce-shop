@@ -24,8 +24,10 @@ import {
 } from './enum-mappers.js';
 
 function catalogCurrency(value: string): string {
-  // Legacy rows may still say "usd"; catalog amounts are treated as EUR.
-  return value.toLowerCase() === 'usd' ? BASE_CURRENCY : value.toLowerCase();
+  // Legacy usd/eur rows are migrated to SEK; normalize any leftover labels.
+  const lower = value.toLowerCase();
+  if (lower === 'usd' || lower === 'eur') return BASE_CURRENCY;
+  return lower;
 }
 
 export function toProduct(row: DbProduct): Product {
@@ -78,7 +80,7 @@ export function fromProduct(product: Product) {
     series: toPrismaSeries(product.series),
     price: product.price,
     compareAtPrice: product.compareAtPrice ?? null,
-    currency: product.currency === 'usd' ? BASE_CURRENCY : product.currency,
+    currency: catalogCurrency(product.currency),
     image: images[0] ?? null,
     images,
     accent: product.accent,

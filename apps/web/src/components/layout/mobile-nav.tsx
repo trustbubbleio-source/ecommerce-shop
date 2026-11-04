@@ -12,7 +12,6 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { MAIN_NAV, type NavLink as SiteNavLink } from '../../config/site';
 import { Brand } from '../common/brand';
-import { CurrencySwitcher } from './currency-switcher';
 import { shopLinkActive } from './shop-nav-dropdown';
 
 function pathItemActive(to: string, pathname: string): boolean {
@@ -57,12 +56,6 @@ export function MobileNav() {
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <Brand />
         </SheetHeader>
-        <div className="border-border flex h-16 shrink-0 items-center justify-between border-b px-4 sm:hidden">
-          <span className="text-muted-foreground text-xs font-medium uppercase leading-none tracking-wide">
-            Currency
-          </span>
-          <CurrencySwitcher />
-        </div>
         <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain p-3">
           {MAIN_NAV.map((entry, index) => {
             const divider = index === 1 ? <div className="border-border my-2 border-t" /> : null;

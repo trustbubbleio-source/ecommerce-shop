@@ -20,7 +20,7 @@ function product(overrides: Partial<CartProduct> = {}): CartProduct {
     category: 'booster-pack',
     set: '151',
     series: 'Scarlet & Violet',
-    currency: 'eur',
+    currency: 'sek',
     stock: 5,
     ...overrides,
   };
@@ -106,14 +106,14 @@ describe('cart selectors', () => {
   });
 
   it('adds shipping below the free threshold', () => {
-    expect(cartShipping(items)).toBe(599);
-    expect(cartTotal(items)).toBe(5599);
+    expect(cartShipping(items)).toBe(6_769);
+    expect(cartTotal(items)).toBe(11_769);
   });
 
   it('gives free shipping above the threshold', () => {
-    const big = [{ product: product({ id: 'x', price: 9000 }), quantity: 1 }];
+    const big = [{ product: product({ id: 'x', price: 90_000 }), quantity: 1 }];
     expect(cartShipping(big)).toBe(0);
-    expect(cartTotal(big)).toBe(9000);
+    expect(cartTotal(big)).toBe(90_000);
   });
 });
 

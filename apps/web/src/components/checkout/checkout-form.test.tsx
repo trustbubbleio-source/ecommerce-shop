@@ -16,7 +16,7 @@ function cartProduct(): CartProduct {
     category: 'booster-box',
     set: '151',
     series: 'Scarlet & Violet',
-    currency: 'eur',
+    currency: 'sek',
     stock: 5,
   };
 }

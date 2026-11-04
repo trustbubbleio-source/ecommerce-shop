@@ -131,7 +131,7 @@ export class PaymentService {
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = order.lines.map((line) => ({
       quantity: line.quantity,
       price_data: {
-        currency: order.currency,
+        currency: 'sek',
         unit_amount: line.unitPrice,
         product_data: { name: line.name },
       },
@@ -141,7 +141,7 @@ export class PaymentService {
       lineItems.push({
         quantity: 1,
         price_data: {
-          currency: order.currency,
+          currency: 'sek',
           unit_amount: order.shipping,
           product_data: { name: 'Shipping' },
         },
@@ -156,7 +156,7 @@ export class PaymentService {
       }
       const coupon = await this.client.coupons.create({
         amount_off: discountCents,
-        currency: order.currency,
+        currency: 'sek',
         duration: 'once',
         name: `Order ${order.id}`.slice(0, 40),
         max_redemptions: 1,
@@ -212,10 +212,6 @@ export class PaymentService {
         sessionId: `cs_mock_${order.id}`,
         url: `${base}/admin/instore/${slug}?paid=1&order_id=${encodeURIComponent(order.id)}&mock=1`,
       };
-    }
-
-    if (order.currency !== 'sek') {
-      throw new Error('In-store Swish checkout requires SEK');
     }
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = order.lines.map((line) => ({

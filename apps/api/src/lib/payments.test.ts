@@ -16,7 +16,7 @@ function makeOrder(overrides: Partial<Order> = {}): Order {
     subtotal: 5000,
     shipping: 599,
     total: 5599,
-    currency: 'eur',
+    currency: 'sek',
     status: 'pending',
     channel: 'online',
     createdAt: '2024-01-01T00:00:00.000Z',
@@ -104,7 +104,7 @@ describe('PaymentService (live mode, injected client)', () => {
 
     await service.createCheckout(order);
     expect(createCoupon).toHaveBeenCalledWith(
-      expect.objectContaining({ amount_off: 560, currency: 'eur', duration: 'once' }),
+      expect.objectContaining({ amount_off: 560, currency: 'sek', duration: 'once' }),
     );
     expect(createSession.mock.calls[0]![0].discounts).toEqual([{ coupon: 'coup_10off' }]);
     expect(createSession.mock.calls[0]![0].metadata.discountCents).toBe('560');
@@ -200,15 +200,6 @@ describe('PaymentService (live mode, injected client)', () => {
     expect(params).not.toHaveProperty('payment_method_types');
   });
 
-  it('rejects in-store Swish when the order is not SEK', async () => {
-    const service = new PaymentService(env, {
-      checkout: { sessions: { create: vi.fn() } },
-      webhooks: { constructEvent: vi.fn() },
-    });
-    await expect(
-      service.createInstoreSwishCheckout(makeOrder({ currency: 'eur' }), { slug: 'x' }),
-    ).rejects.toThrow(/SEK/);
-  });
 });
 
 describe('swishPaymentReference', () => {

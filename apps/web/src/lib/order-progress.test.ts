@@ -13,13 +13,13 @@ const order: Order = {
   id: 'ord_1',
   email: 'ash@pallet.town',
   lines: [
-    { productId: 'a', name: 'Lost Origin Booster box', unitPrice: 75000, quantity: 1 },
+    { productId: 'a', name: 'Lost Origin Booster box', unitPrice: 89_000, quantity: 1 },
     { productId: 'b', name: 'Pack', unitPrice: 500, quantity: 2 },
   ],
-  subtotal: 76000,
+  subtotal: 90_000,
   shipping: 0,
-  total: 76000,
-  currency: 'eur',
+  total: 90_000,
+  currency: 'sek',
   status: 'paid',
   channel: 'online',
   createdAt: '2026-08-27T00:00:00.000Z',
@@ -82,7 +82,7 @@ describe('orderHeadline', () => {
 });
 
 describe('orderCarrierDetails', () => {
-  it('includes pending carrier tracking on paid orders at or above 75 EUR', () => {
+  it('includes pending carrier tracking on paid orders at or above the free-shipping threshold', () => {
     const details = orderCarrierDetails(order);
     expect(details.tracked).toBe(true);
     expect(details.carrierName).toBe('Assigned at dispatch');
@@ -100,12 +100,12 @@ describe('orderCarrierDetails', () => {
     expect(details.trackingUrl).toBe('https://tracking.postnord.com/abc');
   });
 
-  it('omits carrier tracking below 75 EUR when admin has not added details', () => {
+  it('omits carrier tracking below the free-shipping threshold when admin has not added details', () => {
     const details = orderCarrierDetails({
       ...order,
-      subtotal: 7499,
-      shipping: 599,
-      total: 8098,
+      subtotal: 84_000,
+      shipping: 6_769,
+      total: 90_769,
     });
     expect(details.tracked).toBe(false);
     expect(details.carrierName).toBe('Untracked postal');
@@ -113,12 +113,12 @@ describe('orderCarrierDetails', () => {
     expect(details.note).toMatch(/without a carrier tracking number/);
   });
 
-  it('shows admin-added carrier details even below 75 EUR', () => {
+  it('shows admin-added carrier details even below the free-shipping threshold', () => {
     const details = orderCarrierDetails({
       ...order,
-      subtotal: 769,
-      shipping: 599,
-      total: 1368,
+      subtotal: 7_690,
+      shipping: 6_769,
+      total: 14_459,
       carrierName: 'PostNord',
       trackingUrl: 'https://tracking.postnord.com/xyz',
     });

@@ -149,7 +149,7 @@ describe('GET /api/admin/orders', () => {
       subtotal: 1000,
       shipping: 0,
       total: 1000,
-      currency: 'eur',
+      currency: 'sek',
     });
     // Mirror checkout: stock is reserved when the order is created.
     await deps.products.reserveStock([{ productId: 'bb-151', quantity: 1 }]);

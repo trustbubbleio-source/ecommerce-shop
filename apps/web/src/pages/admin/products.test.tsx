@@ -20,7 +20,7 @@ const admin: PublicUser = {
     bio: null,
     shippingAddress: null,
     discountCode: null,
-    preferredCurrency: 'eur',
+    preferredCurrency: 'sek',
     marketingOptIn: false,
     updatedAt: '2024-01-01T00:00:00.000Z',
   },

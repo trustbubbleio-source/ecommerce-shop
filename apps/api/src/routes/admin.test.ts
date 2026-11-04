@@ -301,7 +301,7 @@ describe('POST /api/admin/products/:id/sell-in-store', () => {
     expect(data.order.channel).toBe('in_store');
     expect(data.order.fulfillmentStep).toBe('delivered');
     expect(data.order.total).toBe(2500);
-    expect(data.order.currency).toBe('eur');
+    expect(data.order.currency).toBe('sek');
     expect(data.order.lines).toHaveLength(1);
     expect(data.checkoutUrl).toBeUndefined();
   });
@@ -346,7 +346,7 @@ describe('POST /api/admin/products/:id/sell-in-store', () => {
     expect(res.status).toBe(200);
     expect(data.product.stock).toBe(1);
     expect(data.order.currency).toBe('sek');
-    expect(data.order.total).toBe(Math.round(2500 * 11.3));
+    expect(data.order.total).toBe(2500);
     expect(data.order.channel).toBe('in_store');
     // Mock Stripe settles synchronously (no webhook).
     expect(data.order.status).toBe('fulfilled');

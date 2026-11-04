@@ -28,7 +28,7 @@ export function checkoutRoutes(deps: AppDeps) {
     const priced = await priceCartAsync(
       input.items,
       (id) => deps.products.getByIdOrSlug(id),
-      input.currency ?? 'sek',
+      input.currency ?? 'sek', // SEK only — currency param is ignored by priceCart
       discountCode,
       {
         hasCompletedOrder,

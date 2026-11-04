@@ -2,13 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { categoryLabel, discountPercent, formatPrice, productPreviewBadge, slugify, titleCase } from './format.js';
 
 describe('formatPrice', () => {
-  it('formats cents into EUR by default', () => {
+  it('formats öre into SEK by default', () => {
     expect(formatPrice(1299)).toMatch(/12[,.]99/);
     expect(formatPrice(0)).toMatch(/0[,.]00/);
   });
 
-  it('respects a different currency', () => {
-    expect(formatPrice(1000, 'EUR', 'de-DE')).toContain('10,00');
+  it('respects an explicit currency code', () => {
     expect(formatPrice(1130, 'SEK', 'sv-SE')).toMatch(/11[,.]30/);
   });
 });

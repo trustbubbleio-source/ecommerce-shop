@@ -129,7 +129,7 @@ describe('fetchUngradedCardPrice', () => {
     );
 
     expect(result.cardName).toBe('Mew ex');
-    expect(result.priceCents).toBe(2982);
+    expect(result.priceCents).toBe(Math.round(2982 * 11.3));
     expect(result.sourceUrl).toContain('733788');
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });

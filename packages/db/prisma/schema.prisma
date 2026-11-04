@@ -318,7 +318,7 @@ model Product {
   series         ProductSeries
   price          Int
   compareAtPrice Int?               @map("compare_at_price")
-  currency       String             @default("eur")
+  currency       String             @default("sek")
   image          String?
   images         String[]           @default([])
   accent         String

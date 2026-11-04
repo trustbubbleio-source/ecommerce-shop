@@ -34,7 +34,7 @@ pnpm --filter @akknerds/api dev
   and `configureApiClient({ baseUrl })` live here. Web calls `configureApiClient`
   once in `main.tsx` (and test setup); then import `{ api }` from
   `@akknerds/api-client` everywhere. Do not add fetch wrappers in app code.
-- **Money is integer cents** everywhere. Format only at the edge with `formatPrice`.
+- **Money is integer SEK öre** everywhere. Format only at the edge with `formatPrice` / `formatMoney`.
 - **Never trust client prices.** `POST /api/checkout` re-prices the cart from the
   catalogue via `priceCart()` and clamps quantities to stock.
 - **API dependency injection:** `createApp(overrides)` builds a fresh app with

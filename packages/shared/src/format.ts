@@ -4,9 +4,9 @@ import { BASE_CURRENCY, currencyLocale } from './currency.js';
 
 /**
  * Format an integer amount of minor units into a localized currency string.
- * Amounts are already in the given currency (no FX). Prefer `formatMoney` when
- * converting from the EUR catalog base for display.
- * @example formatPrice(1299, 'EUR') // "12,99 €" (sv-SE)
+ * Amounts are already in the given currency (no FX). Prefer `formatMoney` for
+ * shop display (always SEK; converts legacy EUR rows).
+ * @example formatPrice(1299, 'SEK') // "12,99 kr" (sv-SE)
  */
 export function formatPrice(
   cents: number,

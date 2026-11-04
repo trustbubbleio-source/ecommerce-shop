@@ -1,9 +1,8 @@
 import {
-  CURRENCY_LABELS,
+  BASE_CURRENCY,
   addressSchema,
   updateProfileInputSchema,
   type Address,
-  type SupportedCurrency,
 } from '@akknerds/shared';
 import {
   Button,
@@ -11,7 +10,6 @@ import {
   CardContent,
   Field,
   Input,
-  Select,
   Spinner,
   Textarea,
   useToast,
@@ -80,7 +78,6 @@ export function AccountProfilePage() {
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
   const [bio, setBio] = useState('');
-  const [preferredCurrency, setPreferredCurrency] = useState<SupportedCurrency>('sek');
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [shipFullName, setShipFullName] = useState('');
   const [shipLine1, setShipLine1] = useState('');
@@ -97,7 +94,6 @@ export function AccountProfilePage() {
     setCountry(user.profile.country ?? '');
     setCity(user.profile.city ?? '');
     setBio(user.profile.bio ?? '');
-    setPreferredCurrency(user.profile.preferredCurrency);
     setMarketingOptIn(user.profile.marketingOptIn);
     const ship = user.profile.shippingAddress;
     setShipFullName(ship?.fullName ?? '');
@@ -142,7 +138,7 @@ export function AccountProfilePage() {
       country,
       city,
       bio,
-      preferredCurrency,
+      preferredCurrency: BASE_CURRENCY,
       marketingOptIn,
       shippingAddress: shipping,
     });
@@ -157,8 +153,8 @@ export function AccountProfilePage() {
     }
     setErrors({});
     try {
-      const { user: next } = await updateProfile.mutateAsync(parsed.data);
-      setCurrency(next.profile.preferredCurrency);
+      await updateProfile.mutateAsync(parsed.data);
+      setCurrency(BASE_CURRENCY);
       toast({ title: 'Profile saved', variant: 'success' });
     } catch (err) {
       toast({
@@ -242,19 +238,6 @@ export function AccountProfilePage() {
                       onChange={(ev) => setPhone(ev.target.value)}
                       autoComplete="tel"
                       placeholder="+46 …"
-                    />
-                  )}
-                </Field>
-                <Field label="Preferred currency" error={errors.preferredCurrency}>
-                  {(props) => (
-                    <Select
-                      {...props}
-                      value={preferredCurrency}
-                      onChange={(ev) => setPreferredCurrency(ev.target.value as SupportedCurrency)}
-                      options={[
-                        { value: 'sek', label: CURRENCY_LABELS.sek },
-                        { value: 'eur', label: CURRENCY_LABELS.eur },
-                      ]}
                     />
                   )}
                 </Field>

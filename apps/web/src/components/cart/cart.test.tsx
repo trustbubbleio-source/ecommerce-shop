@@ -12,12 +12,12 @@ function cartProduct(overrides: Partial<CartProduct> = {}): CartProduct {
     id: 'p1',
     slug: 'p1',
     name: 'Obsidian Box',
-    price: 2000,
+    price: 22_600,
     accent: '#fff',
     category: 'booster-box',
     set: '151',
     series: 'Scarlet & Violet',
-    currency: 'eur',
+    currency: 'sek',
     stock: 5,
     ...overrides,
   };
@@ -39,7 +39,6 @@ describe('CartLineItem', () => {
 
   it('shows the line total', () => {
     renderWithProviders(<CartLineItem item={{ product: cartProduct(), quantity: 2 }} />);
-    // 40,00 EUR → SEK default (×11.3)
     expect(screen.getByText(/452[,.]00/)).toBeInTheDocument();
   });
 });
@@ -47,9 +46,8 @@ describe('CartLineItem', () => {
 describe('CartSummary', () => {
   it('shows subtotal, shipping and total with a free-shipping nudge', () => {
     renderWithProviders(
-      <CartSummary items={[{ product: cartProduct({ price: 2000 }), quantity: 1 }]} />,
+      <CartSummary items={[{ product: cartProduct({ price: 22_600 }), quantity: 1 }]} />,
     );
-    // 20,00 EUR / 5,99 EUR shipping → SEK default
     expect(screen.getByText(/226[,.]00/)).toBeInTheDocument();
     expect(screen.getByText(/^67[,.]69/)).toBeInTheDocument(); // shipping
     expect(screen.getByText(/free shipping/i)).toBeInTheDocument();
@@ -58,7 +56,7 @@ describe('CartSummary', () => {
 
   it('shows free shipping when the threshold is met', () => {
     renderWithProviders(
-      <CartSummary items={[{ product: cartProduct({ price: 9000 }), quantity: 1 }]} />,
+      <CartSummary items={[{ product: cartProduct({ price: 90_000 }), quantity: 1 }]} />,
     );
     expect(screen.getByText(/unlocked free shipping/i)).toBeInTheDocument();
     expect(screen.getByText('Free')).toBeInTheDocument();

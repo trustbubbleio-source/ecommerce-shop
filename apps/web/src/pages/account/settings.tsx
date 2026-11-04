@@ -1,6 +1,5 @@
 import { Button, Card, CardContent } from '@akknerds/ui';
 import { Link, useNavigate } from 'react-router-dom';
-import { CurrencySwitcher } from '../../components/layout/currency-switcher';
 import { useAuthStore } from '../../store/auth';
 
 export function AccountSettingsPage() {
@@ -22,16 +21,6 @@ export function AccountSettingsPage() {
             <Button asChild variant="outline" size="sm">
               <Link to="/account">Edit profile</Link>
             </Button>
-          </div>
-
-          <div className="border-border flex flex-wrap items-center justify-between gap-3 border-t pt-5">
-            <div>
-              <p className="text-foreground text-sm font-semibold">Display currency</p>
-              <p className="text-muted-foreground text-sm">
-                Quick switch for browsing. Your saved preference is on the profile page.
-              </p>
-            </div>
-            <CurrencySwitcher />
           </div>
 
           <div className="border-border border-t pt-5">

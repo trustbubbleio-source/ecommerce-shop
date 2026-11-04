@@ -1,6 +1,6 @@
 /**
  * Domain types shared between the web storefront and the API.
- * Monetary values are always integers in the smallest currency unit (cents).
+ * Monetary values are always integers in the smallest currency unit (SEK öre).
  */
 
 import type { SupportedCurrency } from './currency.js';
@@ -27,9 +27,9 @@ export interface Product {
   set: import('./enums.js').ProductSet;
   /** Series the set belongs to, e.g. "Scarlet & Violet". */
   series: import('./enums.js').ProductSeries;
-  /** Current price in cents. */
+  /** Current price in SEK öre. */
   price: number;
-  /** Original price in cents when discounted; absent if not on sale. */
+  /** Original price in SEK öre when discounted; absent if not on sale. */
   compareAtPrice?: number;
   currency: string;
   /** CDN-relative paths (primary image first). Served via CloudFront. */

@@ -5,13 +5,13 @@ import { useFormatMoney } from '../../hooks/use-format-money';
 export interface PriceHistoryPoint {
   /** Month label, e.g. "Mar" */
   label: string;
-  /** Price in EUR cents */
+  /** Price in SEK öre */
   priceCents: number;
 }
 
 interface ProductPriceHistoryProps {
   productId: string;
-  /** Current catalogue price (EUR cents) — anchors the mock series. */
+  /** Current catalogue price (SEK öre) — anchors the mock series. */
   currentPriceCents: number;
   className?: string;
 }

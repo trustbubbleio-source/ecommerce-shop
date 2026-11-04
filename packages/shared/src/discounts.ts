@@ -11,7 +11,7 @@ export interface DiscountCodeDef {
   /**
    * Meaning depends on `kind`:
    * - percent: 1–100
-   * - fixed: EUR cents off the subtotal
+   * - fixed: SEK öre off the subtotal
    * - free_shipping: ignored
    */
   value: number;
@@ -49,7 +49,7 @@ export const DISCOUNT_CODES: readonly DiscountCodeDef[] = [
     firstOrderOnly: true,
     clearAfterPurchase: true,
   },
-  { code: 'RIP5', label: '€5 off', kind: 'fixed', value: 500 },
+  { code: 'RIP5', label: '50 kr off', kind: 'fixed', value: 5_000 },
   { code: 'FREESHIP', label: 'Free shipping', kind: 'free_shipping', value: 0 },
 ] as const;
 
@@ -122,7 +122,7 @@ export interface ApplyDiscountOptions {
 }
 
 /**
- * Apply a resolved discount definition to a cart priced in EUR cents.
+ * Apply a resolved discount definition to a cart priced in SEK öre.
  * Returns null when the code does not apply for this shopper/cart.
  */
 export function applyDiscountDef(
@@ -156,7 +156,7 @@ export function applyDiscountDef(
 }
 
 /**
- * Apply a known built-in discount code to a cart priced in EUR cents.
+ * Apply a known built-in discount code to a cart priced in SEK öre.
  * Unknown / empty codes leave amounts unchanged.
  */
 export function applyDiscountCode(

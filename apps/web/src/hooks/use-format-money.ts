@@ -1,8 +1,6 @@
 import { formatMoney } from '@akknerds/shared';
-import { useCurrencyStore } from '../store/currency';
 
-/** Format EUR-base catalog cents in the shopper’s selected currency. */
+/** Format catalogue / cart amounts (SEK öre) for display. */
 export function useFormatMoney() {
-  const currency = useCurrencyStore((s) => s.currency);
-  return (centsEur: number) => formatMoney(centsEur, currency);
+  return (ore: number) => formatMoney(ore);
 }

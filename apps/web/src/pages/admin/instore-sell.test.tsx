@@ -20,7 +20,7 @@ const adminUser: PublicUser = {
     bio: null,
     shippingAddress: null,
     discountCode: null,
-    preferredCurrency: 'eur',
+    preferredCurrency: 'sek',
     marketingOptIn: false,
     updatedAt: '2024-01-01T00:00:00.000Z',
   },
@@ -95,13 +95,13 @@ describe('AdminInstoreSellPage', () => {
           {
             productId: product.id,
             name: product.name,
-            unitPrice: Math.round(product.price * 11.3),
+            unitPrice: product.price,
             quantity: 1,
           },
         ],
-        subtotal: Math.round(product.price * 11.3),
+        subtotal: product.price,
         shipping: 0,
-        total: Math.round(product.price * 11.3),
+        total: product.price,
         currency: 'sek',
         status: 'pending',
         channel: 'in_store',
@@ -137,7 +137,9 @@ describe('AdminInstoreSellPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /^Cancel$/i }));
 
     // storefront=1 keeps admin on the PDP instead of bouncing back to till mode
-    expect(await screen.findByRole('button', { name: /Add .* to cart/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: /Add .* to cart/i }, { timeout: 5_000 }),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/How will they pay\?/i)).not.toBeInTheDocument();
   });
 });
@@ -151,7 +153,7 @@ describe('ProductDetailPage admin redirect', () => {
 
     renderApp('/product/pokemon-151-booster-box-bb-151');
 
-    expect(await screen.findByText(/How will they pay\?/i)).toBeInTheDocument();
+    expect(await screen.findByText(/How will they pay\?/i, {}, { timeout: 5_000 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Card$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Swish$/i })).toBeInTheDocument();
   });

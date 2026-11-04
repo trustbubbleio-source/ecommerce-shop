@@ -1,5 +1,5 @@
 import { parseCardNumberForLookup } from '@akknerds/card-fetcher';
-import type { ProductLanguage, ProductSet } from '@akknerds/shared';
+import { LEGACY_EUR_TO_SEK, type ProductLanguage, type ProductSet } from '@akknerds/shared';
 import { PriceFetchError } from './errors.js';
 import {
   extractCardmarketPriceEur,
@@ -31,7 +31,7 @@ export interface FetchCardPriceOptions {
 }
 
 /**
- * Ungraded market price via TCGdex (Cardmarket EUR).
+ * Ungraded market price via TCGdex (Cardmarket EUR → SEK öre).
  * Replaces PriceCharting HTML scraping, which Cloudflare now blocks.
  */
 export async function fetchUngradedPriceFromPriceCharting(
@@ -98,7 +98,8 @@ export async function fetchUngradedCardPrice(
     );
   }
 
-  const priceCents = Math.round(priceEur * 100);
+  // Cardmarket quotes EUR; store as SEK öre (same rate as the former shop FX).
+  const priceCents = Math.round(priceEur * 100 * LEGACY_EUR_TO_SEK);
   const cmId = detail.variants_detailed?.find((v) => v.pricing?.cardmarket?.idProduct)?.pricing
     ?.cardmarket?.idProduct;
   const sourceUrl = cmId

@@ -49,7 +49,7 @@ const SECTIONS: PolicySection[] = [
     body: [
       'An order is an offer to buy. We accept the order when we confirm it (confirmation page/email) and process payment. We may refuse or cancel an order in cases such as pricing errors, suspected fraud, export restrictions, or inability to deliver.',
       'Prices are shown in the currency indicated at checkout and include applicable VAT where required for the destination, unless stated otherwise. Shipping is added as described on Shipping & Delivery.',
-      `Current standard shipping: ${fee} below ${freeAt} subtotal; free standard shipping at or above ${freeAt}. Prices are shown in SEK by default; you may switch to EUR. SEK amounts use a fixed conversion from our EUR catalogue prices.`,
+      `Current standard shipping: ${fee} below ${freeAt} subtotal; free standard shipping at or above ${freeAt}. All prices are in Swedish kronor (SEK).`,
     ],
   },
   {

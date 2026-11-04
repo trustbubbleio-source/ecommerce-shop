@@ -2,33 +2,30 @@ import { describe, expect, it } from 'vitest';
 import {
   BASE_CURRENCY,
   DEFAULT_DISPLAY_CURRENCY,
-  EUR_TO_SEK,
+  LEGACY_EUR_TO_SEK,
   convertFromEur,
   formatMoney,
   normalizeCurrency,
+  toSekOre,
 } from './currency.js';
 
 describe('currency', () => {
-  it('keeps EUR as catalog base and SEK as shopper default', () => {
-    expect(BASE_CURRENCY).toBe('eur');
+  it('uses SEK as the only shop currency', () => {
+    expect(BASE_CURRENCY).toBe('sek');
     expect(DEFAULT_DISPLAY_CURRENCY).toBe('sek');
-  });
-
-  it('defaults unknown values to the catalog base (EUR)', () => {
-    expect(normalizeCurrency(undefined)).toBe(BASE_CURRENCY);
-    expect(normalizeCurrency('usd')).toBe(BASE_CURRENCY);
+    expect(normalizeCurrency('eur')).toBe('sek');
+    expect(normalizeCurrency(undefined)).toBe('sek');
     expect(normalizeCurrency('SEK')).toBe('sek');
   });
 
-  it('converts EUR cents to SEK öre with the fixed rate', () => {
-    expect(convertFromEur(100, 'eur')).toBe(100);
-    expect(convertFromEur(100, 'sek')).toBe(Math.round(100 * EUR_TO_SEK));
-    expect(convertFromEur(7500, 'sek')).toBe(Math.round(7500 * EUR_TO_SEK));
+  it('converts legacy EUR cents to SEK öre', () => {
+    expect(convertFromEur(100)).toBe(Math.round(100 * LEGACY_EUR_TO_SEK));
+    expect(toSekOre(100, 'eur')).toBe(Math.round(100 * LEGACY_EUR_TO_SEK));
+    expect(toSekOre(100, 'sek')).toBe(100);
   });
 
-  it('formats money from the EUR base and defaults display to SEK', () => {
-    expect(formatMoney(1299, 'eur')).toMatch(/12[,.]99/);
-    expect(formatMoney(100, 'sek')).toMatch(/11[,.]30|11\.30/);
-    expect(formatMoney(100)).toMatch(/11[,.]30|11\.30/);
+  it('formats SEK öre', () => {
+    expect(formatMoney(1130)).toMatch(/11[,.]30/);
+    expect(formatMoney(100, 'eur')).toMatch(/11[,.]30|11\.30/);
   });
 });

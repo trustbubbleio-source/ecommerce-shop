@@ -1,10 +1,5 @@
 import type { CartLine, OrderLine, Product } from './types.js';
-import {
-  BASE_CURRENCY,
-  convertFromEur,
-  normalizeCurrency,
-  type SupportedCurrency,
-} from './currency.js';
+import { BASE_CURRENCY, normalizeCurrency } from './currency.js';
 import {
   applyDiscountDef,
   findDiscountCode,
@@ -13,10 +8,10 @@ import {
   type DiscountCodeDef,
 } from './discounts.js';
 
-/** Free shipping kicks in at or above this subtotal (EUR cents). */
-export const FREE_SHIPPING_THRESHOLD = 7500;
-/** Flat shipping fee (EUR cents) applied below the free-shipping threshold. */
-export const FLAT_SHIPPING_FEE = 599;
+/** Free shipping kicks in at or above this subtotal (SEK öre). Was €75 → ~848 SEK. */
+export const FREE_SHIPPING_THRESHOLD = 84_750;
+/** Flat shipping fee (SEK öre) below the free-shipping threshold. Was €5.99 → ~68 SEK. */
+export const FLAT_SHIPPING_FEE = 6_769;
 
 export function calcShipping(subtotal: number): number {
   if (subtotal <= 0) return 0;
@@ -29,9 +24,9 @@ export function calcShipping(subtotal: number): number {
  */
 export function hasCarrierTracking(
   subtotal: number,
-  currency: string = BASE_CURRENCY,
+  _currency: string = BASE_CURRENCY,
 ): boolean {
-  return subtotal >= convertFromEur(FREE_SHIPPING_THRESHOLD, normalizeCurrency(currency));
+  return subtotal >= FREE_SHIPPING_THRESHOLD;
 }
 
 /** Standard Swedish VAT on goods (percent). Catalogue prices are VAT-inclusive. */
@@ -63,7 +58,6 @@ export interface PricedCart {
 
 function finalizeCart(
   lines: OrderLine[],
-  currency: SupportedCurrency,
   discountDef: DiscountCodeDef | null | undefined,
   options: ApplyDiscountOptions = {},
 ): PricedCart {
@@ -72,40 +66,14 @@ function finalizeCart(
   const applied = applyDiscountDef(discountDef, subtotal, baseShipping, options);
   const shipping = applied?.shipping ?? baseShipping;
   const discount = applied?.amount ?? 0;
-  return toDisplayCurrency(
-    {
-      lines,
-      subtotal,
-      shipping,
-      discount,
-      discountCode: applied?.code,
-      total: Math.max(0, subtotal + shipping - discount),
-      currency: BASE_CURRENCY,
-    },
-    currency,
-  );
-}
-
-function toDisplayCurrency(priced: PricedCart, currency: SupportedCurrency): PricedCart {
-  if (currency === BASE_CURRENCY) {
-    return { ...priced, currency: BASE_CURRENCY };
-  }
-
-  const lines = priced.lines.map((line) => ({
-    ...line,
-    unitPrice: convertFromEur(line.unitPrice, currency),
-  }));
-  const subtotal = calcSubtotal(lines);
-  const shipping = convertFromEur(priced.shipping, currency);
-  const discount = convertFromEur(priced.discount, currency);
   return {
     lines,
     subtotal,
     shipping,
     discount,
-    discountCode: priced.discountCode,
+    discountCode: applied?.code,
     total: Math.max(0, subtotal + shipping - discount),
-    currency,
+    currency: BASE_CURRENCY,
   };
 }
 
@@ -114,8 +82,8 @@ function toDisplayCurrency(priced: PricedCart, currency: SupportedCurrency): Pri
  * never trusted; quantities are clamped to available stock. Unknown products
  * and out-of-stock lines are dropped.
  *
- * Catalog amounts are EUR. Pass `currency` to convert the priced cart for
- * Stripe / order storage (e.g. `sek`).
+ * Catalog amounts are SEK öre. `currency` is accepted for API compatibility but
+ * always resolves to SEK.
  */
 export function priceCart(
   items: CartLine[],
@@ -124,6 +92,7 @@ export function priceCart(
   discountCode?: string | null,
   options: ApplyDiscountOptions = {},
 ): PricedCart {
+  void normalizeCurrency(currency);
   const lines: OrderLine[] = [];
 
   for (const item of items) {
@@ -139,12 +108,7 @@ export function priceCart(
     });
   }
 
-  return finalizeCart(
-    lines,
-    normalizeCurrency(currency),
-    findDiscountCode(discountCode),
-    options,
-  );
+  return finalizeCart(lines, findDiscountCode(discountCode), options);
 }
 
 export type PriceCartAsyncOptions = ApplyDiscountOptions & {
@@ -175,10 +139,12 @@ export async function priceCartAsync(
     });
   }
 
+  void normalizeCurrency(currency);
+
   let discountDef = findDiscountCode(discountCode);
   if (!discountDef && discountCode && options.resolveDiscount) {
     discountDef = await options.resolveDiscount(normalizeDiscountCode(discountCode));
   }
 
-  return finalizeCart(lines, normalizeCurrency(currency), discountDef, options);
+  return finalizeCart(lines, discountDef, options);
 }

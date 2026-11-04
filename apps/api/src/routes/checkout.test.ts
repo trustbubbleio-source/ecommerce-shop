@@ -29,33 +29,31 @@ describe('POST /api/checkout', () => {
       'POST',
       '/api/checkout',
       checkoutBody({
-        // Pin EUR so we assert against catalog cents (default checkout currency is SEK).
-        currency: 'eur',
         // a malicious client could try to send price: 1 — there is no price field, by design
         items: [{ productId: 'bp-151', quantity: 2 }],
       }),
     );
     const order = (await deps.orders.get(data.orderId))!;
-    expect(order.lines[0]!.unitPrice).toBe(599); // authoritative catalog price
-    expect(order.subtotal).toBe(1198);
-    expect(order.currency).toBe('eur');
+    expect(order.lines[0]!.unitPrice).toBe(6_769); // authoritative catalog SEK öre
+    expect(order.subtotal).toBe(13_538);
+    expect(order.currency).toBe('sek');
   });
 
-  it('defaults checkout currency to SEK when omitted', async () => {
+  it('always charges SEK even if a client sends another currency', async () => {
     const { app, deps } = makeApp();
     const { data } = await jsonRequest(
       app,
       'POST',
       '/api/checkout',
       checkoutBody({
+        currency: 'sek',
         items: [{ productId: 'bp-151', quantity: 2 }],
       }),
     );
     const order = (await deps.orders.get(data.orderId))!;
     expect(order.currency).toBe('sek');
-    // 5.99 EUR × 11.3 → 67.69 SEK; ×2 → 135.38 SEK
-    expect(order.lines[0]!.unitPrice).toBe(6769);
-    expect(order.subtotal).toBe(13538);
+    expect(order.lines[0]!.unitPrice).toBe(6_769);
+    expect(order.subtotal).toBe(13_538);
   });
 
   it('associates the order with an authenticated user', async () => {

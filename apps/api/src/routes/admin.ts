@@ -1,6 +1,6 @@
 import {
+  BASE_CURRENCY,
   PRODUCT_CATEGORIES,
-  convertFromEur,
   createProductInputSchema,
   fetchCardImageInputSchema,
   sellInStoreInputSchema,
@@ -179,8 +179,8 @@ export function adminRoutes(deps: AppDeps) {
 
       const auth = c.get('user')!;
       const useSwish = paymentMethod === 'swish';
-      const unitPrice = useSwish ? convertFromEur(product.price, 'sek') : product.price;
-      const currency = useSwish ? 'sek' : product.currency;
+      const unitPrice = product.price;
+      const currency = BASE_CURRENCY;
       const subtotal = unitPrice * quantity;
       const orderEmail = customerEmail?.trim() || auth.email;
 

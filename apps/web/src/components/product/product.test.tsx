@@ -15,7 +15,6 @@ describe('ProductCard', () => {
   it('shows series and category overlay on sealed products', () => {
     renderWithProviders(<ProductCard product={makeProduct()} />);
     expect(screen.getByRole('link', { name: /151 Booster Box/i })).toBeInTheDocument();
-    // Default display is SEK (169,99 EUR × 11.3 → 1 920,89 kr)
     expect(screen.getByText(/1[ ]?920[,.]89/)).toBeInTheDocument();
     expect(screen.getByText('Booster Box')).toBeInTheDocument();
     expect(screen.getByText('Scarlet & Violet')).toBeInTheDocument();

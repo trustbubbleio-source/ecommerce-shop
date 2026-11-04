@@ -14,7 +14,7 @@ describe('enrichOrderForPacking', () => {
       subtotal: 17099,
       shipping: 0,
       total: 17099,
-      currency: 'eur',
+      currency: 'sek',
     });
 
     const enriched = await enrichOrderForPacking(products, order);

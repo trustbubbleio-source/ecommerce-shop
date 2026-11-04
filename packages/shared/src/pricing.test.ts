@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { EUR_TO_SEK } from './currency.js';
 import {
   FLAT_SHIPPING_FEE,
   FREE_SHIPPING_THRESHOLD,
@@ -22,7 +21,7 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
     set: 'Test',
     series: 'Test',
     price: 1000,
-    currency: 'eur',
+    currency: 'sek',
     accent: '#fff',
     stock: 10,
     featured: false,
@@ -59,13 +58,6 @@ describe('hasCarrierTracking', () => {
     expect(hasCarrierTracking(FREE_SHIPPING_THRESHOLD - 1)).toBe(false);
     expect(hasCarrierTracking(FREE_SHIPPING_THRESHOLD)).toBe(true);
   });
-
-  it('uses the same EUR bar when the order is in SEK', () => {
-    expect(hasCarrierTracking(Math.round((FREE_SHIPPING_THRESHOLD - 1) * EUR_TO_SEK), 'sek')).toBe(
-      false,
-    );
-    expect(hasCarrierTracking(Math.round(FREE_SHIPPING_THRESHOLD * EUR_TO_SEK), 'sek')).toBe(true);
-  });
 });
 
 describe('vatIncludedIn', () => {
@@ -93,8 +85,8 @@ describe('calcSubtotal', () => {
 
 describe('priceCart', () => {
   const products = [
-    makeProduct({ id: 'a', price: 2000, stock: 5 }),
-    makeProduct({ id: 'b', price: 5000, stock: 1 }),
+    makeProduct({ id: 'a', price: 20_000, stock: 5 }),
+    makeProduct({ id: 'b', price: 50_000, stock: 1 }),
     makeProduct({ id: 'c', price: 999, stock: 0 }),
   ];
   const lookup = (id: string) => products.find((p) => p.id === id);
@@ -102,21 +94,21 @@ describe('priceCart', () => {
   it('re-prices from the catalog and ignores client prices', () => {
     const result = priceCart([{ productId: 'a', quantity: 2 }], lookup);
     expect(result.lines).toHaveLength(1);
-    expect(result.lines[0]).toMatchObject({ productId: 'a', unitPrice: 2000, quantity: 2 });
-    expect(result.subtotal).toBe(4000);
-    expect(result.currency).toBe('eur');
+    expect(result.lines[0]).toMatchObject({ productId: 'a', unitPrice: 20_000, quantity: 2 });
+    expect(result.subtotal).toBe(40_000);
+    expect(result.currency).toBe('sek');
   });
 
-  it('converts the priced cart to SEK when requested', () => {
-    const result = priceCart([{ productId: 'a', quantity: 1 }], lookup, 'sek');
+  it('always prices in SEK even when another currency is requested', () => {
+    const result = priceCart([{ productId: 'a', quantity: 1 }], lookup, 'eur');
     expect(result.currency).toBe('sek');
-    expect(result.lines[0]?.unitPrice).toBe(Math.round(2000 * 11.3));
+    expect(result.lines[0]?.unitPrice).toBe(20_000);
   });
 
   it('clamps quantity to available stock', () => {
     const result = priceCart([{ productId: 'b', quantity: 9 }], lookup);
     expect(result.lines[0]?.quantity).toBe(1);
-    expect(result.subtotal).toBe(5000);
+    expect(result.subtotal).toBe(50_000);
   });
 
   it('drops unknown and out-of-stock products', () => {
@@ -146,16 +138,16 @@ describe('priceCart', () => {
 
   it('gives free shipping for a large order', () => {
     const result = priceCart([{ productId: 'a', quantity: 5 }], lookup);
-    expect(result.subtotal).toBe(10000);
+    expect(result.subtotal).toBe(100_000);
     expect(result.shipping).toBe(0);
-    expect(result.total).toBe(10000);
+    expect(result.total).toBe(100_000);
   });
 
   it('applies a percent discount code', () => {
-    const result = priceCart([{ productId: 'a', quantity: 5 }], lookup, 'eur', 'ONEMORERIP10');
-    expect(result.discount).toBe(1000);
+    const result = priceCart([{ productId: 'a', quantity: 5 }], lookup, 'sek', 'ONEMORERIP10');
+    expect(result.discount).toBe(10_000);
     expect(result.discountCode).toBe('ONEMORERIP10');
-    expect(result.total).toBe(9000);
+    expect(result.total).toBe(90_000);
   });
 
   it('returns an empty priced cart for no valid items', () => {

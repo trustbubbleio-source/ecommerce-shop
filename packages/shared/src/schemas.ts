@@ -133,8 +133,8 @@ export const checkoutInputSchema = z.object({
   email: z.string().trim().email('A valid email is required'),
   /** Required for physical fulfilment — never trust a client that omits ship-to. */
   shippingAddress: addressSchema,
-  /** Preferred charge/display currency. Catalog is EUR; SEK is converted server-side. Default display is SEK. */
-  currency: z.enum(['sek', 'eur']).optional(),
+  /** Charge currency — SEK only. */
+  currency: z.enum(['sek']).optional(),
 });
 
 export const registerInputSchema = z.object({
@@ -201,7 +201,7 @@ export const updateProfileInputSchema = z.object({
     .optional()
     .nullable()
     .transform((v) => (v === '' ? null : v)),
-  preferredCurrency: z.enum(['sek', 'eur']).optional(),
+  preferredCurrency: z.enum(['sek']).optional(),
   marketingOptIn: z.boolean().optional(),
   /** Pass a full address to save, or null to clear the default shipping address. */
   shippingAddress: addressSchema.nullable().optional(),
@@ -399,7 +399,7 @@ export const createDiscountCodeInputSchema = z
     if (data.kind === 'fixed' && data.value < 1) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Fixed amount must be at least 1 (EUR cent)',
+        message: 'Fixed amount must be at least 1 öre',
         path: ['value'],
       });
     }

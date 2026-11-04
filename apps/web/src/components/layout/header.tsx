@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom';
 import { MAIN_NAV } from '../../config/site';
 import { Brand } from '../common/brand';
 import { CartDrawer } from './cart-drawer';
-import { CurrencySwitcher } from './currency-switcher';
 import { MobileNav } from './mobile-nav';
 import { NavDropdown } from './nav-dropdown';
 import { NotificationBell } from './notification-bell';
@@ -68,7 +67,6 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1.5">
-          <CurrencySwitcher className="hidden sm:inline-flex" />
           <NotificationBell />
           <SearchDialog />
           <UserMenu />

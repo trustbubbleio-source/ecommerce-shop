@@ -37,8 +37,9 @@ describe('queryProducts', () => {
   });
 
   it('filters by price range', () => {
-    const result = queryProducts(PRODUCTS, { filter: { minPrice: 1000, maxPrice: 6000 } });
-    expect(result.every((p) => p.price >= 1000 && p.price <= 6000)).toBe(true);
+    const result = queryProducts(PRODUCTS, { filter: { minPrice: 5_000, maxPrice: 12_000 } });
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.every((p) => p.price >= 5_000 && p.price <= 12_000)).toBe(true);
   });
 
   it('filters in-stock only', () => {

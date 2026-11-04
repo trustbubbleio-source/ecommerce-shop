@@ -37,7 +37,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'Do you offer free shipping?',
         answer:
-          `Yes — standard shipping is free on orders with a subtotal of ${freeAt} or more. Below that, a flat shipping fee of ${shipFee} applies. Prices are in SEK by default; switch to EUR in the header. The amount is shown in your cart and at checkout before you pay.`,
+          `Yes — standard shipping is free on orders with a subtotal of ${freeAt} or more. Below that, a flat shipping fee of ${shipFee} applies. All prices are in Swedish kronor (SEK). The amount is shown in your cart and at checkout before you pay.`,
       },
       {
         question: 'Do you ship internationally?',

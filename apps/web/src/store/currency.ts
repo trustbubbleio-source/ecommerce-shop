@@ -17,7 +17,7 @@ export const useCurrencyStore = create<CurrencyState>()(
       currency: DEFAULT_DISPLAY_CURRENCY,
       setCurrency: (currency) => set({ currency: normalizeCurrency(currency) }),
     }),
-    // v2: SEK default — new key so existing EUR localStorage does not stick.
-    { name: 'onemorerip-currency-v2' },
+    // v3: SEK only — drop any stored EUR selection from older builds.
+    { name: 'onemorerip-currency-v3' },
   ),
 );

@@ -43,7 +43,7 @@ const emptyForm = {
 function formatValue(kind: DiscountKind, value: number): string {
   if (kind === 'percent') return `${value}%`;
   if (kind === 'free_shipping') return 'Free shipping';
-  return `${(value / 100).toFixed(2)} EUR`;
+  return `${(value / 100).toFixed(2)} SEK`;
 }
 
 export function AdminDiscountsPage() {
@@ -192,19 +192,19 @@ export function AdminDiscountsPage() {
                         setForm((f) => ({
                           ...f,
                           kind,
-                          value: kind === 'percent' ? 5 : kind === 'fixed' ? 500 : 0,
+                          value: kind === 'percent' ? 5 : kind === 'fixed' ? 5_000 : 0,
                         }));
                       }}
                       options={[
                         { value: 'percent', label: 'Percent off' },
-                        { value: 'fixed', label: 'Fixed EUR amount' },
+                        { value: 'fixed', label: 'Fixed SEK amount' },
                         { value: 'free_shipping', label: 'Free shipping' },
                       ]}
                     />
                   )}
                 </Field>
                 {form.kind !== 'free_shipping' ? (
-                  <Field label={form.kind === 'percent' ? 'Percent' : 'Amount (EUR cents)'}>
+                  <Field label={form.kind === 'percent' ? 'Percent' : 'Amount (öre)'}>
                     {(props) => (
                       <Input
                         {...props}

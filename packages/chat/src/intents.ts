@@ -99,7 +99,7 @@ export const CHAT_INTENTS: ChatIntent[] = [
     ],
     weight: 1.4,
     reply: (ctx) =>
-      `Yes — standard tracked shipping is free on orders over ${ctx.freeShippingLabel}. Below that, a flat shipping fee is shown in your cart and at checkout before you pay. You can switch EUR/SEK in the header.`,
+      `Yes — standard tracked shipping is free on orders over ${ctx.freeShippingLabel}. Below that, a flat shipping fee is shown in your cart and at checkout before you pay. All prices are in Swedish kronor (SEK).`,
     suggestions: ['Shipping times', 'Track order', 'Buy'],
     links: [
       { label: 'Shipping', href: '/shipping' },

@@ -1,26 +1,27 @@
 /**
- * Shop money: catalog & cart math are always EUR cents (`BASE_CURRENCY`).
- * Shoppers and the physical store default to SEK display (`DEFAULT_DISPLAY_CURRENCY`).
+ * Shop money: catalog, cart, checkout and Stripe are always SEK öre (`BASE_CURRENCY`).
+ * EUR is no longer offered — legacy EUR order rows are converted only when formatting.
  */
 
-export const BASE_CURRENCY = 'eur' as const;
+export const BASE_CURRENCY = 'sek' as const;
 
-/** Default currency for storefront, checkout, and new user profiles (Sweden-first). */
-export const DEFAULT_DISPLAY_CURRENCY = 'sek' as const;
+/** @deprecated Alias of BASE_CURRENCY — kept so older call sites keep compiling briefly. */
+export const DEFAULT_DISPLAY_CURRENCY = BASE_CURRENCY;
 
-/** SEK first so the header switcher matches the store default. */
-export const SUPPORTED_CURRENCIES = ['sek', 'eur'] as const;
+export const SUPPORTED_CURRENCIES = ['sek'] as const;
 export type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];
 
 /**
- * Fixed display/checkout rate: 1.00 EUR → this many SEK (öre via convertFromEur).
- * Update when you want a fresher commercial rate; checkout uses the same constant.
+ * Former EUR→SEK display rate. Used only to migrate legacy EUR catalogue/order
+ * amounts into öre (not for live FX at checkout).
  */
-export const EUR_TO_SEK = 11.3;
+export const LEGACY_EUR_TO_SEK = 11.3;
+
+/** @deprecated Use LEGACY_EUR_TO_SEK — name kept for older imports. */
+export const EUR_TO_SEK = LEGACY_EUR_TO_SEK;
 
 export const CURRENCY_LABELS: Record<SupportedCurrency, string> = {
   sek: 'SEK',
-  eur: 'EUR',
 };
 
 export function isSupportedCurrency(value: string): value is SupportedCurrency {
@@ -44,23 +45,30 @@ export function currencyLocale(currency: string): string {
 }
 
 /**
- * Convert an amount stored in EUR minor units (cents) into the target currency’s
- * minor units (öre for SEK). Rounds to the nearest integer.
+ * Convert a legacy EUR-cent amount into SEK öre.
+ * Identity when `to` is already SEK / when amount is already öre.
  */
-export function convertFromEur(centsEur: number, to: SupportedCurrency): number {
-  if (to === 'eur') return Math.round(centsEur);
-  return Math.round(centsEur * EUR_TO_SEK);
+export function convertFromEur(centsEur: number, to: SupportedCurrency = BASE_CURRENCY): number {
+  if (to === 'sek') return Math.round(centsEur * LEGACY_EUR_TO_SEK);
+  return Math.round(centsEur);
 }
 
-/** Format EUR-base cents for a display currency (converts when needed). Defaults to SEK. */
+/** Normalize a stored amount into SEK öre (handles legacy `eur` order rows). */
+export function toSekOre(amount: number, storedCurrency: string | undefined | null): number {
+  if ((storedCurrency ?? '').toLowerCase() === 'eur') {
+    return Math.round(amount * LEGACY_EUR_TO_SEK);
+  }
+  return Math.round(amount);
+}
+
+/** Format SEK öre (or convert legacy EUR cents) for display. */
 export function formatMoney(
-  centsEur: number,
-  displayCurrency: string = DEFAULT_DISPLAY_CURRENCY,
+  amount: number,
+  storedCurrency: string = BASE_CURRENCY,
 ): string {
-  const currency = normalizeCurrency(displayCurrency);
-  const amount = convertFromEur(centsEur, currency);
-  return new Intl.NumberFormat(currencyLocale(currency), {
+  const ore = toSekOre(amount, storedCurrency);
+  return new Intl.NumberFormat(currencyLocale('sek'), {
     style: 'currency',
-    currency: currency.toUpperCase(),
-  }).format(amount / 100);
+    currency: 'SEK',
+  }).format(ore / 100);
 }

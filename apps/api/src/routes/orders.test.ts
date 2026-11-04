@@ -128,7 +128,7 @@ describe('GET /api/orders', () => {
       subtotal: 1000,
       shipping: 0,
       total: 1000,
-      currency: 'eur',
+      currency: 'sek',
     });
     expect(pending.status).toBe('pending');
 

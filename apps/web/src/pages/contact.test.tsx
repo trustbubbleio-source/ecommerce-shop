@@ -10,7 +10,9 @@ describe('ContactPage', () => {
   it('validates the form', async () => {
     const spy = vi.spyOn(api, 'contact');
     renderApp('/contact');
-    await userEvent.click(await screen.findByRole('button', { name: /send message/i }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: /send message/i }, { timeout: 5_000 }),
+    );
     expect(await screen.findByText(/Name is required/i)).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
   });

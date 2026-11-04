@@ -3,10 +3,8 @@ import { PolicyDocument, type PolicySection } from '../components/common/policy-
 import { SITE } from '../config/site';
 
 const UPDATED = '24 August 2026';
-const fee = formatMoney(FLAT_SHIPPING_FEE, 'sek');
-const freeAt = formatMoney(FREE_SHIPPING_THRESHOLD, 'sek');
-const feeEur = formatMoney(FLAT_SHIPPING_FEE, 'eur');
-const freeAtEur = formatMoney(FREE_SHIPPING_THRESHOLD, 'eur');
+const fee = formatMoney(FLAT_SHIPPING_FEE);
+const freeAt = formatMoney(FREE_SHIPPING_THRESHOLD);
 
 const SECTIONS: PolicySection[] = [
   {
@@ -31,9 +29,9 @@ const SECTIONS: PolicySection[] = [
     id: 'costs',
     title: '3. Delivery costs',
     body: [
-      `Flat rate: ${fee} (about ${feeEur}) on orders with a subtotal below ${freeAt}.`,
-      `Free shipping: standard tracked shipping is free when your order subtotal is ${freeAt} or more (about ${freeAtEur}).`,
-      'Prices are shown in SEK by default; you can switch to EUR in the header. The exact shipping amount is shown in your cart and again at checkout before you pay.',
+      `Flat rate: ${fee} on orders with a subtotal below ${freeAt}.`,
+      `Free shipping: standard tracked shipping is free when your order subtotal is ${freeAt} or more.`,
+      'All prices are in Swedish kronor (SEK). The exact shipping amount is shown in your cart and again at checkout before you pay.',
     ],
   },
   {

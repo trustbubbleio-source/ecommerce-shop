@@ -14,7 +14,7 @@ async function seedPaidOrder(
     subtotal: 1000,
     shipping: 0,
     total: 1000,
-    currency: 'eur',
+    currency: 'sek',
   });
   await created.deps.orders.setStatus(order.id, 'paid');
   return order;

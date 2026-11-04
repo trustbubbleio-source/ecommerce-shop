@@ -537,7 +537,7 @@ export function AdminEditProductPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <Field
-                label="Price (EUR)"
+                label="Price (SEK)"
                 error={errors.price}
                 required
                 hint={

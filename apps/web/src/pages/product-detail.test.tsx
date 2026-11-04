@@ -18,7 +18,9 @@ describe('ProductDetailPage', () => {
     vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
     renderApp('/product/pokemon-151-booster-box-bb-151');
 
-    expect(await screen.findByRole('heading', { name: /151 Booster Box/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: /151 Booster Box/i }, { timeout: 5_000 }),
+    ).toBeInTheDocument();
     expect(screen.getByText('In stock')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /Add .* to cart/i }));

@@ -9,7 +9,7 @@ const sample: Order = {
   subtotal: 2500,
   shipping: 0,
   total: 2500,
-  currency: 'eur',
+  currency: 'sek',
   status: 'fulfilled',
   channel: 'in_store',
   fulfillmentStep: 'delivered',
