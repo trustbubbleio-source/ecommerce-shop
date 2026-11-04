@@ -47,6 +47,7 @@ enum ProductSeries {
 
 
 enum ProductSet {
+  delta_reign @map("Delta Reign")
   n_30th_celebration_english @map("30th Celebration (English)")
   pitch_black @map("Pitch Black")
   chaos_rising @map("Chaos Rising")

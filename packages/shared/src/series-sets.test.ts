@@ -3,6 +3,7 @@ import { isSetInSeries, setsForSeries } from './series-sets.js';
 
 describe('series-sets', () => {
   it('returns sets only for the selected series', () => {
+    expect(setsForSeries('Mega Evolution')).toContain('Delta Reign');
     expect(setsForSeries('Scarlet & Violet')).toContain('Obsidian Flames');
     expect(setsForSeries('Scarlet & Violet')).toContain('151');
     expect(setsForSeries('Sword & Shield')).toContain('Lost Origin');

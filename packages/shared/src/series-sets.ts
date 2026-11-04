@@ -7,6 +7,7 @@
 
 export const SERIES_SET_MAP = {
   'Mega Evolution': [
+    'Delta Reign',
     '30th Celebration (English)',
     'Pitch Black',
     'Chaos Rising',
