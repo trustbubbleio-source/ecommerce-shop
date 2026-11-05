@@ -2,7 +2,7 @@ import { FREE_SHIPPING_THRESHOLD, FLAT_SHIPPING_FEE, formatMoney } from '@akkner
 import { PolicyDocument, type PolicySection } from '../components/common/policy-document';
 import { SITE } from '../config/site';
 
-const UPDATED = '24 August 2026';
+const UPDATED = '5 November 2026';
 const fee = formatMoney(FLAT_SHIPPING_FEE);
 const freeAt = formatMoney(FREE_SHIPPING_THRESHOLD);
 
@@ -19,18 +19,17 @@ const SECTIONS: PolicySection[] = [
     id: 'methods',
     title: '2. Delivery methods',
     body: [
-      `Standard delivery at checkout. Carrier tracking (name and tracking URL) is included when your merchandise subtotal is ${freeAt} or more.`,
-      `Orders below ${freeAt} ship as untracked postal. You can follow packing and delivery on the order page in your account — that is the live status for those shipments.`,
-      'We currently offer a single standard service at checkout. On tracked orders, carrier assignment may vary by destination (for example PostNord or equivalent partners within Sweden/EU, and international postal/courier partners abroad).',
-      'On tracked orders, you will receive a dispatch email with tracking details when the parcel is collected. Tracking can take a short time to activate after the label is created.',
+      'Every online order ships with tracked parcel delivery — typically PostNord Home Small (or equivalent) within Sweden, and PostNord / partner carriers for EU/EEA and international destinations.',
+      'Carrier name and tracking URL are included on all paid orders. You will receive a dispatch email with tracking details when the parcel is collected. Tracking can take a short time to activate after the label is created.',
+      'You can also follow warehouse progress (Received → Delivered) on the order page in your account.',
     ],
   },
   {
     id: 'costs',
     title: '3. Delivery costs',
     body: [
-      `Flat rate: ${fee} on orders with a subtotal below ${freeAt}.`,
-      `Free shipping: standard tracked shipping is free when your order subtotal is ${freeAt} or more.`,
+      `Flat tracked shipping: ${fee} on orders with a merchandise subtotal below ${freeAt}.`,
+      `Free shipping: tracked shipping is free when your order subtotal is ${freeAt} or more.`,
       'All prices are in Swedish kronor (SEK). The exact shipping amount is shown in your cart and again at checkout before you pay.',
     ],
   },

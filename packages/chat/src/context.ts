@@ -1,4 +1,4 @@
-import { FREE_SHIPPING_THRESHOLD, formatMoney } from '@akknerds/shared';
+import { FLAT_SHIPPING_FEE, FREE_SHIPPING_THRESHOLD, formatMoney } from '@akknerds/shared';
 
 export interface ChatLink {
   label: string;
@@ -15,6 +15,7 @@ export interface ChatContext {
   partnerEmail: string;
   tradeEmail: string;
   freeShippingLabel: string;
+  shippingFeeLabel: string;
   storeLine: string;
   /** Compact weekly hours for the physical store. */
   storeHoursSummary: string;
@@ -44,6 +45,7 @@ export function createChatContext(input: {
     partnerEmail: input.partnerEmail ?? input.supportEmail,
     tradeEmail: input.tradeEmail ?? input.supportEmail,
     freeShippingLabel: formatMoney(FREE_SHIPPING_THRESHOLD, 'sek'),
+    shippingFeeLabel: formatMoney(FLAT_SHIPPING_FEE, 'sek'),
     storeLine: input.storeLine ?? 'Båstad, Sweden',
     storeHoursSummary:
       input.storeHoursSummary ??

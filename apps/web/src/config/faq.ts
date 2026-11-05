@@ -32,12 +32,12 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What delivery options do you offer?',
         answer:
-          `We offer standard parcel delivery at checkout. Carrier tracking (name and tracking URL) is included on orders with a subtotal of ${freeAt} or more. Orders below ${freeAt} ship untracked — follow packing and delivery on the order page in your account. See Shipping & Delivery for carriers, geography and times.`,
+          `We offer standard tracked parcel delivery at checkout — typically PostNord within Sweden (or equivalent partners abroad). Every paid order includes carrier tracking. See Shipping & Delivery for carriers, geography and times.`,
       },
       {
         question: 'Do you offer free shipping?',
         answer:
-          `Yes — standard shipping is free on orders with a subtotal of ${freeAt} or more. Below that, a flat shipping fee of ${shipFee} applies. All prices are in Swedish kronor (SEK). The amount is shown in your cart and at checkout before you pay.`,
+          `Yes — tracked shipping is free on orders with a subtotal of ${freeAt} or more. Below that, a flat tracked shipping fee of ${shipFee} applies. All prices are in Swedish kronor (SEK). The amount is shown in your cart and at checkout before you pay.`,
       },
       {
         question: 'Do you ship internationally?',
@@ -47,7 +47,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'How do I track my order?',
         answer:
-          `Every paid order can be followed on the order page in your account (Received → Delivered). Carrier name and tracking URL are included only when the merchandise subtotal is ${freeAt} or more; they appear after the parcel is collected. Orders below ${freeAt} have no carrier tracking number — this website is the live status.`,
+          `Every paid order can be followed on the order page in your account (Received → Delivered). Carrier name and tracking URL are included on all shipments and appear after the parcel is collected.`,
       },
     ],
   },

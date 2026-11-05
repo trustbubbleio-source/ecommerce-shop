@@ -49,7 +49,7 @@ describe('CartSummary', () => {
       <CartSummary items={[{ product: cartProduct({ price: 22_600 }), quantity: 1 }]} />,
     );
     expect(screen.getByText(/226[,.]00/)).toBeInTheDocument();
-    expect(screen.getByText(/^67[,.]69/)).toBeInTheDocument(); // shipping
+    expect(screen.getByText(/^69[,.]00/)).toBeInTheDocument(); // shipping
     expect(screen.getByText(/free shipping/i)).toBeInTheDocument();
     expect(screen.getByText(/of which VAT \(25%\)/)).toBeInTheDocument();
   });

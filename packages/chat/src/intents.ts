@@ -99,7 +99,7 @@ export const CHAT_INTENTS: ChatIntent[] = [
     ],
     weight: 1.4,
     reply: (ctx) =>
-      `Yes — standard tracked shipping is free on orders over ${ctx.freeShippingLabel}. Below that, a flat shipping fee is shown in your cart and at checkout before you pay. All prices are in Swedish kronor (SEK).`,
+      `Yes — tracked shipping (PostNord / equivalent) is free on orders over ${ctx.freeShippingLabel}. Below that, a flat tracked fee of ${ctx.shippingFeeLabel} applies — shown in your cart and at checkout before you pay. All prices are in Swedish kronor (SEK).`,
     suggestions: ['Shipping times', 'Track order', 'Buy'],
     links: [
       { label: 'Shipping', href: '/shipping' },
@@ -111,7 +111,7 @@ export const CHAT_INTENTS: ChatIntent[] = [
     keywords: ['track', 'tracking', 'where is my order', 'shipment status', 'parcel'],
     weight: 1.3,
     reply: (ctx) =>
-      `Every paid order can be followed in My orders. Carrier tracking (name and URL) is included on orders of ${ctx.freeShippingLabel} or more, and appears when the parcel is collected. Below that, there is no carrier tracking number — the order page on this site is the live status. Order help: ${ctx.ordersEmail}.`,
+      `Every paid order ships with carrier tracking and can be followed in My orders. Carrier name and URL appear when the parcel is collected. Order help: ${ctx.ordersEmail}.`,
     suggestions: ['Shipping times', 'Cancel order', 'Contact'],
     links: [
       { label: 'My account', href: '/account' },
@@ -143,7 +143,7 @@ export const CHAT_INTENTS: ChatIntent[] = [
     ],
     weight: 1.1,
     reply:
-      'Orders placed before 14:00 (Europe/Stockholm) on business days are usually dispatched the same day when stock allows. Sweden: typically 2–4 business days after dispatch; EU/EEA: 3–7; rest of world: typically 5–12. Carrier tracking is included from the free-shipping threshold; smaller orders are followed on the order page. See Shipping & Delivery for costs and geography.',
+      'Orders placed before 14:00 (Europe/Stockholm) on business days are usually dispatched the same day when stock allows. Sweden: typically 2–4 business days after dispatch; EU/EEA: 3–7; rest of world: typically 5–12. Every order includes carrier tracking. See Shipping & Delivery for costs and geography.',
     suggestions: ['Free shipping?', 'Track order', 'International'],
     links: [
       { label: 'Shipping', href: '/shipping' },

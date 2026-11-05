@@ -4,7 +4,6 @@ import {
   cancelOrderInputSchema,
   defaultFulfillmentStep,
   formatPrice,
-  hasCarrierTracking,
   type FulfillmentStep,
 } from '@akknerds/shared';
 import {
@@ -82,7 +81,6 @@ export function AdminOrderDetailPage() {
   const canCancel = !delivered && order.status !== 'cancelled';
   const busy = update.isPending || cancelOrder.isPending;
   const currentStep = order.fulfillmentStep ?? defaultFulfillmentStep(order.status);
-  const tracked = hasCarrierTracking(order.subtotal, order.currency);
   const timeline = orderTimeline(order.status, order.fulfillmentStep);
   const stripeUrl = order.stripeSessionId
     ? stripeCheckoutSessionUrl(order.stripeSessionId)
@@ -193,16 +191,10 @@ export function AdminOrderDetailPage() {
               <CardTitle>Carrier</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              {tracked ? (
-                <p className="text-muted-foreground text-xs">
-                  This order includes carrier tracking. Add the name and URL when the parcel is
-                  collected — they show on the customer order page.
-                </p>
-              ) : (
-                <p className="text-muted-foreground text-xs">
-                  Below the tracking threshold — website timeline only. Carrier URL is optional.
-                </p>
-              )}
+              <p className="text-muted-foreground text-xs">
+                Every online order ships tracked. Add the carrier name and tracking URL when the
+                parcel is collected — they show on the customer order page.
+              </p>
               <Field label="Carrier name">
                 {(props) => (
                   <Input

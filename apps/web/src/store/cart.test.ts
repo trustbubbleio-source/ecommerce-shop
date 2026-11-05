@@ -106,8 +106,8 @@ describe('cart selectors', () => {
   });
 
   it('adds shipping below the free threshold', () => {
-    expect(cartShipping(items)).toBe(6_769);
-    expect(cartTotal(items)).toBe(11_769);
+    expect(cartShipping(items)).toBe(6_900);
+    expect(cartTotal(items)).toBe(11_900);
   });
 
   it('gives free shipping above the threshold', () => {

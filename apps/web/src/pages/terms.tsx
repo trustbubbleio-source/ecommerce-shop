@@ -2,7 +2,7 @@ import { FREE_SHIPPING_THRESHOLD, FLAT_SHIPPING_FEE, formatMoney } from '@akkner
 import { PolicyDocument, type PolicySection } from '../components/common/policy-document';
 import { SITE } from '../config/site';
 
-const UPDATED = '24 August 2026';
+const UPDATED = '5 November 2026';
 const fee = formatMoney(FLAT_SHIPPING_FEE, 'sek');
 const freeAt = formatMoney(FREE_SHIPPING_THRESHOLD, 'sek');
 
@@ -49,7 +49,7 @@ const SECTIONS: PolicySection[] = [
     body: [
       'An order is an offer to buy. We accept the order when we confirm it (confirmation page/email) and process payment. We may refuse or cancel an order in cases such as pricing errors, suspected fraud, export restrictions, or inability to deliver.',
       'Prices are shown in the currency indicated at checkout and include applicable VAT where required for the destination, unless stated otherwise. Shipping is added as described on Shipping & Delivery.',
-      `Current standard shipping: ${fee} below ${freeAt} subtotal; free standard shipping at or above ${freeAt}. All prices are in Swedish kronor (SEK).`,
+      `Current standard shipping: tracked PostNord (or equivalent) at ${fee} below ${freeAt} subtotal; free tracked shipping at or above ${freeAt}. All prices are in Swedish kronor (SEK).`,
     ],
   },
   {

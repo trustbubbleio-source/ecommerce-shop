@@ -82,7 +82,7 @@ describe('orderHeadline', () => {
 });
 
 describe('orderCarrierDetails', () => {
-  it('includes pending carrier tracking on paid orders at or above the free-shipping threshold', () => {
+  it('includes pending carrier tracking on every paid order', () => {
     const details = orderCarrierDetails(order);
     expect(details.tracked).toBe(true);
     expect(details.carrierName).toBe('Assigned at dispatch');
@@ -100,25 +100,24 @@ describe('orderCarrierDetails', () => {
     expect(details.trackingUrl).toBe('https://tracking.postnord.com/abc');
   });
 
-  it('omits carrier tracking below the free-shipping threshold when admin has not added details', () => {
+  it('keeps tracked shipping on small orders below the free-shipping threshold', () => {
     const details = orderCarrierDetails({
       ...order,
-      subtotal: 84_000,
-      shipping: 6_769,
-      total: 90_769,
+      subtotal: 20_000,
+      shipping: 6_900,
+      total: 26_900,
     });
-    expect(details.tracked).toBe(false);
-    expect(details.carrierName).toBe('Untracked postal');
-    expect(details.trackingDisplay).toBe('Not included');
-    expect(details.note).toMatch(/without a carrier tracking number/);
+    expect(details.tracked).toBe(true);
+    expect(details.carrierName).toBe('Assigned at dispatch');
+    expect(details.note).toMatch(/tracked PostNord/i);
   });
 
-  it('shows admin-added carrier details even below the free-shipping threshold', () => {
+  it('shows admin-added carrier details when present', () => {
     const details = orderCarrierDetails({
       ...order,
       subtotal: 7_690,
-      shipping: 6_769,
-      total: 14_459,
+      shipping: 6_900,
+      total: 14_590,
       carrierName: 'PostNord',
       trackingUrl: 'https://tracking.postnord.com/xyz',
     });

@@ -54,8 +54,9 @@ describe('calcShipping', () => {
 });
 
 describe('hasCarrierTracking', () => {
-  it('is included at the free-shipping subtotal', () => {
-    expect(hasCarrierTracking(FREE_SHIPPING_THRESHOLD - 1)).toBe(false);
+  it('is included on every order (tracked PostNord / equivalent)', () => {
+    expect(hasCarrierTracking(1)).toBe(true);
+    expect(hasCarrierTracking(FREE_SHIPPING_THRESHOLD - 1)).toBe(true);
     expect(hasCarrierTracking(FREE_SHIPPING_THRESHOLD)).toBe(true);
   });
 });

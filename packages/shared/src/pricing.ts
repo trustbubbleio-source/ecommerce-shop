@@ -8,10 +8,13 @@ import {
   type DiscountCodeDef,
 } from './discounts.js';
 
-/** Free shipping kicks in at or above this subtotal (SEK öre). Was €75 → ~848 SEK. */
-export const FREE_SHIPPING_THRESHOLD = 84_750;
-/** Flat shipping fee (SEK öre) below the free-shipping threshold. Was €5.99 → ~68 SEK. */
-export const FLAT_SHIPPING_FEE = 6_769;
+/** Free shipping kicks in at or above this merchandise subtotal (SEK öre). */
+export const FREE_SHIPPING_THRESHOLD = 90_000;
+/**
+ * Flat tracked domestic shipping (SEK öre) below the free-shipping threshold.
+ * Aligned with PostNord Home Small Prio (~0.5 kg, incl. VAT) from May 2026 rates.
+ */
+export const FLAT_SHIPPING_FEE = 6_900;
 
 export function calcShipping(subtotal: number): number {
   if (subtotal <= 0) return 0;
@@ -19,14 +22,15 @@ export function calcShipping(subtotal: number): number {
 }
 
 /**
- * Carrier name + tracking URL are included from the same subtotal as free shipping.
- * Below that, the order page timeline is the live status (untracked postal).
+ * Every paid online order ships with carrier tracking (PostNord / equivalent).
+ * `subtotal` / `currency` stay on the signature for call-site compatibility.
  */
 export function hasCarrierTracking(
   subtotal: number,
   _currency: string = BASE_CURRENCY,
 ): boolean {
-  return subtotal >= FREE_SHIPPING_THRESHOLD;
+  void subtotal;
+  return true;
 }
 
 /** Standard Swedish VAT on goods (percent). Catalogue prices are VAT-inclusive. */

@@ -1,7 +1,4 @@
 import {
-  FREE_SHIPPING_THRESHOLD,
-  formatMoney,
-  hasCarrierTracking,
   defaultFulfillmentStep,
   FULFILLMENT_STEP_LABELS,
   type Address,
@@ -195,23 +192,8 @@ export function orderCarrierDetails(order: Order): OrderCarrierDetails {
     };
   }
 
-  const thresholdEligible = hasCarrierTracking(order.subtotal);
-  const threshold = formatMoney(FREE_SHIPPING_THRESHOLD);
   const trackingUrl = safeHttpUrl(order.trackingUrl);
   const savedCarrier = order.carrierName?.trim() || '';
-  // Admin may add carrier/tracking even below the free-shipping threshold.
-  const hasAdminTracking = Boolean(savedCarrier || trackingUrl);
-
-  if (!thresholdEligible && !hasAdminTracking) {
-    return {
-      tracked: false,
-      carrierName: 'Untracked postal',
-      trackingUrl: null,
-      trackingDisplay: 'Not included',
-      note: `Orders under ${threshold} ship without a carrier tracking number. Follow packing and delivery on this page — that is the live status for this shipment.`,
-    };
-  }
-
   const carrierName = savedCarrier || 'Assigned at dispatch';
 
   if (trackingUrl) {
@@ -229,8 +211,6 @@ export function orderCarrierDetails(order: Order): OrderCarrierDetails {
     carrierName,
     trackingUrl: null,
     trackingDisplay: 'Issued when the parcel is collected',
-    note: thresholdEligible
-      ? `Tracked courier service is included on orders of ${threshold} and above. Carrier name and tracking URL appear here when the parcel is collected.`
-      : 'Carrier details were added for this shipment. Tracking URL appears here when available.',
+    note: 'Every online order ships with tracked PostNord (or equivalent). Carrier name and tracking URL appear here when the parcel is collected.',
   };
 }
