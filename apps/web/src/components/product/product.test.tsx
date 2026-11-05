@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { api } from '@akknerds/api-client';
 import { useCartStore } from '../../store/cart';
 import { makeProduct, renderWithProviders } from '../../test/utils';
 import { AddToCartButton } from './add-to-cart-button';
@@ -9,7 +10,10 @@ import { ProductArt } from './product-art';
 import { ProductCard } from './product-card';
 import { ProductFiltersPanel } from './product-filters';
 
-beforeEach(() => useCartStore.setState({ items: [] }));
+beforeEach(() => {
+  useCartStore.setState({ items: [] });
+  vi.restoreAllMocks();
+});
 
 describe('ProductCard', () => {
   it('shows series and category overlay on sealed products', () => {
@@ -149,11 +153,22 @@ describe('ProductFiltersPanel', () => {
   const emptyFilters = {
     category: 'all' as const,
     series: '',
+    artist: '',
     search: '',
     language: '' as const,
     condition: '' as const,
     sort: 'featured' as const,
   };
+
+  beforeEach(() => {
+    vi.spyOn(api, 'catalogMeta').mockResolvedValue({
+      categories: [],
+      series: [],
+      sets: [],
+      artists: ['Ken Sugimori', 'Ryo Ueda'],
+      priceRange: { min: 0, max: 0 },
+    });
+  });
 
   it('renders categories immediately and fires onChange when selected', async () => {
     const onChange = vi.fn();
@@ -174,6 +189,16 @@ describe('ProductFiltersPanel', () => {
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     await userEvent.selectOptions(screen.getByLabelText('Series'), 'Sword & Shield');
     expect(onChange).toHaveBeenCalledWith({ series: 'Sword & Shield' });
+  });
+
+  it('selects artist from catalogue meta', async () => {
+    const onChange = vi.fn();
+    renderWithProviders(
+      <ProductFiltersPanel value={emptyFilters} onChange={onChange} onReset={vi.fn()} />,
+    );
+    expect(await screen.findByRole('option', { name: 'Ken Sugimori' })).toBeInTheDocument();
+    await userEvent.selectOptions(screen.getByLabelText('Artists'), 'Ken Sugimori');
+    expect(onChange).toHaveBeenCalledWith({ artist: 'Ken Sugimori' });
   });
 
   it('toggles language and condition chips', async () => {
