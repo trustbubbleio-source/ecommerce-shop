@@ -10,12 +10,14 @@ export interface CatalogMeta {
   categories: { value: ProductCategory; count: number }[];
   series: readonly string[];
   sets: readonly string[];
+  artists: readonly string[];
   priceRange: { min: number; max: number };
 }
 
 export interface ProductsQuery {
   category?: ProductCategory | 'all';
   series?: string;
+  artist?: string;
   search?: string;
   sort?: SortKey;
   minPrice?: number;

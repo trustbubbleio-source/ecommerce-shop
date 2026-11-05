@@ -60,6 +60,16 @@ describe('queryProducts', () => {
     expect(queryProducts(catalog, { filter: { language: 'japanese' } })).toHaveLength(0);
   });
 
+  it('filters by artist case-insensitively', () => {
+    const singles = PRODUCTS.filter((p) => p.category === 'single-card');
+    if (singles.length === 0) return;
+    const sample = { ...singles[0]!, artist: 'Ken Sugimori' };
+    const other = { ...singles[0]!, id: 'other', artist: 'Ryo Ueda' };
+    const catalog = [sample, other];
+    expect(queryProducts(catalog, { filter: { artist: 'ken sugimori' } })).toEqual([sample]);
+    expect(queryProducts(catalog, { filter: { artist: 'Nobody' } })).toHaveLength(0);
+  });
+
   it('sorts by price ascending and descending', () => {
     const asc = queryProducts(PRODUCTS, { sort: 'price-asc' });
     const desc = queryProducts(PRODUCTS, { sort: 'price-desc' });

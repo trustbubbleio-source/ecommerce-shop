@@ -75,6 +75,39 @@ describe('GET /api/products', () => {
     ).toBe(true);
   });
 
+  it('filters by artist', async () => {
+    const { app, deps } = makeApp();
+    await deps.products.create({
+      name: 'Artist Filter Single',
+      description: 'Has illustrator set.',
+      category: 'single-card',
+      set: '151',
+      series: 'Scarlet & Violet',
+      price: 1999,
+      stock: 3,
+      accent: '#a855f7',
+      images: ['products/test.png'],
+      language: 'english',
+      rarity: 'rare',
+      condition: 'near-mint',
+      artist: 'Filter Test Artist',
+      releaseDate: '2026-01-01',
+    });
+
+    const { data } = await jsonRequest(
+      app,
+      'GET',
+      '/api/products?category=single-card&artist=Filter%20Test%20Artist',
+    );
+    expect(data.products.length).toBeGreaterThan(0);
+    expect(
+      data.products.every((p: { artist?: string }) => p.artist === 'Filter Test Artist'),
+    ).toBe(true);
+
+    const { data: meta } = await jsonRequest(app, 'GET', '/api/products/meta');
+    expect(meta.artists).toContain('Filter Test Artist');
+  });
+
   it('rejects an invalid sort value', async () => {
     const { app } = makeApp();
     const { res } = await jsonRequest(app, 'GET', '/api/products?sort=bogus');
@@ -83,12 +116,13 @@ describe('GET /api/products', () => {
 });
 
 describe('GET /api/products/meta', () => {
-  it('returns categories, series and a price range', async () => {
+  it('returns categories, series, artists and a price range', async () => {
     const { app } = makeApp();
     const { res, data } = await jsonRequest(app, 'GET', '/api/products/meta');
     expect(res.status).toBe(200);
     expect(data.categories.length).toBeGreaterThan(0);
     expect(data.series.length).toBeGreaterThan(0);
+    expect(Array.isArray(data.artists)).toBe(true);
     expect(data.priceRange.max).toBeGreaterThanOrEqual(data.priceRange.min);
   });
 });

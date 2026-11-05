@@ -13,6 +13,7 @@ import type { ProductsQuery } from '@akknerds/api-client';
 export interface ProductFilters {
   category: ProductCategory | 'all';
   series: string;
+  artist: string;
   search: string;
   language: ProductLanguage | '';
   condition: CardCondition | '';
@@ -22,6 +23,7 @@ export interface ProductFilters {
 export const DEFAULT_FILTERS: ProductFilters = {
   category: 'all',
   series: '',
+  artist: '',
   search: '',
   language: '',
   condition: '',
@@ -41,6 +43,7 @@ export function parseFilters(params: URLSearchParams): ProductFilters {
   return {
     category: category && VALID_CATEGORIES.has(category) ? (category as ProductCategory) : 'all',
     series: params.get('series') ?? '',
+    artist: params.get('artist') ?? '',
     search: params.get('search') ?? '',
     language:
       language && VALID_LANGUAGES.has(language) ? (language as ProductLanguage) : '',
@@ -55,6 +58,7 @@ export function filtersToParams(filters: ProductFilters): URLSearchParams {
   const params = new URLSearchParams();
   if (filters.category !== 'all') params.set('category', filters.category);
   if (filters.series) params.set('series', filters.series);
+  if (filters.artist) params.set('artist', filters.artist);
   if (filters.search) params.set('search', filters.search);
   if (filters.language) params.set('language', filters.language);
   if (filters.condition) params.set('condition', filters.condition);
@@ -66,6 +70,7 @@ export function toProductsQuery(filters: ProductFilters): ProductsQuery {
   return {
     category: filters.category,
     series: filters.series || undefined,
+    artist: filters.artist || undefined,
     search: filters.search || undefined,
     // Storefront always lists sellable stock; out-of-stock stays in admin only.
     inStock: true,
@@ -79,6 +84,7 @@ export function isDefaultFilters(filters: ProductFilters): boolean {
   return (
     filters.category === 'all' &&
     filters.series === '' &&
+    filters.artist === '' &&
     filters.search === '' &&
     filters.language === '' &&
     filters.condition === '' &&

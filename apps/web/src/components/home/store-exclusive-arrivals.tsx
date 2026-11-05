@@ -16,8 +16,8 @@ function arrivalCopy(arrived: boolean): { badge: string; when: string } {
     };
   }
   return {
-    badge: 'Arrives November 10-11',
-    when: 'Dropping in store around November 10-11. Exclusive to the physical shop.',
+    badge: 'Arrives November 11-13',
+    when: 'Dropping in store around November 11-13. Exclusive to the physical shop.',
   };
 }
 

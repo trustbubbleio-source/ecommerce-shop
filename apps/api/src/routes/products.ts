@@ -22,6 +22,7 @@ const bool = z.enum(['true', 'false']).transform((v) => v === 'true');
 const productQuerySchema = z.object({
   category: z.string().optional(),
   series: z.string().optional(),
+  artist: z.string().trim().min(1).max(120).optional(),
   search: z.string().optional(),
   sort: z.enum(SORT_KEYS).optional(),
   minPrice: z.coerce.number().int().nonnegative().optional(),
@@ -43,6 +44,7 @@ export function productRoutes(deps: AppDeps) {
     const filter: ProductFilter = {
       category: q.category as ProductFilter['category'],
       series: q.series,
+      artist: q.artist,
       search: q.search,
       minPrice: q.minPrice,
       maxPrice: q.maxPrice,

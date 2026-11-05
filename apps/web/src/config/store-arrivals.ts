@@ -6,9 +6,9 @@ export const DELTA_REIGN_STORE_ARRIVAL = {
   set: 'Delta Reign',
   series: 'Mega Evolution',
   /** First day stock is expected in store (Europe/Stockholm, YYYY-MM-DD). */
-  arrivesOn: '2026-11-10',
-  /** Day after the arrival window; used to flip copy to "in store now". */
-  arrivesThrough: '2026-11-11',
+  arrivesOn: '2026-11-11',
+  /** Last day of the arrival window; used to flip copy to "in store now". */
+  arrivesThrough: '2026-11-13',
   eyebrow: 'New · Store exclusive',
   title: 'Delta Reign, in store only',
   body: 'The newest Mega Evolution expansion lands in our Båstad shop first. Elite Trainer Boxes and blister packs will not be sold online. Come grab them in person.',

@@ -12,6 +12,7 @@ import {
 } from '@akknerds/shared';
 import { Button, Label, Separator, cn } from '@akknerds/ui';
 import { RotateCcw } from 'lucide-react';
+import { useCatalogMeta } from '../../hooks/use-products';
 import { type ProductFilters, isDefaultFilters } from '../../lib/filters';
 
 interface ProductFiltersPanelProps {
@@ -89,8 +90,14 @@ const CONDITION_OPTIONS: ChipOption<CardCondition | ''>[] = [
   })),
 ];
 
-/** Shop sidebar filters — category/series/language/condition are static domain enums (no API wait). */
+const selectClassName =
+  'border-input bg-background text-foreground focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full appearance-none rounded-lg border px-3 text-sm focus-visible:outline-none focus-visible:ring-2';
+
+/** Shop sidebar filters — category/series/language/condition are static; artists come from catalogue meta. */
 export function ProductFiltersPanel({ value, onChange, onReset }: ProductFiltersPanelProps) {
+  const meta = useCatalogMeta();
+  const artists = meta.data?.artists ?? [];
+
   return (
     <div className="flex w-full min-w-0 flex-col gap-6">
       <div className="flex flex-col gap-2" role="group" aria-labelledby="filter-category">
@@ -128,12 +135,33 @@ export function ProductFiltersPanel({ value, onChange, onReset }: ProductFilters
           id="series-filter"
           value={value.series}
           onChange={(e) => onChange({ series: e.target.value })}
-          className="border-input bg-background text-foreground focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full appearance-none rounded-lg border px-3 text-sm focus-visible:outline-none focus-visible:ring-2"
+          className={selectClassName}
         >
           <option value="">All series</option>
           {PRODUCT_SERIES.map((series) => (
             <option key={series} value={series}>
               {series}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="artist-filter">Artists</Label>
+        <select
+          id="artist-filter"
+          value={value.artist}
+          onChange={(e) => onChange({ artist: e.target.value })}
+          className={selectClassName}
+          disabled={meta.isLoading && artists.length === 0}
+        >
+          <option value="">All artists</option>
+          {value.artist && !artists.includes(value.artist) && (
+            <option value={value.artist}>{value.artist}</option>
+          )}
+          {artists.map((artist) => (
+            <option key={artist} value={artist}>
+              {artist}
             </option>
           ))}
         </select>

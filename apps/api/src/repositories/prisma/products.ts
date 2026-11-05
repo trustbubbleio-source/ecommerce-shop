@@ -114,7 +114,7 @@ export class PrismaProductRepository implements ProductRepository {
 
   async meta(): Promise<CatalogMeta> {
     const inStock = { stock: { gt: 0 }, storeOnly: false, inactive: false } as const;
-    const [grouped, priceAgg] = await Promise.all([
+    const [grouped, priceAgg, artistRows] = await Promise.all([
       prisma.product.groupBy({
         by: ['category'],
         where: inStock,
@@ -124,6 +124,16 @@ export class PrismaProductRepository implements ProductRepository {
         where: inStock,
         _min: { price: true },
         _max: { price: true },
+      }),
+      prisma.product.findMany({
+        where: {
+          ...inStock,
+          category: 'single_card',
+          artist: { not: null },
+        },
+        select: { artist: true },
+        distinct: ['artist'],
+        orderBy: { artist: 'asc' },
       }),
     ]);
     // groupBy returns Prisma enum keys (booster_box); shop meta needs domain kebab-case.
@@ -135,10 +145,16 @@ export class PrismaProductRepository implements ProductRepository {
       count: countByCategory.get(value) ?? 0,
     })).filter((c) => c.count > 0);
 
+    const artists = artistRows
+      .map((row) => row.artist?.trim() ?? '')
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
     return {
       categories,
       series: PRODUCT_SERIES,
       sets: PRODUCT_SETS,
+      artists,
       priceRange: {
         min: priceAgg._min.price ?? 0,
         max: priceAgg._max.price ?? 0,

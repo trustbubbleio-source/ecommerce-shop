@@ -60,10 +60,18 @@ export class ProductRepository implements IProductRepository {
     })).filter((c) => c.count > 0);
 
     const prices = inStock.map((p) => p.price);
+    const artists = [
+      ...new Set(
+        inStock
+          .filter((p) => p.category === 'single-card' && p.artist?.trim())
+          .map((p) => p.artist!.trim()),
+      ),
+    ].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
     return {
       categories,
       series: PRODUCT_SERIES,
       sets: PRODUCT_SETS,
+      artists,
       priceRange: {
         min: prices.length ? Math.min(...prices) : 0,
         max: prices.length ? Math.max(...prices) : 0,

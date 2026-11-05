@@ -7,6 +7,7 @@ describe('toProductWhere', () => {
       filter: {
         category: 'booster-box',
         series: 'Scarlet & Violet',
+        artist: 'Ken Sugimori',
         minPrice: 1000,
         maxPrice: 20000,
         inStockOnly: true,
@@ -19,6 +20,7 @@ describe('toProductWhere', () => {
       AND: [
         { category: 'booster_box' },
         { series: 'scarlet_and_violet' },
+        { artist: { equals: 'Ken Sugimori', mode: 'insensitive' } },
         { stock: { gt: 0 } },
         { language: 'english' },
         { price: { gte: 1000, lte: 20000 } },

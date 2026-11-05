@@ -130,6 +130,7 @@ describe('Account pages', () => {
         categories: [],
         series: [],
         sets: [],
+        artists: [],
         priceRange: { min: 0, max: 0 },
       },
     } as never);

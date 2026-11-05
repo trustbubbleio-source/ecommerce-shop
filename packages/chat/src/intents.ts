@@ -262,7 +262,7 @@ export const CHAT_INTENTS: ChatIntent[] = [
     keywords: ['artist', 'illustrator', 'illus', 'illustrated by', 'who drew'],
     weight: 1.25,
     reply:
-      'Many single-card listings include the illustrator. Use the shop search (or the header search) and type an artist name — results match name, set, series, tags, and artist when set.',
+      'Many single-card listings include the illustrator. In Buy, open Artists under Series to filter by illustrator, or type an artist name in search.',
     suggestions: ['Find a card', 'Singles', 'Buy'],
     links: [
       { label: 'Buy', href: '/shop' },

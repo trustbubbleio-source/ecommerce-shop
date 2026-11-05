@@ -23,6 +23,11 @@ export function toProductWhere(
   if (filter.series) {
     and.push({ series: toPrismaSeries(filter.series as ProductSeries) });
   }
+  if (filter.artist?.trim()) {
+    and.push({
+      artist: { equals: filter.artist.trim(), mode: 'insensitive' },
+    });
+  }
   if (filter.inStockOnly) {
     and.push({ stock: { gt: 0 } });
   }

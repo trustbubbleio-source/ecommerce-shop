@@ -14,6 +14,8 @@ export const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 export interface ProductFilter {
   category?: ProductCategory | 'all';
   series?: string;
+  /** Exact illustrator name (case-insensitive). */
+  artist?: string;
   search?: string;
   minPrice?: number;
   maxPrice?: number;
@@ -36,6 +38,10 @@ function matches(product: Product, filter: ProductFilter): boolean {
     return false;
   }
   if (filter.series && product.series !== filter.series) return false;
+  if (filter.artist) {
+    const wanted = filter.artist.trim().toLowerCase();
+    if (!wanted || (product.artist ?? '').trim().toLowerCase() !== wanted) return false;
+  }
   if (filter.inStockOnly && product.stock <= 0) return false;
   if (filter.storeOnly !== undefined && product.storeOnly !== filter.storeOnly) return false;
   if (filter.inactive !== undefined && product.inactive !== filter.inactive) return false;

@@ -145,6 +145,8 @@ export interface CatalogMeta {
   categories: { value: string; count: number }[];
   series: readonly string[];
   sets: readonly string[];
+  /** Distinct illustrators on sellable single cards (for shop filter). */
+  artists: readonly string[];
   priceRange: { min: number; max: number };
 }
 

@@ -14,11 +14,12 @@ describe('parseFilters', () => {
 
   it('parses valid params', () => {
     const params = new URLSearchParams(
-      'category=booster-box&series=151&search=x&sort=price-asc',
+      'category=booster-box&series=151&artist=Ken+Sugimori&search=x&sort=price-asc',
     );
     expect(parseFilters(params)).toEqual({
       category: 'booster-box',
       series: '151',
+      artist: 'Ken Sugimori',
       search: 'x',
       language: '',
       condition: '',
@@ -47,6 +48,7 @@ describe('filtersToParams', () => {
     const params = filtersToParams({
       category: 'single-card',
       series: '151',
+      artist: 'Ryo Ueda',
       search: 'pikachu',
       language: 'japanese',
       condition: 'near-mint',
@@ -54,6 +56,7 @@ describe('filtersToParams', () => {
     });
     expect(params.get('category')).toBe('single-card');
     expect(params.get('series')).toBe('151');
+    expect(params.get('artist')).toBe('Ryo Ueda');
     expect(params.get('search')).toBe('pikachu');
     expect(params.get('inStock')).toBeNull();
     expect(params.get('language')).toBe('japanese');
@@ -65,6 +68,7 @@ describe('filtersToParams', () => {
     const filters = {
       category: 'bundle' as const,
       series: 'One More Rip Exclusive',
+      artist: 'aky CG Works',
       search: '',
       language: 'english' as const,
       condition: '' as const,
@@ -79,6 +83,7 @@ describe('toProductsQuery', () => {
     expect(toProductsQuery(DEFAULT_FILTERS)).toEqual({
       category: 'all',
       series: undefined,
+      artist: undefined,
       search: undefined,
       inStock: true,
       language: undefined,
@@ -92,5 +97,6 @@ describe('isDefaultFilters', () => {
   it('detects the default state', () => {
     expect(isDefaultFilters(DEFAULT_FILTERS)).toBe(true);
     expect(isDefaultFilters({ ...DEFAULT_FILTERS, category: 'bundle' })).toBe(false);
+    expect(isDefaultFilters({ ...DEFAULT_FILTERS, artist: 'Ken Sugimori' })).toBe(false);
   });
 });
