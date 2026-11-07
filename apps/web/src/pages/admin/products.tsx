@@ -10,7 +10,6 @@ import {
 } from '@akknerds/shared';
 import {
   ADMIN_PRODUCTS_PAGE_SIZE,
-  ApiError,
   api,
   type AdminProductSortKey,
 } from '@akknerds/api-client';
@@ -23,8 +22,8 @@ import {
   Select,
   Skeleton,
 } from '@akknerds/ui';
-import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, ArrowUpDown, Boxes, ImagePlus, Package, RefreshCw, Search, Wallet } from 'lucide-react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { ArrowDown, ArrowUp, ArrowUpDown, Boxes, ImagePlus, Package, Search, Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { adminProductsListState } from '../../lib/admin-products-list';
@@ -150,8 +149,6 @@ export function AdminProductsPage() {
 
   const [search, setSearch] = useState(qFromUrl);
   const debouncedSearch = useDebouncedValue(search.trim(), 280);
-  const [syncMessage, setSyncMessage] = useState<string | null>(null);
-  const queryClient = useQueryClient();
 
   // Keep the text field in sync when returning via browser back / shared URL.
   useEffect(() => {
@@ -209,24 +206,6 @@ export function AdminProductsPage() {
     placeholderData: keepPreviousData,
   });
 
-  const priceSync = useMutation({
-    mutationFn: () => api.adminSyncPrices(),
-    onSuccess: (result) => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
-      const { summary } = result;
-      setSyncMessage(
-        `Prices synced: ${summary.updated} updated, ${summary.skipped} unchanged, ${summary.errors} failed.`,
-      );
-    },
-    onError: (error) => {
-      setSyncMessage(
-        error instanceof ApiError
-          ? `Price sync failed: ${error.message}`
-          : 'Price sync failed. Try again in a moment.',
-      );
-    },
-  });
-
   const rows: Product[] = products.data?.products ?? [];
   const total = products.data?.total ?? 0;
   const catalogStats = products.data?.stats ?? EMPTY_CATALOG_STATS;
@@ -273,33 +252,13 @@ export function AdminProductsPage() {
             Manage your catalog and upload product images to the CDN.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={priceSync.isPending || products.isLoading}
-            onClick={() => {
-              setSyncMessage(null);
-              priceSync.mutate();
-            }}
-          >
-            <RefreshCw className={`size-4 ${priceSync.isPending ? 'animate-spin' : ''}`} />
-            {priceSync.isPending ? 'Syncing prices…' : 'Sync single-card prices'}
-          </Button>
-          <Button asChild>
-            <Link to="/admin/new" state={listState}>
-              <ImagePlus className="size-4" />
-              Add product
-            </Link>
-          </Button>
-        </div>
+        <Button asChild>
+          <Link to="/admin/new" state={listState}>
+            <ImagePlus className="size-4" />
+            Add product
+          </Link>
+        </Button>
       </div>
-
-      {syncMessage ? (
-        <p className="text-muted-foreground text-sm" role="status">
-          {syncMessage}
-        </p>
-      ) : null}
 
       <CatalogStatsRow stats={catalogStats} isLoading={products.isLoading && !products.data} />
 

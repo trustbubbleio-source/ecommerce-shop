@@ -13,11 +13,8 @@ import {
   parseCardNumberForLookup,
 } from '@akknerds/card-fetcher';
 import {
-  productToUpdateInput,
-  syncSingleCardPrices,
   fetchUngradedPriceFromPriceCharting,
   PriceFetchError,
-  type PriceSyncOutcome,
 } from '@akknerds/price-fetcher';
 import { Hono } from 'hono';
 import { z } from 'zod';
@@ -313,21 +310,6 @@ export function adminRoutes(deps: AppDeps) {
       const message = error instanceof Error ? error.message : 'Card image fetch failed';
       return c.json({ error: message }, 502);
     }
-  });
-
-  app.post('/sync-prices', requireAuth(), requireAdmin(deps), async (c) => {
-    const products = await deps.products.list({ sort: 'name-asc' });
-    const outcomes: PriceSyncOutcome[] = await syncSingleCardPrices(products, {
-      onUpdate: async (product, priceCents) => {
-        await deps.products.update(product.id, productToUpdateInput(product, priceCents));
-      },
-    });
-    const summary = {
-      updated: outcomes.filter((outcome) => outcome.status === 'updated').length,
-      skipped: outcomes.filter((outcome) => outcome.status === 'skipped').length,
-      errors: outcomes.filter((outcome) => outcome.status === 'error').length,
-    };
-    return c.json({ outcomes, summary });
   });
 
   app.post('/card-price', requireAuth(), requireAdmin(deps), validate('json', fetchCardImageInputSchema), async (c) => {

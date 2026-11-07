@@ -103,17 +103,6 @@ export interface ApiClient {
     cardNumber: number;
     sourceUrl: string;
   }>;
-  adminSyncPrices(): Promise<{
-    outcomes: Array<{
-      productId: string;
-      productName: string;
-      status: 'updated' | 'skipped' | 'error';
-      priceCents?: number;
-      sourceUrl?: string;
-      message?: string;
-    }>;
-    summary: { updated: number; skipped: number; errors: number };
-  }>;
   adminCreateProduct(input: CreateProductInput): Promise<{ product: Product }>;
   adminUpdateProduct(id: string, input: UpdateProductInput): Promise<{ product: Product }>;
   adminDeleteProduct(id: string): Promise<{ ok: boolean }>;
@@ -330,9 +319,6 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     },
     adminFetchCardPrice(input) {
       return request('/admin/card-price', { method: 'POST', body: JSON.stringify(input) });
-    },
-    adminSyncPrices() {
-      return request('/admin/sync-prices', { method: 'POST' });
     },
     adminCreateProduct(input) {
       return request('/admin/products', { method: 'POST', body: JSON.stringify(input) });
