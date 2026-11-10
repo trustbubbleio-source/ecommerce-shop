@@ -1,17 +1,18 @@
 /**
  * Home teaser for sealed product that never lists online (storeOnly in admin).
  * Image keys match the live catalogue CDN paths — update here when stock/SKU changes.
+ * Stock landed in the Båstad shop on 10 Nov 2026, ahead of the 11–13 window.
  */
 export const DELTA_REIGN_STORE_ARRIVAL = {
   set: 'Delta Reign',
   series: 'Mega Evolution',
   /** First day stock is expected in store (Europe/Stockholm, YYYY-MM-DD). */
-  arrivesOn: '2026-11-11',
-  /** Last day of the arrival window; used to flip copy to "in store now". */
-  arrivesThrough: '2026-11-13',
-  eyebrow: 'New · Store exclusive',
+  arrivesOn: '2026-11-10',
+  /** Arrival window is over; home copy stays on the in-store message. */
+  arrivesThrough: '2026-11-10',
+  eyebrow: 'In store · Limited stock',
   title: 'Delta Reign, in store only',
-  body: 'The newest Mega Evolution expansion lands in our Båstad shop first. Elite Trainer Boxes and blister packs will not be sold online. Come grab them in person.',
+  body: 'Delta Reign is finally in our Båstad shop. Elite Trainer Boxes and blister packs are not sold online, and stock is limited. Come grab them in person.',
   products: [
     {
       name: 'Delta Reign ETB',

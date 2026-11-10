@@ -1,30 +1,17 @@
 import { resolveAssetUrl } from '@akknerds/shared';
 import { Button } from '@akknerds/ui';
-import { CalendarDays, MapPin, Store } from 'lucide-react';
+import { MapPin, Sparkles, Store } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import {
-  DELTA_REIGN_STORE_ARRIVAL,
-  hasStoreArrivalLanded,
-} from '../../config/store-arrivals';
+import { DELTA_REIGN_STORE_ARRIVAL } from '../../config/store-arrivals';
 import { SITE } from '../../config/site';
 
-function arrivalCopy(arrived: boolean): { badge: string; when: string } {
-  if (arrived) {
-    return {
-      badge: 'In store now',
-      when: 'Available in our Båstad shop. Not sold online.',
-    };
-  }
-  return {
-    badge: 'Arrives November 11-13',
-    when: 'Dropping in store around November 11-13. Exclusive to the physical shop.',
-  };
-}
+const ARRIVAL_COPY = {
+  badge: 'Finally in store',
+  when: 'They are here — limited stock. Exclusive to the physical shop.',
+} as const;
 
 export function StoreExclusiveArrivals() {
   const cdn = import.meta.env.VITE_ASSET_CDN_URL;
-  const arrived = hasStoreArrivalLanded(DELTA_REIGN_STORE_ARRIVAL.arrivesThrough);
-  const timing = arrivalCopy(arrived);
 
   return (
     <section className="container py-12" aria-labelledby="store-exclusive-arrivals-heading">
@@ -98,10 +85,10 @@ export function StoreExclusiveArrivals() {
             </p>
 
             <p className="text-foreground inline-flex items-center gap-2 text-sm font-semibold">
-              <CalendarDays className="text-primary size-4 shrink-0" aria-hidden />
-              <span>{timing.badge}</span>
+              <Sparkles className="text-primary size-4 shrink-0" aria-hidden />
+              <span>{ARRIVAL_COPY.badge}</span>
             </p>
-            <p className="text-muted-foreground -mt-2 text-sm">{timing.when}</p>
+            <p className="text-muted-foreground -mt-2 text-sm">{ARRIVAL_COPY.when}</p>
 
             <p className="text-muted-foreground inline-flex items-start gap-2 text-sm">
               <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />
