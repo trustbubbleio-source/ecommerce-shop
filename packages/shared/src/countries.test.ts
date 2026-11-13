@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { addressSchema } from './schemas.js';
-import { SHIPPING_COUNTRIES, isShippingCountry } from './countries.js';
+import { SHIPPING_COUNTRIES, isShippingCountry, toShippingCountryIso } from './countries.js';
 
 describe('shipping countries', () => {
   it('includes Sweden and rejects free-text junk', () => {
     expect(isShippingCountry('Sweden')).toBe(true);
     expect(isShippingCountry('swedn')).toBe(false);
     expect(SHIPPING_COUNTRIES).toContain('Germany');
+  });
+
+  it('maps country names to ISO codes for PayPal', () => {
+    expect(toShippingCountryIso('Sweden')).toBe('SE');
+    expect(toShippingCountryIso('SE')).toBe('SE');
+    expect(toShippingCountryIso('Germany')).toBe('DE');
+    // Never truncate "Sweden" → "SW"
+    expect(toShippingCountryIso('SW')).toBe('SE');
   });
 
   it('validates address.country against the list', () => {

@@ -1,4 +1,4 @@
-import type { Order } from '@akknerds/shared';
+import { toShippingCountryIso, type Order } from '@akknerds/shared';
 import type { Env } from '../env.js';
 
 export interface CheckoutResult {
@@ -172,7 +172,8 @@ export class PaymentService {
                       : {}),
                     admin_area_2: order.shippingAddress.city.slice(0, 120),
                     postal_code: order.shippingAddress.postalCode.slice(0, 60),
-                    country_code: (order.shippingAddress.country || 'SE').slice(0, 2).toUpperCase(),
+                    // Addresses store English names ("Sweden"); PayPal needs ISO alpha-2 ("SE").
+                    country_code: toShippingCountryIso(order.shippingAddress.country),
                   },
                 },
               }
