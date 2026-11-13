@@ -68,6 +68,22 @@ export const createProductInputSchema = z
     rarity: z.enum(CARD_RARITIES, { required_error: 'Rarity is required' }),
     condition: z.enum(CARD_CONDITIONS, { required_error: 'Condition is required' }),
     language: z.enum(PRODUCT_LANGUAGES),
+    /** Match key to PayPal Zettle library (e.g. GOWELL-001). */
+    sku: z
+      .string()
+      .trim()
+      .min(1)
+      .max(64)
+      .optional()
+      .transform((v) => (v === '' || v === undefined ? undefined : v)),
+    zettleProductUuid: z
+      .union([z.string().uuid('Zettle product UUID must be a valid UUID'), z.literal('')])
+      .optional()
+      .transform((v) => (v === '' || v === undefined ? undefined : v)),
+    zettleVariantUuid: z
+      .union([z.string().uuid('Zettle variant UUID must be a valid UUID'), z.literal('')])
+      .optional()
+      .transform((v) => (v === '' || v === undefined ? undefined : v)),
     releaseDate: z.string().trim().min(1, 'Release date is required'),
   })
   .superRefine((data, ctx) => {
@@ -346,11 +362,10 @@ export const updateProductInputSchema = createProductInputSchema;
 export const sellInStoreInputSchema = z.object({
   quantity: z.number().int().min(1).max(20).default(1),
   /**
-   * `card_manual` — record fulfilled sale; staff take card separately.
-   * `swish` — pending Stripe Checkout (SEK) until webhook settles.
+   * In-store card/cash only. Terminal / Swish sales go through Zettle POS.
    */
-  paymentMethod: z.enum(['card_manual', 'swish']).default('card_manual'),
-  /** Optional email for Stripe receipt on Swish checkout. */
+  paymentMethod: z.enum(['card_manual']).default('card_manual'),
+  /** Optional email recorded on the in-store order. */
   customerEmail: z.string().email().optional(),
 });
 

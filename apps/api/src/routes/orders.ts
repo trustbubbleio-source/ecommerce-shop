@@ -4,19 +4,8 @@ import type { AppDeps, AppEnv } from '../context.js';
 import { cancelOrderAndReleaseStock } from '../lib/inventory.js';
 import { requireAuth } from '../middleware/auth.js';
 
-async function withInvoiceUrl(deps: AppDeps, order: Order): Promise<Order> {
-  if (order.invoiceUrl) return order;
-  if (order.status !== 'paid' && order.status !== 'fulfilled') return order;
-  const sessionId = order.stripeSessionId;
-  if (!sessionId) return order;
-  try {
-    const doc = await deps.payments.resolveInvoiceDocument(sessionId);
-    if (!doc) return order;
-    await deps.orders.setInvoiceUrl(order.id, doc.url);
-    return { ...order, invoiceUrl: doc.url };
-  } catch {
-    return order;
-  }
+async function withInvoiceUrl(_deps: AppDeps, order: Order): Promise<Order> {
+  return order;
 }
 
 /** Same access rules as GET /:id — owner session, or guest capability token. */

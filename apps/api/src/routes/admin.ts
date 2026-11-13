@@ -138,9 +138,8 @@ export function adminRoutes(deps: AppDeps) {
   });
 
   /**
-   * Physical till sale.
-   * - card_manual: reserve stock + fulfilled in_store order (card taken separately).
-   * - swish: reserve stock + pending order + Stripe Checkout (SEK); webhook fulfills.
+   * Physical till sale (card/cash logged in-app).
+   * Card-terminal / Swish / inventory for walk-in customers: use Zettle POS.
    */
   app.post(
     '/products/:id/sell-in-store',
@@ -155,7 +154,7 @@ export function adminRoutes(deps: AppDeps) {
         return c.json({ error: 'Product is inactive and cannot be sold in store' }, 409);
       }
 
-      const { quantity, paymentMethod, customerEmail } = c.req.valid('json');
+      const { quantity, customerEmail } = c.req.valid('json');
       if (product.stock < quantity) {
         return c.json(
           { error: 'Insufficient stock', stock: product.stock },
@@ -175,7 +174,6 @@ export function adminRoutes(deps: AppDeps) {
       }
 
       const auth = c.get('user')!;
-      const useSwish = paymentMethod === 'swish';
       const unitPrice = product.price;
       const currency = BASE_CURRENCY;
       const subtotal = unitPrice * quantity;
@@ -198,9 +196,9 @@ export function adminRoutes(deps: AppDeps) {
           shipping: 0,
           total: subtotal,
           currency,
-          status: useSwish ? 'pending' : 'fulfilled',
+          status: 'fulfilled',
           channel: 'in_store',
-          fulfillmentStep: useSwish ? undefined : 'delivered',
+          fulfillmentStep: 'delivered',
           shippingAddress: {
             fullName: 'In-store customer',
             line1: 'Hallandsvägen 21',
@@ -215,32 +213,8 @@ export function adminRoutes(deps: AppDeps) {
         return c.json({ error: message }, 500);
       }
 
-      if (!useSwish) {
-        const updated = await deps.products.getByIdOrSlug(product.id);
-        return c.json({ product: updated, order });
-      }
-
-      try {
-        const checkout = await deps.payments.createInstoreSwishCheckout(order, {
-          slug: product.slug,
-        });
-        await deps.orders.attachSession(order.id, checkout.sessionId);
-
-        // Mock Stripe: no webhook — settle as fulfilled immediately (stock stays reserved).
-        if (!deps.payments.enabled) {
-          await deps.orders.setStatus(order.id, 'fulfilled');
-          const settled = await deps.orders.get(order.id);
-          if (settled) order = settled;
-        }
-
-        const updated = await deps.products.getByIdOrSlug(product.id);
-        return c.json({ product: updated, order, checkoutUrl: checkout.url });
-      } catch (error) {
-        await deps.products.releaseStock([{ productId: product.id, quantity }]);
-        await deps.orders.cancel(order.id, 'In-store Swish checkout failed to start.');
-        const message = error instanceof Error ? error.message : 'Could not start Swish checkout';
-        return c.json({ error: message }, 500);
-      }
+      const updated = await deps.products.getByIdOrSlug(product.id);
+      return c.json({ product: updated, order });
     },
   );
 

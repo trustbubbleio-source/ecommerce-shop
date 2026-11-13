@@ -8,6 +8,7 @@ import { loadEnv } from './env.js';
 import { EmailService } from './lib/email.js';
 import { PaymentService } from './lib/payments.js';
 import { StorageService } from './lib/storage.js';
+import { ZettleInventoryService } from './lib/zettle.js';
 import { requireAdmin } from './middleware/admin.js';
 import { authOptional, requireAuth } from './middleware/auth.js';
 import { createMemoryRepositories } from './repositories/factory.js';
@@ -52,6 +53,7 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
     notifications: overrides.notifications ?? memory.notifications,
     discounts: overrides.discounts ?? memory.discounts,
     payments: overrides.payments ?? new PaymentService(env),
+    zettle: overrides.zettle ?? new ZettleInventoryService(env),
     storage: overrides.storage ?? new StorageService(env.storage),
     email: overrides.email ?? new EmailService(env),
     rateLimiter: overrides.rateLimiter ?? new MemoryRateLimiter(),
@@ -79,7 +81,8 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
   api.get('/health/details', requireAuth(), requireAdmin(deps), (c) =>
     c.json({
       status: 'ok',
-      stripe: deps.payments.enabled ? 'live' : 'mock',
+      paypal: deps.payments.enabled ? 'live' : 'mock',
+      zettle: deps.zettle.enabled ? 'live' : 'off',
       database: env.databaseEnabled ? 'postgres' : 'memory',
       storage: env.storage.enabled ? 's3' : 'none',
       email: deps.email.enabled ? 'resend' : 'mock',

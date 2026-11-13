@@ -24,7 +24,7 @@ process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
 serve({ fetch: app.fetch, port: env.port }, (info) => {
-  const mode = env.stripeEnabled ? 'live Stripe' : 'mock payments';
+  const mode = env.paypalEnabled ? `PayPal (${env.paypalMode})` : 'mock payments';
   const storage = env.databaseEnabled ? 'Postgres' : 'in-memory';
   // eslint-disable-next-line no-console
   console.log(`▲ One More Rip API ready on http://localhost:${info.port} (${mode}, ${storage})`);

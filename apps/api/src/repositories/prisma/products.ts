@@ -93,6 +93,18 @@ export class PrismaProductRepository implements ProductRepository {
     return row ? toProduct(row) : undefined;
   }
 
+  async getByZettleVariantUuid(variantUuid: string): Promise<Product | undefined> {
+    const row = await prisma.product.findFirst({
+      where: { zettleVariantUuid: variantUuid },
+    });
+    return row ? toProduct(row) : undefined;
+  }
+
+  async getBySku(sku: string): Promise<Product | undefined> {
+    const row = await prisma.product.findFirst({ where: { sku } });
+    return row ? toProduct(row) : undefined;
+  }
+
   async catalogStats() {
     const rows = await prisma.$queryRaw<
       Array<{ listings: bigint; units: bigint; value: bigint }>
@@ -190,6 +202,16 @@ export class PrismaProductRepository implements ProductRepository {
     const row = await prisma.product.update({
       where: { id: productId },
       data: { rating: stats.rating, reviewCount: stats.reviewCount },
+    });
+    return toProduct(row);
+  }
+
+  async setStock(productId: string, stock: number): Promise<Product | undefined> {
+    const existing = await this.getByIdOrSlug(productId);
+    if (!existing) return undefined;
+    const row = await prisma.product.update({
+      where: { id: existing.id },
+      data: { stock: Math.max(0, Math.floor(stock)) },
     });
     return toProduct(row);
   }

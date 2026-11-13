@@ -51,7 +51,7 @@ export class OrderRepository implements IOrderRepository {
     return this.byId.get(id);
   }
 
-  async getByStripeSession(sessionId: string): Promise<Order | undefined> {
+  async getByPaymentSession(sessionId: string): Promise<Order | undefined> {
     const orderId = this.bySession.get(sessionId);
     return orderId ? this.byId.get(orderId) : undefined;
   }
@@ -63,7 +63,7 @@ export class OrderRepository implements IOrderRepository {
   async attachSession(orderId: string, sessionId: string): Promise<void> {
     const order = this.byId.get(orderId);
     if (!order) return;
-    order.stripeSessionId = sessionId;
+    order.paymentSessionId = sessionId;
     this.bySession.set(sessionId, orderId);
   }
 

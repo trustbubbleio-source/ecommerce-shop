@@ -306,7 +306,7 @@ describe('POST /api/admin/products/:id/sell-in-store', () => {
     expect(data.checkoutUrl).toBeUndefined();
   });
 
-  it('starts a SEK Swish checkout and settles immediately in mock mode', async () => {
+  it('rejects legacy Swish till payments (use Zettle POS instead)', async () => {
     const { app, deps } = makeApp();
     await seedAdmin(deps);
     const { data: login } = await jsonRequest(app, 'POST', '/api/auth/login', {
@@ -319,7 +319,7 @@ describe('POST /api/admin/products/:id/sell-in-store', () => {
       '/api/admin/products',
       {
         name: 'Swish Till Single',
-        description: 'Swish in-store sale.',
+        description: 'Legacy Swish path removed.',
         category: 'single-card',
         set: '151',
         series: 'Scarlet & Violet',
@@ -335,7 +335,7 @@ describe('POST /api/admin/products/:id/sell-in-store', () => {
       { authorization: `Bearer ${login.token}` },
     );
 
-    const { res, data } = await jsonRequest(
+    const { res } = await jsonRequest(
       app,
       'POST',
       `/api/admin/products/${created.product.id}/sell-in-store`,
@@ -343,15 +343,7 @@ describe('POST /api/admin/products/:id/sell-in-store', () => {
       { authorization: `Bearer ${login.token}` },
     );
 
-    expect(res.status).toBe(200);
-    expect(data.product.stock).toBe(1);
-    expect(data.order.currency).toBe('sek');
-    expect(data.order.total).toBe(2500);
-    expect(data.order.channel).toBe('in_store');
-    // Mock Stripe settles synchronously (no webhook).
-    expect(data.order.status).toBe('fulfilled');
-    expect(data.checkoutUrl).toMatch(/paid=1/);
-    expect(data.checkoutUrl).toContain(created.product.slug);
+    expect(res.status).toBe(400);
   });
 
   it('rejects when stock is empty', async () => {

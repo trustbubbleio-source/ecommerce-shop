@@ -84,7 +84,7 @@ export function adminOrderRoutes(deps: AppDeps) {
         } catch (error) {
           console.error('[payments] refund failed', error);
           return c.json(
-            { error: 'Could not refund this order in Stripe. The order is still active.' },
+            { error: 'Could not refund this order in PayPal. The order is still active.' },
             502,
           );
         }

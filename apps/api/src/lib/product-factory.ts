@@ -34,6 +34,9 @@ export function newProductFromInput(input: CreateProductInput): Product {
     cardNumber: input.cardNumber,
     artist: input.artist,
     releaseDate: input.releaseDate,
+    sku: input.sku,
+    zettleProductUuid: input.zettleProductUuid,
+    zettleVariantUuid: input.zettleVariantUuid,
   };
 }
 
@@ -70,5 +73,8 @@ export function applyProductInput(existing: Product, input: CreateProductInput):
     cardNumber: input.cardNumber,
     artist: input.artist,
     releaseDate: input.releaseDate,
+    sku: input.sku ?? existing.sku,
+    zettleProductUuid: input.zettleProductUuid ?? existing.zettleProductUuid,
+    zettleVariantUuid: input.zettleVariantUuid ?? existing.zettleVariantUuid,
   };
 }

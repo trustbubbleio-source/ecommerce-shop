@@ -48,6 +48,14 @@ export class ProductRepository implements IProductRepository {
     return this.products.find((p) => p.id === idOrSlug || p.slug === idOrSlug);
   }
 
+  async getByZettleVariantUuid(variantUuid: string): Promise<Product | undefined> {
+    return this.products.find((p) => p.zettleVariantUuid === variantUuid);
+  }
+
+  async getBySku(sku: string): Promise<Product | undefined> {
+    return this.products.find((p) => p.sku === sku);
+  }
+
   async catalogStats() {
     return computeCatalogStats(this.products);
   }
@@ -108,6 +116,13 @@ export class ProductRepository implements IProductRepository {
     if (!product) return undefined;
     product.rating = stats.rating;
     product.reviewCount = stats.reviewCount;
+    return product;
+  }
+
+  async setStock(productId: string, stock: number): Promise<Product | undefined> {
+    const product = this.products.find((p) => p.id === productId);
+    if (!product) return undefined;
+    product.stock = Math.max(0, Math.floor(stock));
     return product;
   }
 

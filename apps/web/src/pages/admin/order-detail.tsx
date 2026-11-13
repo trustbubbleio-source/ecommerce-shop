@@ -19,7 +19,7 @@ import {
   Textarea,
   useToast,
 } from '@akknerds/ui';
-import { ArrowLeft, ExternalLink, MapPin, PackageX } from 'lucide-react';
+import { ArrowLeft, MapPin, PackageX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { OrderInvoiceLink } from '../../components/account/order-invoice-link';
@@ -34,8 +34,6 @@ import {
   formatOrderDate,
   orderTimeline,
 } from '../../lib/order-progress';
-import { stripeCheckoutSessionUrl } from '../../lib/stripe-dashboard';
-
 export function AdminOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const { data, isLoading, isError } = useAdminOrder(orderId);
@@ -82,10 +80,6 @@ export function AdminOrderDetailPage() {
   const busy = update.isPending || cancelOrder.isPending;
   const currentStep = order.fulfillmentStep ?? defaultFulfillmentStep(order.status);
   const timeline = orderTimeline(order.status, order.fulfillmentStep);
-  const stripeUrl = order.stripeSessionId
-    ? stripeCheckoutSessionUrl(order.stripeSessionId)
-    : null;
-
   const save = (fulfillmentStep: FulfillmentStep) => {
     update.mutate(
       {
@@ -120,19 +114,6 @@ export function AdminOrderDetailPage() {
             <Badge variant="destructive">Cancelled</Badge>
           ) : order.status === 'pending' ? (
             <Badge variant="muted">Pending</Badge>
-          ) : paid && stripeUrl ? (
-            <a
-              href={stripeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex"
-              aria-label="Open payment in Stripe Dashboard"
-            >
-              <Badge variant="success" className="hover:bg-success/25 gap-1">
-                Paid
-                <ExternalLink className="size-3" aria-hidden />
-              </Badge>
-            </a>
           ) : paid ? (
             <Badge variant="success">Paid</Badge>
           ) : null}
@@ -179,7 +160,7 @@ export function AdminOrderDetailPage() {
               </div>
             ) : (
               <p className="text-muted-foreground text-sm">
-                Timeline unlocks after Stripe confirms payment.
+                Timeline unlocks after PayPal confirms payment.
               </p>
             )}
           </CardContent>

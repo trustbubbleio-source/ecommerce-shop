@@ -61,6 +61,9 @@ export function toProduct(row: DbProduct): Product {
     cardNumber: row.cardNumber ?? undefined,
     artist: row.artist ?? undefined,
     releaseDate: row.releaseDate,
+    sku: row.sku ?? undefined,
+    zettleProductUuid: row.zettleProductUuid ?? undefined,
+    zettleVariantUuid: row.zettleVariantUuid ?? undefined,
   };
 }
 
@@ -98,6 +101,9 @@ export function fromProduct(product: Product) {
     cardNumber: product.cardNumber ?? null,
     artist: product.artist ?? null,
     releaseDate: product.releaseDate,
+    sku: product.sku ?? null,
+    zettleProductUuid: product.zettleProductUuid ?? null,
+    zettleVariantUuid: product.zettleVariantUuid ?? null,
   };
 }
 
@@ -113,7 +119,7 @@ export function toOrder(row: DbOrder): Order {
     currency: row.currency,
     status: row.status as OrderStatus,
     channel: row.channel === 'in_store' ? 'in_store' : 'online',
-    stripeSessionId: row.stripeSessionId ?? undefined,
+    paymentSessionId: row.paymentSessionId ?? undefined,
     invoiceUrl: row.invoiceUrl ?? undefined,
     fulfillmentStep: (row.fulfillmentStep as FulfillmentStep | null) ?? undefined,
     carrierName: row.carrierName ?? undefined,

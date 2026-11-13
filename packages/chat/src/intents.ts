@@ -155,6 +155,7 @@ export const CHAT_INTENTS: ChatIntent[] = [
     keywords: [
       'payment',
       'pay',
+      'paypal',
       'stripe',
       'credit card',
       'apple pay',
@@ -165,7 +166,7 @@ export const CHAT_INTENTS: ChatIntent[] = [
     ],
     weight: 1.2,
     reply: (ctx) =>
-      `We accept major cards (Visa, Mastercard, Amex) via Stripe, plus Apple Pay and Google Pay on supported devices. Checkout is PCI Level 1 secure — we never store your full card number. Your card is authorised at checkout and captured when the order is confirmed; pre-orders are charged upfront. Billing questions: ${ctx.ordersEmail}.`,
+      `We accept PayPal Checkout (PayPal balance, cards, and other methods PayPal shows at checkout). We never store your full card number. Billing questions: ${ctx.ordersEmail}.`,
     suggestions: ['Orders', 'Welcome offer', 'FAQ'],
     links: [
       { label: 'FAQ', href: '/faq' },

@@ -49,8 +49,8 @@ export class PrismaOrderRepository implements OrderRepository {
     return row ? toOrder(row) : undefined;
   }
 
-  async getByStripeSession(sessionId: string) {
-    const row = await prisma.order.findUnique({ where: { stripeSessionId: sessionId } });
+  async getByPaymentSession(sessionId: string) {
+    const row = await prisma.order.findUnique({ where: { paymentSessionId: sessionId } });
     return row ? toOrder(row) : undefined;
   }
 
@@ -64,7 +64,7 @@ export class PrismaOrderRepository implements OrderRepository {
   async attachSession(orderId: string, sessionId: string): Promise<void> {
     await prisma.order.updateMany({
       where: { id: orderId },
-      data: { stripeSessionId: sessionId },
+      data: { paymentSessionId: sessionId },
     });
   }
 
@@ -113,7 +113,7 @@ export class PrismaOrderRepository implements OrderRepository {
   }
 
   async markStatusBySession(sessionId: string, status: OrderStatus) {
-    const row = await prisma.order.findUnique({ where: { stripeSessionId: sessionId } });
+    const row = await prisma.order.findUnique({ where: { paymentSessionId: sessionId } });
     if (!row) return undefined;
     const updated = await prisma.order.update({
       where: { id: row.id },
@@ -124,11 +124,11 @@ export class PrismaOrderRepository implements OrderRepository {
 
   async markPaidBySession(sessionId: string) {
     const pending = await prisma.order.findFirst({
-      where: { stripeSessionId: sessionId, status: 'pending' },
+      where: { paymentSessionId: sessionId, status: 'pending' },
     });
     if (!pending) return undefined;
 
-    // In-store Swish: hand over immediately (no packing/shipping).
+    // In-store channel: hand over immediately (no packing/shipping).
     if (pending.channel === 'in_store') {
       const updated = await prisma.order.update({
         where: { id: pending.id },

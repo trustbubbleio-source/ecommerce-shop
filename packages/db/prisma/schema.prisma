@@ -342,6 +342,12 @@ model Product {
   /** Illustrator name for single cards (searchable). */
   artist         String?
   releaseDate    String             @map("release_date")
+  /** Merchant SKU (e.g. GOWELL-001). Matched to PayPal Zettle library. */
+  sku                 String?  @unique
+  /** Zettle Product Library product UUID. */
+  zettleProductUuid   String?  @map("zettle_product_uuid")
+  /** Zettle Product Library variant UUID (inventory is tracked per variant). */
+  zettleVariantUuid   String?  @map("zettle_variant_uuid")
   favorites      Favorite[]
   reviews        ProductReview[]
 
@@ -356,6 +362,7 @@ model Product {
   @@index([rating])
   @@index([language])
   @@index([condition])
+  @@index([zettleVariantUuid])
   @@map("products")
 }
 
@@ -447,7 +454,8 @@ model Order {
   shipping        Int
   total           Int
   currency        String
-  stripeSessionId String?  @unique @map("stripe_session_id")
+  /** PayPal Order ID (or legacy Stripe Checkout session id). */
+  paymentSessionId String?  @unique @map("payment_session_id")
   invoiceUrl      String?  @map("invoice_url")
   fulfillmentStep String?  @map("fulfillment_step")
   carrierName     String?  @map("carrier_name")

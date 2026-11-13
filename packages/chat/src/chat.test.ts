@@ -23,9 +23,9 @@ describe('matchIntent', () => {
     expect(shipping.kind).toBe('reply');
     expect(shipping.reply.toLowerCase()).toContain('business day');
 
-    const payments = matchIntent('Is Stripe checkout secure?', ctx);
+    const payments = matchIntent('Is PayPal checkout secure?', ctx);
     expect(payments.intentId).toBe('payments');
-    expect(payments.reply.toLowerCase()).toContain('stripe');
+    expect(payments.reply.toLowerCase()).toContain('paypal');
   });
 
   it('uses free-shipping threshold from shared pricing', () => {

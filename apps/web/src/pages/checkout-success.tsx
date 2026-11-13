@@ -1,7 +1,8 @@
 import { formatPrice } from '@akknerds/shared';
+import { api } from '@akknerds/api-client';
 import { Button, Card, CardContent, Separator, Spinner } from '@akknerds/ui';
 import { CheckCircle2, PackageX } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { EmptyState } from '../components/common/empty-state';
 import { IncludedVatLine } from '../components/common/included-vat-line';
@@ -11,9 +12,35 @@ import { useCartStore } from '../store/cart';
 export function CheckoutSuccessPage() {
   const [params] = useSearchParams();
   const orderId = params.get('order_id') ?? undefined;
-  const { data, isLoading, isError } = useOrder(orderId);
+  const paypalToken = params.get('token') ?? undefined;
+  const isMock = params.get('mock') === '1';
+  const [captureError, setCaptureError] = useState<string | null>(null);
+  const [capturing, setCapturing] = useState(Boolean(paypalToken) && !isMock);
+  const captureStarted = useRef(false);
+
+  const { data, isLoading, isError, refetch } = useOrder(orderId);
   const clear = useCartStore((s) => s.clear);
   const cleared = useRef(false);
+
+  useEffect(() => {
+    if (!orderId || isMock || captureStarted.current) return;
+    if (!paypalToken && data?.order?.status !== 'pending') return;
+
+    captureStarted.current = true;
+    setCapturing(true);
+    void api
+      .capturePayPalOrder({
+        orderId,
+        paypalOrderId: paypalToken,
+        token: paypalToken,
+      })
+      .then(() => refetch())
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : 'Payment capture failed';
+        setCaptureError(message);
+      })
+      .finally(() => setCapturing(false));
+  }, [orderId, paypalToken, isMock, data?.order?.status, refetch]);
 
   useEffect(() => {
     const status = data?.order?.status;
@@ -23,10 +50,10 @@ export function CheckoutSuccessPage() {
     }
   }, [data, clear]);
 
-  if (isLoading) {
+  if (isLoading || capturing) {
     return (
       <div className="container flex justify-center py-24">
-        <Spinner className="size-8" label="Loading your order" />
+        <Spinner className="size-8" label={capturing ? 'Confirming PayPal payment' : 'Loading your order'} />
       </div>
     );
   }
@@ -37,7 +64,10 @@ export function CheckoutSuccessPage() {
         <EmptyState
           icon={<PackageX />}
           title="We couldn't find that order"
-          description="If you just paid, your confirmation email will have the details."
+          description={
+            captureError ??
+            "If you just paid, your confirmation email will have the details."
+          }
           action={
             <Button asChild>
               <Link to="/shop">Continue buying</Link>
@@ -49,6 +79,7 @@ export function CheckoutSuccessPage() {
   }
 
   const { order } = data;
+  const pending = order.status === 'pending';
 
   return (
     <div className="container max-w-2xl py-12">
@@ -56,15 +87,21 @@ export function CheckoutSuccessPage() {
         <span className="bg-success/15 text-success grid size-16 place-items-center rounded-full">
           <CheckCircle2 className="size-9" />
         </span>
-        <h1 className="text-3xl font-extrabold tracking-tight">Thank you for your order!</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">
+          {pending ? 'Finishing your payment…' : 'Thank you for your order!'}
+        </h1>
         <p className="text-muted-foreground">
           A confirmation has been sent to{' '}
           <span className="text-foreground font-medium">{order.email}</span>.
         </p>
-        <p className="text-muted-foreground max-w-md text-sm">
-          You will receive two emails: one order confirmation from One More Rip, and a separate
-          payment receipt from Stripe. Both are normal — nothing is wrong if you see both.
-        </p>
+        {captureError ? (
+          <p className="text-destructive max-w-md text-sm">{captureError}</p>
+        ) : (
+          <p className="text-muted-foreground max-w-md text-sm">
+            You will receive an order confirmation from One More Rip. PayPal may also send its own
+            payment receipt — both are normal.
+          </p>
+        )}
         <p className="text-muted-foreground text-sm">
           Order <span className="text-foreground font-mono">{order.id}</span>
         </p>

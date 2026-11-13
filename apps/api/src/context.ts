@@ -4,6 +4,7 @@ import type { EmailService } from './lib/email.js';
 import type { TokenPayload } from './lib/jwt.js';
 import type { PaymentService } from './lib/payments.js';
 import type { StorageService } from './lib/storage.js';
+import type { ZettleInventoryService } from './lib/zettle.js';
 import type {
   DiscountRepository,
   FavoriteRepository,
@@ -31,6 +32,7 @@ export interface AppDeps {
   notifications: NotificationRepository;
   discounts: DiscountRepository;
   payments: PaymentService;
+  zettle: ZettleInventoryService;
   storage: StorageService;
   email: EmailService;
   rateLimiter: MemoryRateLimiter;

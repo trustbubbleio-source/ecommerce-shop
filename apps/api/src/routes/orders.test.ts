@@ -20,18 +20,10 @@ async function placeOrder(app: ReturnType<typeof makeApp>['app'], token?: string
 describe('POST /api/orders/:id/abandon', () => {
   it('cancels a pending order and restores reserved stock', async () => {
     const env = testEnv({
-      STRIPE_SECRET_KEY: 'sk_test_real',
-      STRIPE_WEBHOOK_SECRET: 'whsec_real',
+      PAYPAL_API_KEY: 'test_paypal_client',
+      PAYPAL_SECRET_KEY: 'test_paypal_secret',
     });
-    const payments = new PaymentService(env, {
-      checkout: {
-        sessions: {
-          create: vi.fn().mockResolvedValue({ id: 'cs_abandon', url: 'https://stripe.test/pay' }),
-        },
-      },
-      coupons: { create: vi.fn().mockResolvedValue({ id: 'coup' }) },
-      webhooks: { constructEvent: vi.fn() },
-    });
+    const payments = new PaymentService(env);
     const created = makeApp({ env, payments });
     const before = (await created.deps.products.getByIdOrSlug('bb-151'))!.stock;
 
@@ -140,34 +132,15 @@ describe('GET /api/orders', () => {
     expect(ids).not.toContain(pending.id);
   });
 
-  it('hydrates a Stripe invoice URL onto paid orders', async () => {
-    const sessionId = 'cs_live_hydrate';
-    const env = testEnv({
-      STRIPE_SECRET_KEY: 'sk_test_real',
-      STRIPE_WEBHOOK_SECRET: 'whsec_real',
-    });
-    const payments = new PaymentService(env, {
-      checkout: {
-        sessions: {
-          create: vi.fn().mockResolvedValue({ id: sessionId, url: 'https://stripe.test/pay' }),
-          retrieve: vi.fn().mockResolvedValue({
-            id: sessionId,
-            invoice: { invoice_pdf: 'https://pay.stripe.com/invoice/inv_h/pdf' },
-          }),
-        },
-      },
-      // Welcome discount on new accounts needs a coupon when Stripe is live.
-      coupons: { create: vi.fn().mockResolvedValue({ id: 'coup_welcome' }) },
-      webhooks: { constructEvent: vi.fn() },
-    });
-    const created = makeApp({ env, payments });
+  it('lists paid orders without requiring a provider invoice URL', async () => {
+    const created = makeApp();
     const token = await registerAndLogin(created);
     const orderId = await placeOrder(created.app, token);
-    await created.deps.orders.setStatus(orderId, 'paid');
+    await created.deps.orders.setInvoiceUrl(orderId, 'https://example.com/receipt.pdf');
 
     const { data } = await jsonRequest(created.app, 'GET', '/api/orders', undefined, {
       authorization: `Bearer ${token}`,
     });
-    expect(data.orders[0]?.invoiceUrl).toBe('https://pay.stripe.com/invoice/inv_h/pdf');
+    expect(data.orders[0]?.invoiceUrl).toBe('https://example.com/receipt.pdf');
   });
 });

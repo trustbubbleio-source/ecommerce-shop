@@ -64,7 +64,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'Is checkout secure?',
         answer:
-          'Yes. Payments are processed by Stripe, a PCI Level 1 certified provider. We never store your full card number on our servers. All traffic is encrypted over HTTPS, and 3D Secure authentication is used where supported by your bank.',
+          'Yes. Payments are processed by PayPal. We never store your full card number on our servers. All traffic is encrypted over HTTPS.',
       },
       {
         question: 'When am I charged?',

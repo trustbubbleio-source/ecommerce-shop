@@ -1,254 +1,86 @@
-import { describe, expect, it, vi } from 'vitest';
-import { PaymentService, type StripeLike } from '../lib/payments.js';
-import { jsonRequest, makeApp, TEST_SHIPPING_ADDRESS, testEnv } from '../test/helpers.js';
+import { describe, expect, it } from 'vitest';
+import { createApp } from '../app.js';
+import { loadEnv } from '../env.js';
+import { PaymentService } from '../lib/payments.js';
 
-const checkoutPayload = {
-  email: 'buyer@example.com',
-  items: [{ productId: 'bb-151', quantity: 1 }],
-  shippingAddress: TEST_SHIPPING_ADDRESS,
-};
+describe('PayPal capture webhook', () => {
+  it('settles a pending order after mock capture', async () => {
+    const env = loadEnv({ PAYPAL_API_KEY: '', PAYPAL_SECRET_KEY: '' });
+    const { app, deps } = createApp({ env, payments: new PaymentService(env) });
 
-function liveApp(client: StripeLike) {
-  const env = testEnv({ STRIPE_SECRET_KEY: 'sk_test_real', STRIPE_WEBHOOK_SECRET: 'whsec_real' });
-  const payments = new PaymentService(env, client);
-  return makeApp({ env, payments });
-}
+    const order = await deps.orders.create({
+      email: 'buyer@example.com',
+      lines: [{ productId: 'p1', name: 'Card', unitPrice: 1000, quantity: 1 }],
+      subtotal: 1000,
+      shipping: 0,
+      total: 1000,
+      currency: 'sek',
+    });
+    await deps.orders.attachSession(order.id, `PAYPAL_MOCK_${order.id}`);
 
-describe('POST /api/webhooks/stripe', () => {
-  it('acknowledges in mock mode without verifying', async () => {
-    const { app } = makeApp();
-    const { res, data } = await jsonRequest(app, 'POST', '/api/webhooks/stripe', {});
-    expect(res.status).toBe(200);
-    expect(data.mock).toBe(true);
-  });
-
-  it('marks the matching order paid on checkout.session.completed', async () => {
-    const sessionId = 'cs_live_test';
-    const { app, deps } = liveApp({
-      checkout: {
-        sessions: {
-          create: vi.fn().mockResolvedValue({ id: sessionId, url: 'https://stripe.test/pay' }),
-        },
-      },
-      webhooks: {
-        constructEvent: vi
-          .fn()
-          .mockReturnValue({
-            type: 'checkout.session.completed',
-            data: { object: { id: sessionId } },
-          }),
-      },
+    const res = await app.request('/api/webhooks/paypal/capture', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ orderId: order.id, paypalOrderId: `PAYPAL_MOCK_${order.id}` }),
     });
 
-    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', checkoutPayload);
-    expect((await deps.orders.get(checkout.orderId))?.status).toBe('pending');
-
-    const { res } = await jsonRequest(
-      app,
-      'POST',
-      '/api/webhooks/stripe',
-      {},
-      {
-        'stripe-signature': 'valid-sig',
-      },
-    );
     expect(res.status).toBe(200);
-    expect((await deps.orders.get(checkout.orderId))?.status).toBe('paid');
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.status).toBe('paid');
+
+    const settled = await deps.orders.get(order.id);
+    expect(settled?.status).toBe('paid');
   });
 
-  it('stores the Stripe invoice PDF on the order', async () => {
-    const sessionId = 'cs_live_invoice';
-    const { app, deps } = liveApp({
-      checkout: {
-        sessions: {
-          create: vi.fn().mockResolvedValue({ id: sessionId, url: 'https://stripe.test/pay' }),
-        },
-      },
-      webhooks: {
-        constructEvent: vi.fn().mockReturnValue({
-          type: 'checkout.session.completed',
-          data: {
-            object: {
-              id: sessionId,
-              invoice: { invoice_pdf: 'https://pay.stripe.com/invoice/inv_1/pdf' },
+  it('returns 410 for legacy Stripe webhook path', async () => {
+    const { app } = createApp();
+    const res = await app.request('/api/webhooks/stripe', { method: 'POST' });
+    expect(res.status).toBe(410);
+  });
+
+  it('applies absolute stock from Zettle InventoryBalanceChanged', async () => {
+    const { app, deps } = createApp();
+    const product = (await deps.products.list())[0]!;
+    await deps.products.setStock(product.id, 9);
+    // Link variant uuid in-memory
+    const linked = await deps.products.update(product.id, {
+      name: product.name,
+      description: product.description,
+      category: product.category,
+      set: product.set,
+      series: product.series,
+      price: product.price,
+      stock: 9,
+      accent: product.accent,
+      images: product.images.length ? product.images : ['products/x.jpg'],
+      rarity: product.rarity ?? 'rare',
+      condition: product.condition ?? 'near-mint',
+      language: product.language,
+      releaseDate: product.releaseDate,
+      zettleProductUuid: '11111111-1111-1111-1111-111111111111',
+      zettleVariantUuid: '22222222-2222-2222-2222-222222222222',
+    });
+    expect(linked?.zettleVariantUuid).toBe('22222222-2222-2222-2222-222222222222');
+
+    const res = await app.request('/api/webhooks/zettle', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        eventName: 'InventoryBalanceChanged',
+        payload: {
+          balanceAfter: [
+            {
+              variantUuid: '22222222-2222-2222-2222-222222222222',
+              balance: '4',
             },
-          },
-        }),
-      },
-    });
-
-    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', checkoutPayload);
-
-    await jsonRequest(
-      app,
-      'POST',
-      '/api/webhooks/stripe',
-      {},
-      { 'stripe-signature': 'valid-sig' },
-    );
-
-    expect((await deps.orders.get(checkout.orderId))?.invoiceUrl).toBe(
-      'https://pay.stripe.com/invoice/inv_1/pdf',
-    );
-  });
-
-  it('cancels a fully refunded order and ignores a second refund event', async () => {
-    const sessionId = 'cs_live_refund';
-    let event: { type: string; data: { object: unknown } } = {
-      type: 'checkout.session.completed',
-      data: { object: { id: sessionId } },
-    };
-    const { app, deps } = liveApp({
-      checkout: {
-        sessions: {
-          create: vi.fn().mockResolvedValue({ id: sessionId, url: 'https://stripe.test/pay' }),
+          ],
         },
-      },
-      webhooks: { constructEvent: vi.fn().mockImplementation(() => event) },
+      }),
     });
-
-    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', checkoutPayload);
-    await jsonRequest(app, 'POST', '/api/webhooks/stripe', {}, { 'stripe-signature': 'sig' });
-    expect((await deps.orders.get(checkout.orderId))?.status).toBe('paid');
-
-    event = {
-      type: 'charge.refunded',
-      data: { object: { metadata: { orderId: checkout.orderId }, refunded: true } },
-    };
-    const { res } = await jsonRequest(
-      app,
-      'POST',
-      '/api/webhooks/stripe',
-      {},
-      { 'stripe-signature': 'sig' },
-    );
     expect(res.status).toBe(200);
-    expect((await deps.orders.get(checkout.orderId))?.status).toBe('cancelled');
-
-    const again = await jsonRequest(
-      app,
-      'POST',
-      '/api/webhooks/stripe',
-      {},
-      { 'stripe-signature': 'sig' },
-    );
-    expect(again.res.status).toBe(200);
-    expect((await deps.orders.get(checkout.orderId))?.status).toBe('cancelled');
-  });
-
-  it('leaves the order paid when a refund is only partial', async () => {
-    const sessionId = 'cs_live_partial';
-    let orderId = '';
-    const { app, deps } = liveApp({
-      checkout: {
-        sessions: {
-          create: vi.fn().mockResolvedValue({ id: sessionId, url: 'https://stripe.test/pay' }),
-        },
-      },
-      webhooks: {
-        constructEvent: vi.fn().mockImplementation(() => ({
-          type: 'charge.refunded',
-          data: { object: { metadata: { orderId }, refunded: false } },
-        })),
-      },
-    });
-
-    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', checkoutPayload);
-    orderId = checkout.orderId;
-    await deps.orders.setStatus(orderId, 'paid');
-
-    const { res } = await jsonRequest(
-      app,
-      'POST',
-      '/api/webhooks/stripe',
-      {},
-      { 'stripe-signature': 'sig' },
-    );
-    expect(res.status).toBe(200);
-    expect((await deps.orders.get(orderId))?.status).toBe('paid');
-  });
-
-  it('only sends paid emails once when checkout.session.completed is delivered twice', async () => {
-    const sessionId = 'cs_live_idempotent';
-    const sendOrderConfirmation = vi.fn().mockResolvedValue(undefined);
-    const sendPaidOrderAlert = vi.fn().mockResolvedValue(undefined);
-    const { app, deps } = liveApp({
-      checkout: {
-        sessions: {
-          create: vi.fn().mockResolvedValue({ id: sessionId, url: 'https://stripe.test/pay' }),
-        },
-      },
-      webhooks: {
-        constructEvent: vi.fn().mockReturnValue({
-          type: 'checkout.session.completed',
-          data: { object: { id: sessionId } },
-        }),
-      },
-    });
-    deps.email.sendOrderConfirmation = sendOrderConfirmation;
-    deps.email.sendPaidOrderAlert = sendPaidOrderAlert;
-
-    const { data: checkout } = await jsonRequest(app, 'POST', '/api/checkout', checkoutPayload);
-    expect((await deps.orders.get(checkout.orderId))?.status).toBe('pending');
-
-    for (let i = 0; i < 2; i++) {
-      await jsonRequest(app, 'POST', '/api/webhooks/stripe', {}, { 'stripe-signature': 'sig' });
-    }
-
-    expect((await deps.orders.get(checkout.orderId))?.status).toBe('paid');
-    expect(sendOrderConfirmation).toHaveBeenCalledTimes(1);
-    expect(sendPaidOrderAlert).toHaveBeenCalledTimes(1);
-  });
-
-  it('rejects a request without a signature header', async () => {
-    const { app } = liveApp({
-      checkout: { sessions: { create: vi.fn() } },
-      webhooks: { constructEvent: vi.fn() },
-    });
-    const { res } = await jsonRequest(app, 'POST', '/api/webhooks/stripe', {});
-    expect(res.status).toBe(400);
-  });
-
-  it('rejects an invalid signature', async () => {
-    const { app } = liveApp({
-      checkout: { sessions: { create: vi.fn() } },
-      webhooks: {
-        constructEvent: vi.fn().mockImplementation(() => {
-          throw new Error('bad signature');
-        }),
-      },
-    });
-    const { res } = await jsonRequest(
-      app,
-      'POST',
-      '/api/webhooks/stripe',
-      {},
-      {
-        'stripe-signature': 'bad',
-      },
-    );
-    expect(res.status).toBe(400);
-  });
-
-  it('ignores unrelated event types', async () => {
-    const { app } = liveApp({
-      checkout: { sessions: { create: vi.fn() } },
-      webhooks: {
-        constructEvent: vi
-          .fn()
-          .mockReturnValue({ type: 'payment_intent.created', data: { object: {} } }),
-      },
-    });
-    const { res, data } = await jsonRequest(
-      app,
-      'POST',
-      '/api/webhooks/stripe',
-      {},
-      {
-        'stripe-signature': 'sig',
-      },
-    );
-    expect(res.status).toBe(200);
-    expect(data.received).toBe(true);
+    const body = await res.json();
+    expect(body.updated).toBe(1);
+    expect((await deps.products.getByIdOrSlug(product.id))?.stock).toBe(4);
   });
 });

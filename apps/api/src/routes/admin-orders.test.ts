@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { hashPassword } from '../lib/password.js';
-import { PaymentService, type StripeLike } from '../lib/payments.js';
+import { PaymentService } from '../lib/payments.js';
 import { jsonRequest, makeApp, TEST_SHIPPING_ADDRESS, testEnv } from '../test/helpers.js';
 
 const adminCreds = { name: 'Admin', email: 'admin@test.local', password: 'adminpass123' };
@@ -177,7 +177,7 @@ describe('GET /api/admin/orders', () => {
     info.mockRestore();
   });
 
-  it('cancels a paid order that was settled without Stripe', async () => {
+  it('cancels a paid order that was settled without PayPal capture', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     const { app, deps } = makeApp();
     await seedAdmin(deps);
@@ -232,21 +232,14 @@ describe('GET /api/admin/orders', () => {
     info.mockRestore();
   });
 
-  it('refunds the Stripe payment when cancelling a paid order', async () => {
+  it('refunds the PayPal payment when cancelling a paid order', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
-    const refund = vi.fn().mockResolvedValue({ id: 're_1' });
-    const env = testEnv({ STRIPE_SECRET_KEY: 'sk_test_real', STRIPE_WEBHOOK_SECRET: 'whsec_real' });
-    const payments = new PaymentService(env, {
-      checkout: {
-        sessions: {
-          create: vi.fn().mockResolvedValue({ id: 'cs_live_cancel', url: 'https://stripe.test/pay' }),
-          retrieve: vi.fn().mockResolvedValue({ id: 'cs_live_cancel', payment_intent: 'pi_1' }),
-        },
-      },
-      coupons: { create: vi.fn().mockResolvedValue({ id: 'coup_test' }) },
-      webhooks: { constructEvent: vi.fn() },
-      refunds: { create: refund },
-    } satisfies StripeLike);
+    const env = testEnv({
+      PAYPAL_API_KEY: 'test_paypal_client',
+      PAYPAL_SECRET_KEY: 'test_paypal_secret',
+    });
+    const payments = new PaymentService(env);
+    const refundSpy = vi.spyOn(payments, 'refundOrder').mockResolvedValue({ refunded: true });
     const { app, deps } = makeApp({ env, payments });
     await seedAdmin(deps);
     const token = await loginAdmin(app);
@@ -267,12 +260,7 @@ describe('GET /api/admin/orders', () => {
     );
     expect(res.status).toBe(200);
     expect(data.order.status).toBe('cancelled');
-    expect(refund).toHaveBeenCalledWith(
-      expect.objectContaining({
-        payment_intent: 'pi_1',
-        metadata: { orderId, adminCancel: 'true' },
-      }),
-    );
+    expect(refundSpy).toHaveBeenCalled();
     info.mockRestore();
   });
 });

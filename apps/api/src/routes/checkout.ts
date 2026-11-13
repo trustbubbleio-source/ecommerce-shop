@@ -2,7 +2,11 @@ import { checkoutInputSchema, priceCartAsync } from '@akknerds/shared';
 import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
 import { validate } from '../lib/http.js';
-import { stockLinesFromOrder } from '../lib/inventory.js';
+import {
+  releaseStockSynced,
+  reserveStockSynced,
+  stockLinesFromOrder,
+} from '../lib/inventory.js';
 import { notifyPaidOrder } from '../lib/order-alert.js';
 import { canPurchase } from '../lib/prelaunch.js';
 import {
@@ -42,10 +46,15 @@ export function checkoutRoutes(deps: AppDeps) {
       return c.json({ error: 'None of the items in your cart are currently available' }, 400);
     }
 
-    const reserved = await deps.products.reserveStock(stockLinesFromOrder({ lines: priced.lines }));
+    const stockLines = stockLinesFromOrder({ lines: priced.lines });
+    const reserved = await reserveStockSynced(deps, stockLines);
     if (!reserved.ok) {
       return c.json(
-        { error: 'One or more items just sold out. Please refresh your cart and try again.' },
+        {
+          error: reserved.error
+            ? `Could not reserve stock in Zettle: ${reserved.error}`
+            : 'One or more items just sold out. Please refresh your cart and try again.',
+        },
         409,
       );
     }
@@ -67,8 +76,7 @@ export function checkoutRoutes(deps: AppDeps) {
       const checkout = await deps.payments.createCheckout(order);
       await deps.orders.attachSession(order.id, checkout.sessionId);
 
-      // In mock mode there is no Stripe webhook, so settle the order immediately
-      // to make the end-to-end purchase flow demoable without credentials.
+      // In mock mode there is no PayPal capture, so settle immediately.
       // Stock stays reserved (= sold).
       if (!deps.payments.enabled) {
         const paid = await deps.orders.setStatus(order.id, 'paid');
@@ -78,7 +86,7 @@ export function checkoutRoutes(deps: AppDeps) {
 
       return c.json({ url: checkout.url, orderId: order.id }, 201);
     } catch (error) {
-      await deps.products.releaseStock(stockLinesFromOrder({ lines: priced.lines }));
+      await releaseStockSynced(deps, stockLines);
       if (orderId) {
         await deps.orders.cancel(orderId, 'Checkout failed before payment session was created.');
       }

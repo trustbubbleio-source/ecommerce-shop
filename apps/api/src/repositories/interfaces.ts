@@ -105,7 +105,7 @@ export interface OrderFulfillmentPatch {
 export interface OrderRepository {
   create(input: CreateOrderInput): Promise<Order>;
   get(id: string): Promise<Order | undefined>;
-  getByStripeSession(sessionId: string): Promise<Order | undefined>;
+  getByPaymentSession(sessionId: string): Promise<Order | undefined>;
   listAll(): Promise<Order[]>;
   attachSession(orderId: string, sessionId: string): Promise<void>;
   setInvoiceUrl(orderId: string, invoiceUrl: string): Promise<void>;
@@ -114,7 +114,7 @@ export interface OrderRepository {
   cancel(orderId: string, reason: string): Promise<Order | undefined>;
   markStatusBySession(sessionId: string, status: OrderStatus): Promise<Order | undefined>;
   /**
-   * Atomically pending → paid by Stripe session.
+   * Atomically pending → paid by payment session id (PayPal order id).
    * Returns the order only when this call performed the transition (idempotent for emails).
    */
   markPaidBySession(sessionId: string): Promise<Order | undefined>;
@@ -163,6 +163,8 @@ export interface ProductRepository {
   list(options?: ListOptions): Promise<Product[]>;
   listPage(options?: ListOptions): Promise<ProductPage>;
   getByIdOrSlug(idOrSlug: string): Promise<Product | undefined>;
+  getByZettleVariantUuid(variantUuid: string): Promise<Product | undefined>;
+  getBySku(sku: string): Promise<Product | undefined>;
   meta(): Promise<CatalogMeta>;
   catalogStats(): Promise<CatalogStats>;
   create(input: CreateProductInput): Promise<Product>;
@@ -174,6 +176,8 @@ export interface ProductRepository {
     productId: string,
     stats: { rating: number; reviewCount: number },
   ): Promise<Product | undefined>;
+  /** Set absolute stock from Zettle (webhook / sync). */
+  setStock(productId: string, stock: number): Promise<Product | undefined>;
   /**
    * Atomically reserve units for checkout (decrement). Fails if any line
    * would go below zero — no partial reservation is kept.

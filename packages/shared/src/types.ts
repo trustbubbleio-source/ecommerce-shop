@@ -63,6 +63,12 @@ export interface Product {
   /** Card illustrator — included in product search when set. */
   artist?: string;
   releaseDate: string;
+  /** Merchant SKU matched to PayPal Zettle (e.g. GOWELL-001). */
+  sku?: string;
+  /** Zettle product UUID from the Product Library. */
+  zettleProductUuid?: string;
+  /** Zettle variant UUID — inventory is tracked per variant. */
+  zettleVariantUuid?: string;
 }
 
 export interface CartLine {
@@ -127,8 +133,9 @@ export interface Order {
   channel: OrderChannel;
   /** Warehouse progress after payment. Omitted while pending/cancelled. */
   fulfillmentStep?: FulfillmentStep;
-  stripeSessionId?: string;
-  /** Stripe invoice PDF (or hosted receipt fallback). */
+  /** PayPal Order ID used to settle / refund the payment. */
+  paymentSessionId?: string;
+  /** Hosted invoice / receipt URL when the provider supplies one. */
   invoiceUrl?: string;
   shippingAddress?: Address;
   /** Set when a tracked parcel is handed to the courier. */

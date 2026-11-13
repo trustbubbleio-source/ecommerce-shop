@@ -6,19 +6,28 @@ export interface Env {
   port: number;
   webOrigins: string[];
   jwtSecret: string;
-  stripeSecretKey: string;
-  stripeWebhookSecret: string;
+  paypalClientId: string;
+  paypalClientSecret: string;
+  /** `sandbox` (default) or `live`. */
+  paypalMode: 'sandbox' | 'live';
   checkoutSuccessUrl: string;
   checkoutCancelUrl: string;
   /**
-   * Public web origin used to build in-store Swish success/cancel URLs
-   * (`/admin/instore/:slug?...`). Defaults to the first WEB_ORIGIN.
+   * Public web origin used for absolute links. Defaults to the first WEB_ORIGIN.
    */
   instoreCheckoutBaseUrl: string;
-  /** Optional Stripe Dashboard payment method configuration for in-store Checkout. */
-  stripeInstorePaymentMethodConfig?: string;
-  /** Whether a real Stripe key is configured; otherwise checkout runs in mock mode. */
-  stripeEnabled: boolean;
+  /** Whether PayPal REST credentials are configured; otherwise checkout runs in mock mode. */
+  paypalEnabled: boolean;
+  /** Zettle developer portal client id (self-hosted app). */
+  zettleClientId: string;
+  /** Zettle API key JWT (assertion grant). */
+  zettleApiKey: string;
+  /** Optional cached STORE inventory UUID (skips discovery). */
+  zettleStoreInventoryUuid?: string;
+  /** Optional cached SOLD inventory UUID (skips discovery). */
+  zettleSoldInventoryUuid?: string;
+  /** Whether Zettle inventory sync is configured. */
+  zettleEnabled: boolean;
   /** Explicit opt-in to mock payments in production (prelaunch / emergency only). */
   allowMockPayments: boolean;
   /** Whether DATABASE_URL is configured for Postgres via Prisma. */
@@ -66,17 +75,12 @@ const PLACEHOLDERS = new Set([
 ]);
 
 function isReal(value: string | undefined): value is string {
-  return typeof value === 'string' && !PLACEHOLDERS.has(value);
+  return typeof value === 'string' && !PLACEHOLDERS.has(value) && value.trim().length > 0;
 }
 
 function isDatabaseConfigured(source: NodeJS.ProcessEnv): boolean {
   const url = source.DATABASE_URL?.trim();
   return Boolean(url && url.startsWith('postgresql://'));
-}
-
-function isStripeSecret(value: string): boolean {
-  // Secret keys (sk_) or restricted keys (rk_) from the Stripe Dashboard.
-  return isReal(value) && (value.startsWith('sk_') || value.startsWith('rk_'));
 }
 
 function truthyFlag(value: string | undefined): boolean {
@@ -110,14 +114,13 @@ export function assertProductionEnv(env: Env, source: NodeJS.ProcessEnv = proces
   if (!env.jwtSecret || env.jwtSecret === DEV_JWT_SECRET || env.jwtSecret.length < 32) {
     problems.push('JWT_SECRET must be set to a strong random value (32+ chars), not the dev default.');
   }
-  if (!env.stripeEnabled && !env.allowMockPayments) {
+  if (!env.paypalEnabled && !env.allowMockPayments) {
     problems.push(
-      'STRIPE_SECRET_KEY must be a real sk_/rk_ key, or set ALLOW_MOCK_PAYMENTS=true explicitly (prelaunch only).',
+      'PAYPAL_API_KEY + PAYPAL_SECRET_KEY must be set, or set ALLOW_MOCK_PAYMENTS=true explicitly (prelaunch only).',
     );
   }
-  if (env.stripeEnabled && !isReal(env.stripeWebhookSecret)) {
-    problems.push('STRIPE_WEBHOOK_SECRET (whsec_...) is required when Stripe is enabled.');
-  }
+  // Zettle is strongly recommended in production for POS↔web stock sync, but
+  // do not hard-fail boot — local stock still works until keys are added.
   if (!env.email.enabled) {
     problems.push('RESEND_API_KEY must be a real re_ key (mock email is not allowed in production).');
   }
@@ -130,7 +133,15 @@ export function assertProductionEnv(env: Env, source: NodeJS.ProcessEnv = proces
 }
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  const stripeSecretKey = source.STRIPE_SECRET_KEY ?? '';
+  const paypalClientId = (source.PAYPAL_API_KEY ?? source.PAYPAL_CLIENT_ID ?? '').trim();
+  const paypalClientSecret = (source.PAYPAL_SECRET_KEY ?? source.PAYPAL_CLIENT_SECRET ?? '').trim();
+  const modeRaw = (source.PAYPAL_MODE ?? '').trim().toLowerCase();
+  const paypalMode: 'sandbox' | 'live' =
+    modeRaw === 'live' || modeRaw === 'production' ? 'live' : 'sandbox';
+  const zettleClientId = (source.ZETTLE_CLIENT_ID ?? '').trim();
+  const zettleApiKey = (source.ZETTLE_API_KEY ?? '').trim();
+  const zettleStoreInventoryUuid = source.ZETTLE_STORE_INVENTORY_UUID?.trim() || undefined;
+  const zettleSoldInventoryUuid = source.ZETTLE_SOLD_INVENTORY_UUID?.trim() || undefined;
   const cloudfrontUrl = (source.AWS_CLOUDFRONT_URL ?? '').replace(/\/$/, '');
   const accessKeyId = source.AWS_ACCESS_KEY_ID ?? '';
   const secretAccessKey = source.AWS_SECRET_ACCESS_KEY ?? '';
@@ -147,18 +158,22 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     webOrigins[0] ??
     'http://localhost:5173'
   ).replace(/\/$/, '');
-  const pmc = source.STRIPE_INSTORE_PAYMENT_METHOD_CONFIG?.trim();
   return {
     port: Number.parseInt(source.PORT ?? '4000', 10),
     webOrigins,
     jwtSecret: source.JWT_SECRET ?? DEV_JWT_SECRET,
-    stripeSecretKey,
-    stripeWebhookSecret: source.STRIPE_WEBHOOK_SECRET ?? '',
+    paypalClientId,
+    paypalClientSecret,
+    paypalMode,
     checkoutSuccessUrl: source.CHECKOUT_SUCCESS_URL ?? 'http://localhost:5173/checkout/success',
     checkoutCancelUrl: source.CHECKOUT_CANCEL_URL ?? 'http://localhost:5173/cart',
     instoreCheckoutBaseUrl,
-    stripeInstorePaymentMethodConfig: pmc || undefined,
-    stripeEnabled: isStripeSecret(stripeSecretKey),
+    paypalEnabled: isReal(paypalClientId) && isReal(paypalClientSecret),
+    zettleClientId,
+    zettleApiKey,
+    zettleStoreInventoryUuid,
+    zettleSoldInventoryUuid,
+    zettleEnabled: isReal(zettleClientId) && isReal(zettleApiKey),
     allowMockPayments: truthyFlag(source.ALLOW_MOCK_PAYMENTS),
     databaseEnabled: isDatabaseConfigured(source),
     storage: {

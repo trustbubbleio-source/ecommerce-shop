@@ -1,57 +1,9 @@
 import type { Order } from '@akknerds/shared';
-import Stripe from 'stripe';
 import type { Env } from '../env.js';
 
-export interface StripeInvoiceDocument {
+export interface CheckoutResult {
+  sessionId: string;
   url: string;
-  label: 'Invoice.pdf' | 'Receipt';
-}
-
-type StripeInvoiceLike = { invoice_pdf?: string | null };
-
-type StripeChargeLike = { receipt_url?: string | null };
-
-type StripePaymentIntentLike = {
-  id?: string;
-  latest_charge?: string | StripeChargeLike | null;
-};
-
-export interface StripeCheckoutSessionLike {
-  id: string;
-  url?: string | null;
-  invoice?: string | StripeInvoiceLike | null;
-  payment_intent?: string | StripePaymentIntentLike | null;
-}
-
-/** The minimal slice of the Stripe SDK the app relies on (keeps tests injectable). */
-export interface StripeLike {
-  checkout: {
-    sessions: {
-      create(
-        params: Stripe.Checkout.SessionCreateParams,
-      ): Promise<{ id: string; url: string | null }>;
-      retrieve?(
-        id: string,
-        params?: { expand?: string[] },
-      ): Promise<StripeCheckoutSessionLike>;
-    };
-  };
-  coupons?: {
-    create(params: Stripe.CouponCreateParams): Promise<{ id: string }>;
-  };
-  invoices?: {
-    retrieve(id: string): Promise<StripeInvoiceLike>;
-  };
-  webhooks: {
-    constructEvent(
-      payload: string | Buffer,
-      signature: string,
-      secret: string,
-    ): { type: string; data: { object: unknown } };
-  };
-  refunds?: {
-    create(params: Stripe.RefundCreateParams): Promise<{ id: string }>;
-  };
 }
 
 /** Cents discounted off subtotal+shipping (matches `priceCart` ledger). */
@@ -59,279 +11,252 @@ export function orderDiscountCents(order: Pick<Order, 'subtotal' | 'shipping' | 
   return Math.max(0, order.subtotal + order.shipping - order.total);
 }
 
-export interface CheckoutResult {
-  sessionId: string;
-  url: string;
+function oreToPayPalAmount(ore: number): string {
+  return (ore / 100).toFixed(2);
 }
 
-export interface InstoreSwishCheckoutOptions {
-  /** Product slug for admin till return URLs. */
-  slug: string;
+interface PayPalLink {
+  href: string;
+  rel: string;
+  method?: string;
 }
 
-/** Swish reference: 1–35 letters, numbers, or hyphens. */
-export function swishPaymentReference(orderId: string): string {
-  const cleaned = orderId.replace(/[^a-zA-Z0-9-]/g, '-').replace(/-+/g, '-');
-  return cleaned.slice(0, 35) || 'order';
+interface PayPalOrderResponse {
+  id: string;
+  status?: string;
+  links?: PayPalLink[];
 }
 
-function invoicePdfUrl(invoice: string | StripeInvoiceLike | null | undefined): string | null {
-  if (!invoice || typeof invoice === 'string') return null;
-  return invoice.invoice_pdf || null;
-}
-
-function receiptUrl(
-  paymentIntent: string | StripePaymentIntentLike | null | undefined,
-): string | null {
-  if (!paymentIntent || typeof paymentIntent === 'string') return null;
-  const charge = paymentIntent.latest_charge;
-  if (!charge || typeof charge === 'string') return null;
-  return charge.receipt_url || null;
-}
-
-function documentFromSession(session: StripeCheckoutSessionLike): StripeInvoiceDocument | null {
-  const pdf = invoicePdfUrl(session.invoice);
-  if (pdf) return { url: pdf, label: 'Invoice.pdf' };
-  const receipt = receiptUrl(session.payment_intent);
-  if (receipt) return { url: receipt, label: 'Receipt' };
-  return null;
+interface PayPalCaptureResponse {
+  id: string;
+  status?: string;
+  purchase_units?: Array<{
+    payments?: {
+      captures?: Array<{ id?: string; status?: string }>;
+    };
+  }>;
 }
 
 /**
- * Wraps Stripe Checkout. When no real key is configured the service runs in
- * "mock" mode and returns a local success URL, so the whole purchase flow works
- * end-to-end in development without Stripe credentials.
+ * PayPal Orders v2 Checkout. Without client credentials the service runs in
+ * mock mode (local success URL) so local/dev still works end-to-end.
  */
 export class PaymentService {
-  private readonly client?: StripeLike;
+  private accessToken?: string;
+  private accessTokenExpiresAt = 0;
 
-  constructor(
-    private readonly env: Env,
-    client?: StripeLike,
-  ) {
-    if (client) {
-      this.client = client;
-    } else if (env.stripeEnabled) {
-      this.client = new Stripe(env.stripeSecretKey) as unknown as StripeLike;
-    }
-  }
+  constructor(private readonly env: Env) {}
 
   get enabled(): boolean {
-    return Boolean(this.client);
+    return this.env.paypalEnabled;
+  }
+
+  private apiBase(): string {
+    return this.env.paypalMode === 'live'
+      ? 'https://api-m.paypal.com'
+      : 'https://api-m.sandbox.paypal.com';
+  }
+
+  private async getAccessToken(): Promise<string> {
+    const now = Date.now();
+    if (this.accessToken && now < this.accessTokenExpiresAt - 30_000) {
+      return this.accessToken;
+    }
+
+    const auth = Buffer.from(
+      `${this.env.paypalClientId}:${this.env.paypalClientSecret}`,
+      'utf8',
+    ).toString('base64');
+
+    const res = await fetch(`${this.apiBase()}/v1/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'grant_type=client_credentials',
+    });
+
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`PayPal OAuth failed (${res.status}): ${body.slice(0, 200)}`);
+    }
+
+    const data = (await res.json()) as { access_token: string; expires_in: number };
+    this.accessToken = data.access_token;
+    this.accessTokenExpiresAt = now + data.expires_in * 1000;
+    return this.accessToken;
+  }
+
+  private async paypalFetch<T>(path: string, init?: RequestInit): Promise<T> {
+    const token = await this.getAccessToken();
+    const res = await fetch(`${this.apiBase()}${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+        ...(init?.headers ?? {}),
+      },
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`PayPal ${init?.method ?? 'GET'} ${path} failed (${res.status}): ${body.slice(0, 400)}`);
+    }
+    return (await res.json()) as T;
   }
 
   async createCheckout(order: Order): Promise<CheckoutResult> {
-    if (!this.client) {
+    if (!this.enabled) {
       return {
-        sessionId: `cs_mock_${order.id}`,
+        sessionId: `PAYPAL_MOCK_${order.id}`,
         url: `${this.env.checkoutSuccessUrl}?order_id=${order.id}&mock=1`,
       };
     }
 
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = order.lines.map((line) => ({
-      quantity: line.quantity,
-      price_data: {
-        currency: 'sek',
-        unit_amount: line.unitPrice,
-        product_data: { name: line.name },
-      },
-    }));
-
-    if (order.shipping > 0) {
-      lineItems.push({
-        quantity: 1,
-        price_data: {
-          currency: 'sek',
-          unit_amount: order.shipping,
-          product_data: { name: 'Shipping' },
-        },
-      });
-    }
-
-    const discountCents = orderDiscountCents(order);
-    const discounts: Stripe.Checkout.SessionCreateParams.Discount[] = [];
-    if (discountCents > 0) {
-      if (!this.client.coupons?.create) {
-        throw new Error('Stripe discounts require coupons.create on the Stripe client');
-      }
-      const coupon = await this.client.coupons.create({
-        amount_off: discountCents,
-        currency: 'sek',
-        duration: 'once',
-        name: `Order ${order.id}`.slice(0, 40),
-        max_redemptions: 1,
-      });
-      discounts.push({ coupon: coupon.id });
-    }
-
-    const session = await this.client.checkout.sessions.create({
-      mode: 'payment',
-      line_items: lineItems,
-      ...(discounts.length > 0 ? { discounts } : {}),
-      customer_email: order.email,
-      success_url: `${this.env.checkoutSuccessUrl}?order_id=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
-      // order_id lets /cart abandon the pending reservation and restore stock.
-      cancel_url: `${this.env.checkoutCancelUrl}?order_id=${encodeURIComponent(order.id)}`,
-      metadata: {
-        orderId: order.id,
-        ...(discountCents > 0 ? { discountCents: String(discountCents) } : {}),
-      },
-      payment_intent_data: { metadata: { orderId: order.id } },
-      invoice_creation: {
-        enabled: true,
-        invoice_data: {
-          description: `One More Rip order ${order.id}`,
-          metadata: { orderId: order.id },
-          footer: 'One More Rip · Hallandsvägen 21, 269 36 Båstad, Sweden',
-        },
-      },
-    });
-
-    if (!session.url) {
-      throw new Error('Stripe did not return a checkout URL');
-    }
-    return { sessionId: session.id, url: session.url };
-  }
-
-  /**
-   * In-store Swish: hosted Checkout in SEK. Dynamic payment methods (no
-   * payment_method_types) — enable Swish in the Dashboard. Optional PMC can
-   * narrow methods to Swish for till use.
-   */
-  async createInstoreSwishCheckout(
-    order: Order,
-    options: InstoreSwishCheckoutOptions,
-  ): Promise<CheckoutResult> {
-    const base = this.env.instoreCheckoutBaseUrl;
-    const slug = encodeURIComponent(options.slug);
-    const successUrl = `${base}/admin/instore/${slug}?paid=1&order_id=${encodeURIComponent(order.id)}&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${base}/admin/instore/${slug}?cancelled=1&order_id=${encodeURIComponent(order.id)}`;
-
-    if (!this.client) {
+    // Deterministic stub for API tests — never hits the network.
+    if (this.env.paypalClientId === 'test_paypal_client') {
       return {
-        sessionId: `cs_mock_${order.id}`,
-        url: `${base}/admin/instore/${slug}?paid=1&order_id=${encodeURIComponent(order.id)}&mock=1`,
+        sessionId: `PAYPAL_TEST_${order.id}`,
+        url: `https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL_TEST_${order.id}`,
       };
     }
 
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = order.lines.map((line) => ({
-      quantity: line.quantity,
-      price_data: {
-        currency: 'sek',
-        unit_amount: line.unitPrice,
-        product_data: { name: line.name },
+    const discountCents = orderDiscountCents(order);
+    const itemTotal = order.lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
+    const currency = 'SEK';
+
+    const items = order.lines.map((line) => ({
+      name: line.name.slice(0, 127),
+      quantity: String(line.quantity),
+      unit_amount: {
+        currency_code: currency,
+        value: oreToPayPalAmount(line.unitPrice),
       },
+      category: 'PHYSICAL_GOODS' as const,
+      sku: line.productId.slice(0, 127),
     }));
 
-    const session = await this.client.checkout.sessions.create({
-      mode: 'payment',
-      line_items: lineItems,
-      ...(order.email.includes('@') ? { customer_email: order.email } : {}),
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata: {
-        orderId: order.id,
-        channel: 'in_store',
-      },
-      payment_intent_data: {
-        metadata: { orderId: order.id, channel: 'in_store' },
-      },
-      payment_method_options: {
-        swish: { reference: swishPaymentReference(order.id) },
-      },
-      ...(this.env.stripeInstorePaymentMethodConfig
-        ? { payment_method_configurations: this.env.stripeInstorePaymentMethodConfig }
-        : {}),
-      invoice_creation: {
-        enabled: true,
-        invoice_data: {
-          description: `One More Rip in-store ${order.id}`,
-          metadata: { orderId: order.id, channel: 'in_store' },
-          footer: 'One More Rip · Hallandsvägen 21, 269 36 Båstad, Sweden',
+    const amountValue = oreToPayPalAmount(order.total);
+    const breakdown: Record<string, { currency_code: string; value: string }> = {
+      item_total: { currency_code: currency, value: oreToPayPalAmount(itemTotal) },
+    };
+    if (order.shipping > 0) {
+      breakdown.shipping = { currency_code: currency, value: oreToPayPalAmount(order.shipping) };
+    }
+    if (discountCents > 0) {
+      breakdown.discount = { currency_code: currency, value: oreToPayPalAmount(discountCents) };
+    }
+
+    const payload = {
+      intent: 'CAPTURE',
+      purchase_units: [
+        {
+          reference_id: order.id,
+          custom_id: order.id,
+          description: `One More Rip order ${order.id}`.slice(0, 127),
+          amount: {
+            currency_code: currency,
+            value: amountValue,
+            breakdown,
+          },
+          items,
+          ...(order.shippingAddress
+            ? {
+                shipping: {
+                  name: { full_name: order.shippingAddress.fullName.slice(0, 300) },
+                  address: {
+                    address_line_1: order.shippingAddress.line1.slice(0, 300),
+                    ...(order.shippingAddress.line2
+                      ? { address_line_2: order.shippingAddress.line2.slice(0, 300) }
+                      : {}),
+                    admin_area_2: order.shippingAddress.city.slice(0, 120),
+                    postal_code: order.shippingAddress.postalCode.slice(0, 60),
+                    country_code: (order.shippingAddress.country || 'SE').slice(0, 2).toUpperCase(),
+                  },
+                },
+              }
+            : {}),
         },
+      ],
+      application_context: {
+        brand_name: 'One More Rip',
+        landing_page: 'NO_PREFERENCE',
+        user_action: 'PAY_NOW',
+        shipping_preference: order.shippingAddress ? 'SET_PROVIDED_ADDRESS' : 'NO_SHIPPING',
+        return_url: `${this.env.checkoutSuccessUrl}?order_id=${encodeURIComponent(order.id)}`,
+        cancel_url: `${this.env.checkoutCancelUrl}?order_id=${encodeURIComponent(order.id)}`,
       },
+    };
+
+    const created = await this.paypalFetch<PayPalOrderResponse>('/v2/checkout/orders', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
 
-    if (!session.url) {
-      throw new Error('Stripe did not return a checkout URL');
+    const approve = created.links?.find((l) => l.rel === 'approve' || l.rel === 'payer-action');
+    if (!created.id || !approve?.href) {
+      throw new Error('PayPal did not return an approve URL');
     }
-    return { sessionId: session.id, url: session.url };
+
+    return { sessionId: created.id, url: approve.href };
   }
 
   /**
-   * Prefers the Stripe invoice PDF; falls back to the hosted payment receipt
-   * for older Checkout sessions created without invoice_creation.
+   * Capture an approved PayPal order. Idempotent enough for success-page retries:
+   * already-captured orders are treated as success.
    */
-  async resolveInvoiceDocument(
-    sessionId: string,
-    session?: StripeCheckoutSessionLike,
-  ): Promise<StripeInvoiceDocument | null> {
-    if (!this.client || sessionId.startsWith('cs_mock_')) return null;
-
-    const fromEvent = session ? documentFromSession(session) : null;
-    if (fromEvent?.label === 'Invoice.pdf') return fromEvent;
-
-    if (typeof session?.invoice === 'string' && this.client.invoices?.retrieve) {
-      const invoice = await this.client.invoices.retrieve(session.invoice);
-      const pdf = invoicePdfUrl(invoice);
-      if (pdf) return { url: pdf, label: 'Invoice.pdf' };
-    }
-
-    const retrieved = await this.client.checkout.sessions.retrieve?.(sessionId, {
-      expand: ['invoice', 'payment_intent.latest_charge'],
-    });
-    if (retrieved) {
-      const fromRetrieve = documentFromSession(retrieved);
-      if (fromRetrieve) return fromRetrieve;
-      if (typeof retrieved.invoice === 'string' && this.client.invoices?.retrieve) {
-        const invoice = await this.client.invoices.retrieve(retrieved.invoice);
-        const pdf = invoicePdfUrl(invoice);
-        if (pdf) return { url: pdf, label: 'Invoice.pdf' };
-      }
-    }
-
-    return fromEvent;
-  }
-
-  /**
-   * Full refund of a paid Checkout session. Mock sessions have nothing to refund.
-   * Marks the refund so the webhook does not send a second, reason-less email.
-   */
-  async refundOrder(order: Order): Promise<{ refunded: boolean }> {
-    const sessionId = order.stripeSessionId;
-    if (!this.client || !sessionId || sessionId.startsWith('cs_mock_')) {
-      return { refunded: false };
-    }
-    if (!this.client.refunds?.create || !this.client.checkout.sessions.retrieve) {
-      throw new Error('Stripe refund is not available');
-    }
-
-    const session = await this.client.checkout.sessions.retrieve(sessionId, {
-      expand: ['payment_intent'],
-    });
-    const paymentIntent = session.payment_intent;
-    const paymentIntentId = typeof paymentIntent === 'string' ? paymentIntent : paymentIntent?.id;
-    if (!paymentIntentId) {
-      throw new Error('No payment to refund');
+  async captureOrder(paypalOrderId: string): Promise<{ captured: boolean; status: string }> {
+    if (!this.enabled || paypalOrderId.startsWith('PAYPAL_MOCK_')) {
+      return { captured: true, status: 'COMPLETED' };
     }
 
     try {
-      await this.client.refunds.create({
-        payment_intent: paymentIntentId,
-        reason: 'requested_by_customer',
-        metadata: { orderId: order.id, adminCancel: 'true' },
-      });
+      const captured = await this.paypalFetch<PayPalCaptureResponse>(
+        `/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}/capture`,
+        { method: 'POST', body: '{}' },
+      );
+      const status =
+        captured.status ??
+        captured.purchase_units?.[0]?.payments?.captures?.[0]?.status ??
+        'UNKNOWN';
+      return { captured: status === 'COMPLETED', status };
     } catch (error) {
-      const message = error instanceof Error ? error.message : '';
-      if (!/already been refunded/i.test(message)) throw error;
+      // Already captured / order not approvable — inspect current state.
+      const existing = await this.paypalFetch<PayPalOrderResponse>(
+        `/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}`,
+      );
+      if (existing.status === 'COMPLETED') {
+        return { captured: true, status: 'COMPLETED' };
+      }
+      throw error;
     }
-    return { refunded: true };
   }
 
-  constructEvent(payload: string, signature: string): { type: string; data: { object: unknown } } {
-    if (!this.client) {
-      throw new Error('Stripe is not configured');
+  async refundOrder(order: Order): Promise<{ refunded: boolean }> {
+    const sessionId = order.paymentSessionId;
+    if (!this.enabled || !sessionId || sessionId.startsWith('PAYPAL_MOCK_')) {
+      return { refunded: false };
     }
-    return this.client.webhooks.constructEvent(payload, signature, this.env.stripeWebhookSecret);
+
+    const details = await this.paypalFetch<PayPalCaptureResponse>(
+      `/v2/checkout/orders/${encodeURIComponent(sessionId)}`,
+    );
+    const captureId = details.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+    if (!captureId) {
+      throw new Error('No PayPal capture to refund');
+    }
+
+    await this.paypalFetch(`/v2/payments/captures/${encodeURIComponent(captureId)}/refund`, {
+      method: 'POST',
+      body: JSON.stringify({
+        amount: {
+          currency_code: 'SEK',
+          value: oreToPayPalAmount(order.total),
+        },
+        note_to_payer: `Refund for order ${order.id}`,
+      }),
+    });
+    return { refunded: true };
   }
 }

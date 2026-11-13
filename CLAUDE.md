@@ -40,10 +40,17 @@ pnpm --filter @akknerds/api dev
 - **API dependency injection:** `createApp(overrides)` builds a fresh app with
   in-memory repositories — this is what makes the API tests hermetic. Repositories
   live in `apps/api/src/repositories` and are the single place to swap for a DB.
-- **Payments:** `PaymentService` runs in **mock mode** when no real `sk_` key is
-  set (returns a local success URL and settles orders synchronously). A real key
-  switches to Stripe Checkout + webhook settlement. Tests inject a fake Stripe
-  client.
+- **Payments:** `PaymentService` runs in **mock mode** when PayPal credentials
+  are missing (local success URL, settles synchronously). With
+  `PAYPAL_API_KEY` + `PAYPAL_SECRET_KEY` it creates PayPal Orders v2 Checkout
+  (`PAYPAL_MODE=sandbox|live`). Success page captures via
+  `POST /api/webhooks/paypal/capture`.
+- **Zettle inventory:** products link via `sku` / `zettleProductUuid` /
+  `zettleVariantUuid`. Checkout reserves local stock then moves Zettle
+  STORE→SOLD (`ZettleInventoryService`). Pusher `InventoryBalanceChanged`
+  hits `POST /api/webhooks/zettle` and sets absolute `stock`. Requires
+  `ZETTLE_CLIENT_ID` + `ZETTLE_API_KEY`. New POS products are still created
+  manually on the web with matching SKU/UUIDs (enrichment stays on web).
 - **Web state:** server data → TanStack Query (`src/hooks`); cart + auth →
   Zustand stores (`src/store`, persisted to localStorage). The auth store syncs
   its token into the API client via `setAuthToken`.

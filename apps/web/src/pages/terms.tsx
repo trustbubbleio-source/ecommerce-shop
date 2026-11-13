@@ -56,7 +56,7 @@ const SECTIONS: PolicySection[] = [
     id: 'payment',
     title: '5. Payment',
     body: [
-      'Payment is processed by Stripe or other providers shown at checkout. We do not store full card numbers on our servers.',
+      'Payment is processed by PayPal. We do not store full card numbers on our servers.',
       'You authorise us (and our payment provider) to charge the selected payment method for the order total including shipping.',
     ],
   },

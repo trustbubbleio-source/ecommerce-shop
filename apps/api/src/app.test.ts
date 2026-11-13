@@ -32,7 +32,7 @@ describe('app', () => {
     });
     expect(res.status).toBe(200);
     expect(data.status).toBe('ok');
-    expect(data.stripe).toBe('mock');
+    expect(data.paypal).toBe('mock');
   });
 
   it('sets basic security headers', async () => {

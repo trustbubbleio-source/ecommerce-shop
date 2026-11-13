@@ -71,6 +71,12 @@ export interface ApiClient {
   resetPassword(input: ResetPasswordInput): Promise<{ ok: boolean; message: string }>;
   me(): Promise<{ user: PublicUser }>;
   checkout(input: CheckoutInput): Promise<CheckoutSession>;
+  /** Capture a PayPal order after the buyer returns from approval. */
+  capturePayPalOrder(input: {
+    orderId?: string;
+    paypalOrderId?: string;
+    token?: string;
+  }): Promise<{ ok: boolean; orderId?: string; status?: string }>;
   getOrder(id: string): Promise<{ order: Order }>;
   myOrders(): Promise<{ orders: Order[] }>;
   abandonOrder(id: string): Promise<{ order: Order; abandoned: boolean }>;
@@ -272,6 +278,12 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     },
     checkout(input) {
       return request('/checkout', { method: 'POST', body: JSON.stringify(input) });
+    },
+    capturePayPalOrder(input) {
+      return request('/webhooks/paypal/capture', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      });
     },
     getOrder(id) {
       return request(`/orders/${encodeURIComponent(id)}`);
