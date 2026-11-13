@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { Product } from '@akknerds/shared';
 import type { Env } from '../env.js';
 
@@ -154,7 +155,8 @@ export class ZettleInventoryService {
 
     const { store, sold } = await this.ensureInventoryUuids();
     const payload = {
-      identifier: `reserve-${Date.now()}`,
+      // Zettle requires a UUID v4 idempotency key — not a free-form string.
+      identifier: randomUUID(),
       movements: linked.map((line) => ({
         productUuid: line.product.zettleProductUuid!,
         variantUuid: line.product.zettleVariantUuid!,
@@ -182,7 +184,7 @@ export class ZettleInventoryService {
 
     const { store, sold } = await this.ensureInventoryUuids();
     const payload = {
-      identifier: `release-${Date.now()}`,
+      identifier: randomUUID(),
       movements: linked.map((line) => ({
         productUuid: line.product.zettleProductUuid!,
         variantUuid: line.product.zettleVariantUuid!,
