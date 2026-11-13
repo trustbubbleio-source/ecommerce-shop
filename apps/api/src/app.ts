@@ -81,12 +81,14 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
   api.get('/health/details', requireAuth(), requireAdmin(deps), (c) =>
     c.json({
       status: 'ok',
-      paypal: deps.payments.enabled ? 'live' : 'mock',
-      zettle: deps.zettle.enabled ? 'live' : 'off',
+      paypal: deps.payments.enabled ? env.paypalMode : 'mock',
+      zettle: deps.zettle.enabled ? 'on' : 'off',
       database: env.databaseEnabled ? 'postgres' : 'memory',
       storage: env.storage.enabled ? 's3' : 'none',
       email: deps.email.enabled ? 'resend' : 'mock',
       google: env.google.enabled ? 'enabled' : 'disabled',
+      checkoutSuccessUrl: env.checkoutSuccessUrl,
+      checkoutCancelUrl: env.checkoutCancelUrl,
     }),
   );
   api.route('/products', productRoutes(deps));
