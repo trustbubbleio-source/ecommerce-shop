@@ -84,7 +84,7 @@ describe('AdminInstoreSellPage', () => {
       },
     });
 
-    renderApp(['/admin/instore/test-card']);
+    renderApp('/admin/instore/test-card');
     expect(await screen.findByRole('heading', { name: 'Test Card' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Swish$/i })).not.toBeInTheDocument();
 
