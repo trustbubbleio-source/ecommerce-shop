@@ -90,7 +90,10 @@ export function checkoutRoutes(deps: AppDeps) {
       if (orderId) {
         await deps.orders.cancel(orderId, 'Checkout failed before payment session was created.');
       }
-      throw error;
+      const message = error instanceof Error ? error.message : 'Checkout failed';
+      console.error('[checkout] payment session failed', error);
+      // Surface provider errors (PayPal OAuth / order create) instead of a opaque 500.
+      return c.json({ error: message }, 502);
     }
   });
 

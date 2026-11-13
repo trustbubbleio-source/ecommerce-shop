@@ -119,6 +119,20 @@ export function assertProductionEnv(env: Env, source: NodeJS.ProcessEnv = proces
       'PAYPAL_API_KEY + PAYPAL_SECRET_KEY must be set, or set ALLOW_MOCK_PAYMENTS=true explicitly (prelaunch only).',
     );
   }
+  if (env.paypalEnabled && env.paypalMode !== 'live') {
+    problems.push(
+      'PAYPAL_MODE must be "live" in production (unset defaults to sandbox and breaks live credentials).',
+    );
+  }
+  if (
+    env.paypalEnabled &&
+    (/localhost|127\.0\.0\.1/i.test(env.checkoutSuccessUrl) ||
+      /localhost|127\.0\.0\.1/i.test(env.checkoutCancelUrl))
+  ) {
+    problems.push(
+      'CHECKOUT_SUCCESS_URL / CHECKOUT_CANCEL_URL must be public https URLs in production (not localhost).',
+    );
+  }
   // Zettle is strongly recommended in production for POS↔web stock sync, but
   // do not hard-fail boot — local stock still works until keys are added.
   if (!env.email.enabled) {
