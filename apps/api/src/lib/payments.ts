@@ -148,6 +148,13 @@ export class PaymentService {
       breakdown.discount = { currency_code: currency, value: oreToPayPalAmount(discountCents) };
     }
 
+    const shippingCountry = toShippingCountryIso(order.shippingAddress?.country);
+    const nameParts = (order.shippingAddress?.fullName ?? '').trim().split(/\s+/).filter(Boolean);
+    const givenName = nameParts[0] ?? undefined;
+    const surname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+    // Prefer payment_source.paypal (current PayPal guidance) over deprecated application_context.
+    // locale + BILLING + email reduce guest-checkout friction (fewer re-prompts, SE-oriented UI).
     const payload = {
       intent: 'CAPTURE',
       purchase_units: [
@@ -173,20 +180,38 @@ export class PaymentService {
                     admin_area_2: order.shippingAddress.city.slice(0, 120),
                     postal_code: order.shippingAddress.postalCode.slice(0, 60),
                     // Addresses store English names ("Sweden"); PayPal needs ISO alpha-2 ("SE").
-                    country_code: toShippingCountryIso(order.shippingAddress.country),
+                    country_code: shippingCountry,
                   },
                 },
               }
             : {}),
         },
       ],
-      application_context: {
-        brand_name: 'One More Rip',
-        landing_page: 'NO_PREFERENCE',
-        user_action: 'PAY_NOW',
-        shipping_preference: order.shippingAddress ? 'SET_PROVIDED_ADDRESS' : 'NO_SHIPPING',
-        return_url: `${this.env.checkoutSuccessUrl}?order_id=${encodeURIComponent(order.id)}`,
-        cancel_url: `${this.env.checkoutCancelUrl}?order_id=${encodeURIComponent(order.id)}`,
+      payment_source: {
+        paypal: {
+          ...(order.email ? { email_address: order.email.slice(0, 254) } : {}),
+          ...(givenName || surname
+            ? {
+                name: {
+                  ...(givenName ? { given_name: givenName.slice(0, 140) } : {}),
+                  ...(surname ? { surname: surname.slice(0, 140) } : {}),
+                },
+              }
+            : {}),
+          address: {
+            country_code: shippingCountry,
+          },
+          experience_context: {
+            brand_name: 'One More Rip',
+            locale: 'sv-SE',
+            // Prefer card/guest entry over forcing PayPal login first.
+            landing_page: 'BILLING',
+            user_action: 'PAY_NOW',
+            shipping_preference: order.shippingAddress ? 'SET_PROVIDED_ADDRESS' : 'NO_SHIPPING',
+            return_url: `${this.env.checkoutSuccessUrl}?order_id=${encodeURIComponent(order.id)}`,
+            cancel_url: `${this.env.checkoutCancelUrl}?order_id=${encodeURIComponent(order.id)}`,
+          },
+        },
       },
     };
 
