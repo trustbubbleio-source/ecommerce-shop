@@ -70,6 +70,10 @@ export type ProductFormValues = {
   isNew: boolean;
   storeOnly: boolean;
   inactive: boolean;
+  /** PayPal Zettle library SKU (e.g. BP-006). */
+  sku: string;
+  zettleProductUuid: string;
+  zettleVariantUuid: string;
 };
 
 export const defaultProductFormValues: ProductFormValues = {
@@ -92,6 +96,9 @@ export const defaultProductFormValues: ProductFormValues = {
   isNew: true,
   storeOnly: false,
   inactive: false,
+  sku: '',
+  zettleProductUuid: '',
+  zettleVariantUuid: '',
 };
 
 /** Standard single-card listing copy — headline uses name, rarity and condition. */
@@ -171,6 +178,9 @@ export function buildProductDraft(
     condition: values.condition as CardCondition,
     language: values.language,
     tags: values.tags.length > 0 ? values.tags : undefined,
+    sku: values.sku.trim() || undefined,
+    zettleProductUuid: values.zettleProductUuid.trim() || undefined,
+    zettleVariantUuid: values.zettleVariantUuid.trim() || undefined,
   };
 }
 

@@ -51,6 +51,7 @@ import { useSingleCardAutoCopy } from '../../hooks/use-single-card-auto-copy';
 import { ApiError, api } from '@akknerds/api-client';
 import { ProductTagPicker, normalizeProductTags } from '../../components/admin/product-tag-picker';
 import { ProductVisibilityFields } from '../../components/admin/product-visibility-fields';
+import { ProductZettleFields } from '../../components/admin/product-zettle-fields';
 import { SingleCardPriceField } from '../../components/admin/single-card-price-field';
 import { ProductQrPanel } from '../../components/product/product-qr-panel';
 import { adminProductsReturnPath } from '../../lib/admin-products-list';
@@ -84,6 +85,9 @@ function productToFormValues(product: Product): ProductFormValues {
     isNew: product.isNew,
     storeOnly: product.storeOnly,
     inactive: product.inactive,
+    sku: product.sku ?? '',
+    zettleProductUuid: product.zettleProductUuid ?? '',
+    zettleVariantUuid: product.zettleVariantUuid ?? '',
   };
 }
 
@@ -579,6 +583,19 @@ export function AdminEditProductPage() {
                 )}
               </Field>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">PayPal Zettle (POS sync)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ProductZettleFields
+              value={values}
+              errors={errors}
+              onChange={(patch) => setValues((v) => ({ ...v, ...patch }))}
+            />
           </CardContent>
         </Card>
 

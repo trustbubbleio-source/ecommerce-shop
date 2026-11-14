@@ -42,6 +42,7 @@ import { type FormEvent, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ProductTagPicker } from '../../components/admin/product-tag-picker';
 import { ProductVisibilityFields } from '../../components/admin/product-visibility-fields';
+import { ProductZettleFields } from '../../components/admin/product-zettle-fields';
 import { SingleCardPriceField } from '../../components/admin/single-card-price-field';
 import { useSingleCardAutoCopy } from '../../hooks/use-single-card-auto-copy';
 import { ApiError, api } from '@akknerds/api-client';
@@ -107,6 +108,9 @@ const defaultValues = {
   isNew: true,
   storeOnly: false,
   inactive: false,
+  sku: '',
+  zettleProductUuid: '',
+  zettleVariantUuid: '',
 };
 
 function buildCreateProductDraft(
@@ -136,6 +140,9 @@ function buildCreateProductDraft(
     condition: values.condition as CardCondition,
     language: values.language,
     tags: values.tags.length > 0 ? values.tags : undefined,
+    sku: values.sku.trim() || undefined,
+    zettleProductUuid: values.zettleProductUuid.trim() || undefined,
+    zettleVariantUuid: values.zettleVariantUuid.trim() || undefined,
   };
 }
 
@@ -187,6 +194,9 @@ export function AdminNewProductPage() {
         condition: values.condition as CardCondition,
         language: values.language,
         tags: values.tags.length > 0 ? values.tags : undefined,
+        sku: values.sku.trim() || undefined,
+        zettleProductUuid: values.zettleProductUuid.trim() || undefined,
+        zettleVariantUuid: values.zettleVariantUuid.trim() || undefined,
       };
 
       const parsed = createProductInputSchema.safeParse(input);
@@ -617,6 +627,19 @@ export function AdminNewProductPage() {
                 )}
               </Field>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">PayPal Zettle (POS sync)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ProductZettleFields
+              value={values}
+              errors={errors}
+              onChange={(patch) => setValues((v) => ({ ...v, ...patch }))}
+            />
           </CardContent>
         </Card>
 
