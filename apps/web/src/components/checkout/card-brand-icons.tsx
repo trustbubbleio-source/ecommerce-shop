@@ -23,24 +23,32 @@ export function CardBrandIcons({ className }: { className?: string }) {
   );
 }
 
-function MarkShell({ children, className }: { children: ReactNode; className?: string }) {
+function MarkShell({ children }: { children: ReactNode }) {
   return (
-    <span
-      className={`bg-background/95 inline-flex h-5 items-center justify-center rounded-[3px] px-1 ${className ?? ''}`}
-    >
+    <span className="bg-white inline-flex h-[18px] w-[28px] items-center justify-center rounded-[3px] shadow-sm">
       {children}
     </span>
   );
 }
 
+/** Badge-style Visa wordmark — matches the other network tiles better than a sparse path. */
 function VisaMark() {
   return (
     <MarkShell>
-      <svg width="28" height="10" viewBox="0 0 36 12" aria-hidden="true">
-        <path
-          fill="#1A1F71"
-          d="M15.4 11.6 17.1.4h2.7L18 11.6h-2.6zm10.2-11c-.5-.2-1.4-.4-2.4-.4-2.7 0-4.6 1.4-4.6 3.5 0 1.5 1.4 2.4 2.5 2.9 1.1.5 1.5.9 1.5 1.4 0 .7-.9 1.1-1.7 1.1-1.1 0-1.7-.2-2.7-.6l-.4-.2-.4 2.4c.7.3 2 .6 3.4.6 2.8 0 4.7-1.4 4.7-3.6 0-1.2-.7-2.1-2.3-2.9-1-.5-1.5-.9-1.5-1.4 0-.5.5-1 1.7-1 1 0 1.7.2 2.2.4l.3.1.4-2.3zM32.7.4h-2.1c-.6 0-1.1.2-1.4.8L25 11.6h2.8l.5-1.5h3.4l.3 1.5H35L32.7.4zm-2.9 7.3.9-3.4.6 3.4h-1.5zM13.2.4 10.6 8 10.3 6.6c-.5-1.7-2.1-3.6-3.9-4.5l2.4 9.5h2.8L15.9.4h-2.7zM7.2.4H2.9L2.8.6C2 1 .9 1.3 0 1.5l.1.4h1.7C2.5 2 3 2.5 3.2 3.3l1.8 8.3h2.8L11 .4H7.2z"
-        />
+      <svg width="24" height="10" viewBox="0 0 48 16" aria-hidden="true">
+        <rect width="48" height="16" rx="2" fill="#1A1F71" />
+        <text
+          x="24"
+          y="11.5"
+          textAnchor="middle"
+          fill="#fff"
+          fontSize="9"
+          fontFamily="Arial, Helvetica, sans-serif"
+          fontWeight="700"
+          letterSpacing="0.5"
+        >
+          VISA
+        </text>
       </svg>
     </MarkShell>
   );
@@ -49,7 +57,7 @@ function VisaMark() {
 function MastercardMark() {
   return (
     <MarkShell>
-      <svg width="22" height="14" viewBox="0 0 28 18" aria-hidden="true">
+      <svg width="24" height="14" viewBox="0 0 28 18" aria-hidden="true">
         <circle cx="10" cy="9" r="7" fill="#EB001B" />
         <circle cx="18" cy="9" r="7" fill="#F79E1B" />
         <path fill="#FF5F00" d="M14 3.6a7 7 0 0 1 0 10.8 7 7 0 0 1 0-10.8z" />
@@ -61,7 +69,7 @@ function MastercardMark() {
 function MaestroMark() {
   return (
     <MarkShell>
-      <svg width="22" height="14" viewBox="0 0 28 18" aria-hidden="true">
+      <svg width="24" height="14" viewBox="0 0 28 18" aria-hidden="true">
         <circle cx="10" cy="9" r="7" fill="#0099DF" />
         <circle cx="18" cy="9" r="7" fill="#ED0006" />
         <path fill="#6C6BBD" d="M14 3.6a7 7 0 0 1 0 10.8 7 7 0 0 1 0-10.8z" />
@@ -73,7 +81,7 @@ function MaestroMark() {
 function AmexMark() {
   return (
     <MarkShell>
-      <svg width="22" height="14" viewBox="0 0 28 18" aria-hidden="true">
+      <svg width="24" height="14" viewBox="0 0 28 18" aria-hidden="true">
         <rect width="28" height="18" rx="2" fill="#2E77BC" />
         <text
           x="14"
@@ -81,7 +89,7 @@ function AmexMark() {
           textAnchor="middle"
           fill="#fff"
           fontSize="7"
-          fontFamily="system-ui,sans-serif"
+          fontFamily="Arial, Helvetica, sans-serif"
           fontWeight="700"
         >
           AMEX

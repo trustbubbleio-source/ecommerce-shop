@@ -42,7 +42,7 @@ const NUMBER_FIELD_STYLE = {
   ...FIELD_STYLE,
   input: {
     ...FIELD_STYLE.input,
-    'padding-right': '7.5rem',
+    'padding-right': '8.25rem',
   },
 } as const;
 
@@ -50,12 +50,12 @@ const CVV_FIELD_STYLE = {
   ...FIELD_STYLE,
   input: {
     ...FIELD_STYLE.input,
-    'padding-right': '2.25rem',
+    'padding-right': '2.75rem',
   },
 } as const;
 
 const fieldShellClass =
-  'border-input bg-background relative overflow-hidden rounded-lg border shadow-sm transition-colors focus-within:border-ring focus-within:ring-ring/40 focus-within:ring-2';
+  'border-input bg-background relative rounded-lg border shadow-sm transition-colors focus-within:border-ring focus-within:ring-ring/40 focus-within:ring-2';
 
 export type CardSubmitFn = (
   paypalOrderId: string,
@@ -82,9 +82,10 @@ function FieldShell({
 }) {
   return (
     <div className={fieldShellClass}>
-      {children}
+      {/* Keep iframe clip separate so CVV tooltip can escape above the field. */}
+      <div className="overflow-hidden rounded-[inherit]">{children}</div>
       {adornment ? (
-        <div className="pointer-events-none absolute inset-y-0 right-2 z-10 flex items-center gap-1">
+        <div className="pointer-events-none absolute inset-y-0 right-2 z-20 flex items-center gap-1">
           {adornment}
         </div>
       ) : null}
@@ -92,20 +93,20 @@ function FieldShell({
   );
 }
 
-/** CSS-only hover/focus tooltip that works without a Tooltip primitive. */
+/** Hover/focus tip rendered above the field (parent must not clip overflow). */
 function CvvHelpTip() {
   return (
-    <span className="group pointer-events-auto relative inline-flex">
+    <span className="group/cvv pointer-events-auto relative inline-flex">
       <button
         type="button"
-        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex size-6 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2"
+        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring bg-background/90 inline-flex size-8 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2"
         aria-label="What is the security code?"
       >
-        <CircleHelp className="size-4" aria-hidden="true" />
+        <CircleHelp className="size-5" strokeWidth={2} aria-hidden="true" />
       </button>
       <span
         role="tooltip"
-        className="border-border bg-popover text-popover-foreground pointer-events-none absolute bottom-[calc(100%+0.45rem)] right-0 z-20 hidden w-52 rounded-md border px-2.5 py-2 text-left text-xs leading-snug shadow-md group-hover:block group-focus-within:block"
+        className="border-border bg-popover text-popover-foreground pointer-events-none absolute bottom-full right-0 z-50 mb-2 hidden w-56 rounded-md border px-3 py-2.5 text-left text-xs leading-snug shadow-lg group-hover/cvv:block group-focus-within/cvv:block"
       >
         The 3-digit code on the back of your card (or 4 digits on the front for American Express).
       </span>

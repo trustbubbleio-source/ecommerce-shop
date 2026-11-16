@@ -30,7 +30,10 @@ export function ExpressCheckout({
           title="Apple Pay needs domain verification in PayPal / Apple before it can go live."
           disabled
         >
-          <ApplePayMark />
+          <span className="inline-flex items-center gap-1.5">
+            <AppleLogo />
+            <span className="text-[15px] font-medium tracking-tight text-white">Pay</span>
+          </span>
         </ExpressSlot>
 
         <ExpressSlot
@@ -38,7 +41,10 @@ export function ExpressCheckout({
           title="Google Pay will appear here once PayPal wallet eligibility is confirmed for this domain."
           disabled
         >
-          <GooglePayMark />
+          <span className="inline-flex items-center gap-1.5">
+            <GoogleGLogo />
+            <span className="text-[15px] font-medium tracking-tight text-white">Pay</span>
+          </span>
         </ExpressSlot>
 
         <div
@@ -72,7 +78,7 @@ function ExpressSlot({
       disabled={disabled}
       title={title}
       aria-label={`${label} (coming soon)`}
-      className="bg-foreground text-background flex min-h-11 cursor-not-allowed items-center justify-center rounded-lg opacity-80"
+      className="flex min-h-11 cursor-not-allowed items-center justify-center rounded-lg bg-black text-white opacity-90"
     >
       {children}
       <span className="sr-only">{label}</span>
@@ -80,49 +86,34 @@ function ExpressSlot({
   );
 }
 
-function ApplePayMark() {
+function AppleLogo() {
   return (
-    <svg width="52" height="20" viewBox="0 0 52 20" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M9.2 4.2c-.5.6-.8 1.4-.7 2.2.8.1 1.7-.4 2.2-1 .5-.6.8-1.4.7-2.2-.8 0-1.6.4-2.2 1zM11.4 6.7c-1.2 0-2.2.7-2.8.7-.6 0-1.5-.7-2.5-.7-1.3 0-2.4.7-3.1 1.9-1.3 2.3-.3 5.7 1 7.6.6.9 1.4 1.9 2.4 1.9 1 0 1.3-.6 2.5-.6s1.5.6 2.5.6 1.7-.9 2.3-1.8c.7-1 1-2 1-2.1-.1 0-1.8-.7-1.8-2.7 0-1.7 1.4-2.5 1.4-2.5-.8-1.2-2-1.3-2.4-1.3z"
-      />
-      <text
-        x="20"
-        y="14.5"
-        fill="currentColor"
-        fontFamily="system-ui, -apple-system, sans-serif"
-        fontSize="12"
-        fontWeight="600"
-      >
-        Pay
-      </text>
+    <svg width="16" height="20" viewBox="0 0 384 512" aria-hidden="true" className="fill-white">
+      <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-68.1 35.1-17.9 20.9-28.3 46.9-25.4 74.5 26.9 2.1 52.2-13.5 69.5-37.1z" />
     </svg>
   );
 }
 
-function GooglePayMark() {
+/** Standard four-color Google "G" mark. */
+function GoogleGLogo() {
   return (
-    <svg width="56" height="20" viewBox="0 0 56 20" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
       <path
         fill="#4285F4"
-        d="M14.5 9.4v1.9h3.3c-.1.8-.3 1.4-.7 1.9-.5.6-1.3 1.3-2.6 1.3-2.1 0-3.8-1.7-3.8-3.8s1.7-3.8 3.8-3.8c1.1 0 1.9.4 2.5 1l1.4-1.4C17.5 5.6 16.2 5 14.5 5 11.1 5 8.4 7.7 8.4 11.1s2.7 6.1 6.1 6.1c1.8 0 3.1-.6 4.2-1.7 1.1-1.1 1.4-2.6 1.4-3.8 0-.4 0-.7-.1-1H14.5z"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
       />
       <path
         fill="#34A853"
-        d="M6.7 12.5c0-.5.1-1 .2-1.4H3.2v2.7h2.1c-.1.6-.5 1.3-1.1 1.7v1.4h2.1c1.2-1.1 2-2.8 2-4.4z"
-        transform="translate(5.2 -1.4) scale(.55)"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
       />
-      <text
-        x="22"
-        y="14.5"
-        fill="currentColor"
-        fontFamily="system-ui, sans-serif"
-        fontSize="12"
-        fontWeight="600"
-      >
-        Pay
-      </text>
+      <path
+        fill="#FBBC05"
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      />
     </svg>
   );
 }
