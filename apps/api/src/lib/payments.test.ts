@@ -262,7 +262,7 @@ describe('PaymentService card payload (network stub)', () => {
       processing_instruction?: string;
       payment_source: {
         swish: {
-          name: { given_name: string; surname: string };
+          name: string;
           country_code: string;
           experience_context: Record<string, string>;
         };
@@ -270,8 +270,53 @@ describe('PaymentService card payload (network stub)', () => {
     };
     expect(payload.processing_instruction).toBe('ORDER_COMPLETE_ON_PAYMENT_APPROVAL');
     expect(payload.payment_source.swish.country_code).toBe('SE');
-    expect(payload.payment_source.swish.name.given_name).toBe('Ash');
-    expect(payload.payment_source.swish.name.surname).toBe('Ketchum');
+    expect(payload.payment_source.swish.name).toBe('Ash Ketchum');
     expect(payload.payment_source.swish.experience_context.locale).toBe('sv-SE');
+  });
+
+  it('pads a single-word Swish name so PayPal gets first + last', async () => {
+    let posted: unknown;
+    const env = loadEnv({
+      PAYPAL_API_KEY: 'real_client',
+      PAYPAL_SECRET_KEY: 'real_secret',
+      CHECKOUT_SUCCESS_URL: 'https://shop.test/success',
+      CHECKOUT_CANCEL_URL: 'https://shop.test/cart',
+    });
+    const service = new PaymentService(env);
+    service.fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/v1/oauth2/token')) {
+        return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
+          status: 200,
+        });
+      }
+      if (url.includes('/v2/checkout/orders') && init?.method === 'POST') {
+        posted = JSON.parse(String(init.body));
+        return new Response(
+          JSON.stringify({
+            id: 'SWISH456',
+            links: [{ rel: 'payer-action', href: 'https://www.sandbox.paypal.com/swish' }],
+          }),
+          { status: 201 },
+        );
+      }
+      return new Response('{}', { status: 404 });
+    }) as typeof fetch;
+
+    await service.createCheckout(
+      mockOrder({
+        shippingAddress: {
+          fullName: 'Kim',
+          line1: 'Testgatan 1',
+          city: 'Stockholm',
+          postalCode: '11122',
+          country: 'SE',
+        },
+      }),
+      { method: 'swish' },
+    );
+
+    const payload = posted as { payment_source: { swish: { name: string } } };
+    expect(payload.payment_source.swish.name).toBe('Kim Shopper');
   });
 });

@@ -334,16 +334,19 @@ export class PaymentService {
     }
 
     if (method === 'swish') {
-      // PayPal Swish expects Name object (given_name / surname), not a plain string.
-      const parts = (order.shippingAddress?.fullName ?? '').trim().split(/\s+/).filter(Boolean);
-      const givenName = (parts[0] ?? 'Customer').slice(0, 140);
-      const surname = (parts.length > 1 ? parts.slice(1).join(' ') : givenName).slice(0, 140);
+      // Swish docs/examples use a plain string (not Name object). Object → MALFORMED_REQUEST_JSON.
+      // PayPal also rejects single-token / email-like values → INVALID_PARAMETER_VALUE.
+      const raw = (order.shippingAddress?.fullName ?? '').normalize('NFKC');
+      const cleaned = raw
+        .replace(/[^\p{L}\p{M}\s'-]/gu, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const parts = cleaned.split(' ').filter(Boolean);
+      const given = (parts[0] ?? 'Customer').slice(0, 140);
+      const family = (parts.slice(1).join(' ') || 'Shopper').slice(0, 140);
       return {
         swish: {
-          name: {
-            given_name: givenName,
-            surname,
-          },
+          name: `${given} ${family}`.slice(0, 300),
           country_code: 'SE',
           experience_context: {
             locale: 'sv-SE',
