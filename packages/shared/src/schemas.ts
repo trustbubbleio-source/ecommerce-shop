@@ -144,6 +144,8 @@ export const cartLineSchema = z.object({
   quantity: z.number().int().min(1).max(99),
 });
 
+export const paymentMethodSchema = z.enum(['card', 'paypal', 'redirect']);
+
 export const checkoutInputSchema = z.object({
   items: z.array(cartLineSchema).min(1, 'Your cart is empty'),
   email: z.string().trim().email('A valid email is required'),
@@ -151,6 +153,19 @@ export const checkoutInputSchema = z.object({
   shippingAddress: addressSchema,
   /** Charge currency — SEK only. */
   currency: z.enum(['sek']).optional(),
+  /**
+   * How the buyer will pay. Defaults to redirect so older clients keep working.
+   * `card` / `paypal` return a PayPal order id for on-site capture; `redirect` returns an approve URL.
+   */
+  paymentMethod: paymentMethodSchema.default('redirect'),
+});
+
+export const paymentSessionInputSchema = z.object({
+  paymentMethod: paymentMethodSchema,
+});
+
+export const capturePaymentInputSchema = z.object({
+  paypalOrderId: z.string().min(1),
 });
 
 export const registerInputSchema = z.object({
@@ -334,6 +349,8 @@ export const updateOrderFulfillmentSchema = z.object({
 export type AddressInput = z.infer<typeof addressSchema>;
 export type CartLineInput = z.infer<typeof cartLineSchema>;
 export type CheckoutInput = z.infer<typeof checkoutInputSchema>;
+export type PaymentSessionInput = z.infer<typeof paymentSessionInputSchema>;
+export type CapturePaymentInput = z.infer<typeof capturePaymentInputSchema>;
 export type RegisterInput = z.infer<typeof registerInputSchema>;
 export type LoginInput = z.infer<typeof loginInputSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordInputSchema>;

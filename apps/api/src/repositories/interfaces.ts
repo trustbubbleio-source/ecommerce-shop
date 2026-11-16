@@ -120,6 +120,8 @@ export interface OrderRepository {
   markPaidBySession(sessionId: string): Promise<Order | undefined>;
   setStatus(orderId: string, status: OrderStatus): Promise<Order | undefined>;
   listByUser(userId: string): Promise<Order[]>;
+  /** Pending online orders created before `date` (for payment TTL cleanup). */
+  listPendingOlderThan(date: Date): Promise<Order[]>;
   /** True if the user has a paid/fulfilled order containing the product. */
   hasPurchasedProduct(userId: string, productId: string): Promise<boolean>;
 }

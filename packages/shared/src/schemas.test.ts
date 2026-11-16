@@ -125,6 +125,27 @@ describe('checkoutInputSchema', () => {
     ).toBe(true);
   });
 
+  it('defaults paymentMethod to redirect', () => {
+    const parsed = checkoutInputSchema.safeParse({
+      items: [{ productId: 'bb-151', quantity: 2 }],
+      email: 'buyer@example.com',
+      shippingAddress,
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.paymentMethod).toBe('redirect');
+  });
+
+  it('accepts paymentMethod card', () => {
+    expect(
+      checkoutInputSchema.safeParse({
+        items: [{ productId: 'bb-151', quantity: 1 }],
+        email: 'buyer@example.com',
+        shippingAddress,
+        paymentMethod: 'card',
+      }).success,
+    ).toBe(true);
+  });
+
   it('rejects quantities above the per-line cap', () => {
     expect(
       checkoutInputSchema.safeParse({

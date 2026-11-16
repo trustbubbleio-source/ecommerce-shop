@@ -129,6 +129,18 @@ export class OrderRepository implements IOrderRepository {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
+  async listPendingOlderThan(date: Date): Promise<Order[]> {
+    const cutoff = date.toISOString();
+    return [...this.byId.values()]
+      .filter(
+        (o) =>
+          o.status === 'pending' &&
+          o.channel === 'online' &&
+          o.createdAt < cutoff,
+      )
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  }
+
   async hasPurchasedProduct(userId: string, productId: string): Promise<boolean> {
     return [...this.byId.values()].some(
       (o) =>

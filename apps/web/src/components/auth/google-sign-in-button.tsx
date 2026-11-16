@@ -7,47 +7,48 @@ import { useGoogleAuth } from '../../hooks/use-auth';
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
 const GIS_SRC = 'https://accounts.google.com/gsi/client?hl=en';
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: {
-            client_id: string;
-            callback: (response: { credential: string }) => void;
-            auto_select?: boolean;
-            cancel_on_tap_outside?: boolean;
-          }) => void;
-          renderButton: (
-            parent: HTMLElement,
-            options: {
-              type?: string;
-              theme?: string;
-              size?: string;
-              text?: string;
-              shape?: string;
-              width?: number;
-              locale?: string;
-            },
-          ) => void;
-        };
-      };
+/** GIS Identity types — merged with PayPal Google Pay's `window.google.payments`. */
+type GoogleIdentityApi = {
+  accounts: {
+    id: {
+      initialize: (config: {
+        client_id: string;
+        callback: (response: { credential: string }) => void;
+        auto_select?: boolean;
+        cancel_on_tap_outside?: boolean;
+      }) => void;
+      renderButton: (
+        parent: HTMLElement,
+        options: {
+          type?: string;
+          theme?: string;
+          size?: string;
+          text?: string;
+          shape?: string;
+          width?: number;
+          locale?: string;
+        },
+      ) => void;
     };
-  }
+  };
+};
+
+function googleIdentity(): GoogleIdentityApi['accounts'] | undefined {
+  return (window as Window & { google?: GoogleIdentityApi }).google?.accounts;
 }
 
 let gisPromise: Promise<void> | null = null;
 
 function loadGis(): Promise<void> {
   if (typeof window === 'undefined') return Promise.resolve();
-  if (window.google?.accounts?.id) return Promise.resolve();
+  if (googleIdentity()?.id) return Promise.resolve();
   if (gisPromise) return gisPromise;
   gisPromise = new Promise((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>('script[src^="https://accounts.google.com/gsi/client"]');
     if (existing) {
       existing.addEventListener('load', () => resolve());
       existing.addEventListener('error', () => reject(new Error('Failed to load Google')));
-      if (window.google?.accounts?.id) resolve();
+      if (googleIdentity()?.id) resolve();
       return;
     }
     const script = document.createElement('script');
@@ -111,12 +112,13 @@ export function GoogleSignInButton({ redirectTo = '/account' }: { redirectTo?: s
     let lastWidth = 0;
 
     const paint = () => {
-      if (cancelled || !window.google || !gisRef.current || !hostRef.current) return;
+      const accounts = googleIdentity();
+      if (cancelled || !accounts || !gisRef.current || !hostRef.current) return;
       const width = Math.max(240, Math.min(400, Math.floor(hostRef.current.clientWidth)));
       if (width === lastWidth && gisRef.current.querySelector('iframe')) return;
       lastWidth = width;
       gisRef.current.innerHTML = '';
-      window.google.accounts.id.renderButton(gisRef.current, {
+      accounts.id.renderButton(gisRef.current, {
         type: 'standard',
         theme: 'outline',
         size: 'large',
@@ -137,12 +139,13 @@ export function GoogleSignInButton({ redirectTo = '/account' }: { redirectTo?: s
 
     void loadGis()
       .then(() => {
-        if (cancelled || !window.google) return;
-        window.google.accounts.id.initialize({
+        const accounts = googleIdentity();
+        if (cancelled || !accounts) return;
+        accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
           auto_select: false,
           cancel_on_tap_outside: true,
-          callback: async (response) => {
+          callback: async (response: { credential: string }) => {
             try {
               await onCredential.current(response.credential);
               onNavigate.current(redirectTo, { replace: true });

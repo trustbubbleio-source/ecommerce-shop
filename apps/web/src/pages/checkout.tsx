@@ -5,6 +5,7 @@ import { CheckoutForm } from '../components/checkout/checkout-form';
 import { PageHeader } from '../components/common/page-header';
 import { ProductArt } from '../components/product/product-art';
 import { usePurchaseLocked } from '../config/launch';
+import { useCheckoutConfig } from '../hooks/use-checkout-config';
 import { useFormatMoney } from '../hooks/use-format-money';
 import { useReconcileCart } from '../hooks/use-reconcile-cart';
 import { useCartStore } from '../store/cart';
@@ -13,6 +14,8 @@ export function CheckoutPage() {
   const formatMoney = useFormatMoney();
   const items = useCartStore((s) => s.items);
   const reconcileStatus = useReconcileCart();
+  // Warm checkout config so the lazy payment chunk has data ready.
+  useCheckoutConfig();
 
   const purchaseLocked = usePurchaseLocked();
 

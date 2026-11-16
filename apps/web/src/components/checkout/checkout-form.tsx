@@ -3,22 +3,30 @@ import {
   SHIPPING_COUNTRIES,
   addressSchema,
   isShippingCountry,
+  toShippingCountryIso,
 } from '@akknerds/shared';
 import { Alert, Button, Field, Input, Select, Spinner, useToast } from '@akknerds/ui';
+import { ApiError, api } from '@akknerds/api-client';
 import { Lock } from 'lucide-react';
-import { type FormEvent, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { lazy, Suspense, type FormEvent, useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import { ApiError } from '@akknerds/api-client';
+import { useCheckoutConfig } from '../../hooks/use-checkout-config';
 import { useCheckout } from '../../hooks/use-checkout';
+import type { CardSubmitFn } from './card-payment-fields';
+import type { PaymentUiMethod } from './payment-section';
 import { useAuthStore } from '../../store/auth';
-import { useCartStore } from '../../store/cart';
+import { cartShipping, cartSubtotal, useCartStore } from '../../store/cart';
+import { checkoutFingerprint, useCheckoutStore } from '../../store/checkout';
+
+const PaymentSection = lazy(() =>
+  import('./payment-section').then((m) => ({ default: m.PaymentSection })),
+);
 
 const checkoutFormSchema = addressSchema.extend({
   email: z.string().trim().email('A valid email is required'),
 });
 
-/** Form state allows empty country until the customer picks one. */
 type FormValues = {
   email: string;
   fullName: string;
@@ -40,16 +48,29 @@ const EMPTY: FormValues = {
   country: '',
 };
 
+const CARD_PRIVACY_NOTICE =
+  'By paying with your card, you acknowledge that your data will be processed by PayPal subject to the PayPal Privacy Statement available at PayPal.com.';
+
 export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) {
   const user = useAuthStore((s) => s.user);
   const items = useCartStore((s) => s.items);
   const currency = 'sek';
   const checkout = useCheckout();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { data: config } = useCheckoutConfig();
+  const checkoutStore = useCheckoutStore();
   const [values, setValues] = useState<FormValues>({ ...EMPTY, email: user?.email ?? '' });
   const [errors, setErrors] = useState<FormErrors & { acceptTerms?: string }>({});
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [prefilled, setPrefilled] = useState(false);
+  const [uiMethod, setUiMethod] = useState<PaymentUiMethod>('card');
+  const [cardValid, setCardValid] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [inlineError, setInlineError] = useState<string | null>(null);
+  const cardSubmitRef = useRef<CardSubmitFn | null>(null);
+
+  const cardFieldsEnabled = Boolean(config?.methods.cardFields && config.provider === 'paypal');
 
   useEffect(() => {
     if (!user || prefilled) return;
@@ -72,8 +93,7 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
     setValues((v) => ({ ...v, [key]: e.target.value }));
   };
 
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const validateForm = () => {
     const parsed = checkoutFormSchema.safeParse(values);
     if (!parsed.success) {
       const fieldErrors: FormErrors & { acceptTerms?: string } = {};
@@ -85,35 +105,210 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
         fieldErrors.acceptTerms = 'Please accept the Terms and Returns policy to continue';
       }
       setErrors(fieldErrors);
-      return;
+      return null;
     }
     if (!acceptTerms) {
       setErrors({
         acceptTerms: 'Please accept the Terms and Returns policy to continue',
       });
-      return;
+      return null;
     }
     setErrors({});
+    return parsed.data;
+  };
 
-    const { email, ...address } = parsed.data;
-    const input: CheckoutInput = {
+  const buildInput = (
+    data: z.infer<typeof checkoutFormSchema>,
+  ): Omit<CheckoutInput, 'paymentMethod'> => {
+    const { email, ...address } = data;
+    return {
       email,
       currency,
       items: items.map((item) => ({ productId: item.product.id, quantity: item.quantity })),
       shippingAddress: address,
     };
+  };
 
-    try {
-      const session = await checkout.mutateAsync(input);
+  const ensureSession = async (
+    data: z.infer<typeof checkoutFormSchema>,
+    paymentMethod: 'card' | 'paypal' | 'redirect',
+  ) => {
+    const input = buildInput(data);
+    const fingerprint = checkoutFingerprint({
+      email: input.email,
+      items: input.items,
+      shippingAddress: input.shippingAddress,
+    });
+
+    const existing = useCheckoutStore.getState();
+    if (
+      existing.orderId &&
+      existing.fingerprint &&
+      existing.fingerprint !== fingerprint
+    ) {
+      try {
+        await api.abandonOrder(existing.orderId);
+      } catch {
+        // best-effort
+      }
+      checkoutStore.clear();
+    }
+
+    const current = useCheckoutStore.getState();
+    if (current.orderId && current.fingerprint === fingerprint && current.paypalOrderId) {
+      if (paymentMethod !== 'redirect' && current.method === paymentMethod) {
+        const refreshed = await api.createPaymentSession(current.orderId, { paymentMethod });
+        if (refreshed.status === 'paid') {
+          checkoutStore.clear();
+          navigate(`/checkout/success?order_id=${encodeURIComponent(current.orderId)}`);
+          return null;
+        }
+        const paypalOrderId = refreshed.paypalOrderId ?? current.paypalOrderId;
+        checkoutStore.setSession({
+          orderId: current.orderId,
+          paypalOrderId,
+          method: paymentMethod,
+          fingerprint,
+        });
+        return { orderId: current.orderId, paypalOrderId, url: refreshed.url ?? null };
+      }
+    }
+
+    if (current.orderId && current.fingerprint === fingerprint && paymentMethod !== 'redirect') {
+      const refreshed = await api.createPaymentSession(current.orderId, { paymentMethod });
+      if (refreshed.status === 'paid') {
+        checkoutStore.clear();
+        navigate(`/checkout/success?order_id=${encodeURIComponent(current.orderId)}`);
+        return null;
+      }
+      const paypalOrderId = refreshed.paypalOrderId!;
+      checkoutStore.setSession({
+        orderId: current.orderId,
+        paypalOrderId,
+        method: paymentMethod,
+        fingerprint,
+      });
+      return { orderId: current.orderId, paypalOrderId, url: refreshed.url ?? null };
+    }
+
+    const session = await checkout.mutateAsync({ ...input, paymentMethod });
+    if (session.status === 'paid' && session.url) {
       window.location.assign(session.url);
+      return null;
+    }
+    const paypalOrderId = session.paypalOrderId ?? '';
+    checkoutStore.setSession({
+      orderId: session.orderId,
+      paypalOrderId,
+      method: paymentMethod,
+      fingerprint,
+    });
+    return { orderId: session.orderId, paypalOrderId, url: session.url ?? null };
+  };
+
+  const onRedirectPay = async (e: FormEvent) => {
+    e.preventDefault();
+    const data = validateForm();
+    if (!data) return;
+    setInlineError(null);
+    setBusy(true);
+    try {
+      const session = await ensureSession(data, 'redirect');
+      if (!session) return;
+      if (session.url) {
+        window.location.assign(session.url);
+        return;
+      }
+      throw new Error('PayPal did not return a checkout URL');
     } catch (error) {
       toast({
         title: 'Checkout failed',
         description: error instanceof ApiError ? error.message : 'Please try again.',
         variant: 'error',
       });
+    } finally {
+      setBusy(false);
     }
   };
+
+  const onCardPay = async (e: FormEvent) => {
+    e.preventDefault();
+    const data = validateForm();
+    if (!data) return;
+    if (!cardValid) {
+      setInlineError('Please complete your card details.');
+      return;
+    }
+    if (!cardSubmitRef.current) {
+      setInlineError('Card fields are still loading. Please try again.');
+      return;
+    }
+
+    setInlineError(null);
+    setBusy(true);
+    checkoutStore.setPhase('creating');
+    try {
+      const session = await ensureSession(data, 'card');
+      if (!session) return;
+
+      checkoutStore.setPhase('submitting');
+      const result = await cardSubmitRef.current(session.paypalOrderId, {
+        streetAddress: data.line1,
+        city: data.city,
+        postalCode: data.postalCode,
+        countryCode: toShippingCountryIso(data.country),
+      });
+
+      if (result.state === 'canceled') {
+        setInlineError('Authentication was cancelled. You can try again.');
+        checkoutStore.setPhase('ready');
+        return;
+      }
+      if (result.state === 'failed') {
+        setInlineError(result.message || 'Card payment failed. Please try again.');
+        checkoutStore.setPhase('error');
+        return;
+      }
+
+      checkoutStore.setPhase('capturing');
+      await api.capturePayment(session.orderId, { paypalOrderId: session.paypalOrderId });
+      checkoutStore.clear();
+      navigate(`/checkout/success?order_id=${encodeURIComponent(session.orderId)}`);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 402) {
+        setInlineError(
+          error.message || 'Your card was declined. Try another card or pay with PayPal instead.',
+        );
+      } else {
+        toast({
+          title: 'Checkout failed',
+          description: error instanceof ApiError ? error.message : 'Please try again.',
+          variant: 'error',
+        });
+      }
+      checkoutStore.setPhase('error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const ensurePaypalOrder = async () => {
+    const data = validateForm();
+    if (!data) throw new Error('Please complete the shipping form first.');
+    const session = await ensureSession(data, 'paypal');
+    if (!session) throw new Error('Order already paid');
+    return { orderId: session.orderId, paypalOrderId: session.paypalOrderId };
+  };
+
+  const amountOre = cartSubtotal(items) + cartShipping(items);
+
+  const onSubmit = cardFieldsEnabled && uiMethod === 'card' ? onCardPay : onRedirectPay;
+  const payDisabled =
+    disabled ||
+    busy ||
+    checkout.isPending ||
+    items.length === 0 ||
+    (cardFieldsEnabled && uiMethod === 'card' && !cardValid);
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5" noValidate>
@@ -219,6 +414,27 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
         )}
       </Field>
 
+      {cardFieldsEnabled && config ? (
+        <Suspense
+          fallback={
+            <div className="flex justify-center py-4">
+              <Spinner label="Loading payment" />
+            </div>
+          }
+        >
+          <PaymentSection
+            config={config}
+            amountOre={amountOre}
+            method={uiMethod}
+            onMethodChange={setUiMethod}
+            onCardValidityChange={setCardValid}
+            cardSubmitRef={cardSubmitRef}
+            ensurePaypalOrder={ensurePaypalOrder}
+            disabled={disabled || busy}
+          />
+        </Suspense>
+      ) : null}
+
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
           <label className="flex cursor-pointer items-start gap-3 text-sm leading-snug">
@@ -265,15 +481,33 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
         </div>
       </div>
 
-      <Button
-        type="submit"
-        size="lg"
-        block
-        disabled={disabled || checkout.isPending || items.length === 0}
-      >
-        {checkout.isPending ? <Spinner className="text-primary-foreground" /> : <Lock />}
-        Pay securely
-      </Button>
+      {inlineError || checkoutStore.error ? (
+        <Alert variant="destructive">{inlineError || checkoutStore.error}</Alert>
+      ) : null}
+
+      {cardFieldsEnabled && uiMethod === 'card' ? (
+        <p className="text-muted-foreground text-xs leading-relaxed">{CARD_PRIVACY_NOTICE}</p>
+      ) : null}
+
+      {!(cardFieldsEnabled && uiMethod === 'paypal') ? (
+        <Button type="submit" size="lg" block disabled={payDisabled}>
+          {busy || checkout.isPending ? <Spinner className="text-primary-foreground" /> : <Lock />}
+          Pay now
+        </Button>
+      ) : null}
+
+      {cardFieldsEnabled ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          block
+          disabled={disabled || busy || items.length === 0}
+          onClick={(e) => void onRedirectPay(e as unknown as FormEvent)}
+        >
+          Pay with PayPal instead
+        </Button>
+      ) : null}
     </form>
   );
 }

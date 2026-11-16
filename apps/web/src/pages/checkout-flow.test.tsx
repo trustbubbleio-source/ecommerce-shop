@@ -36,6 +36,14 @@ const order: Order = {
 beforeEach(() => {
   useCartStore.setState({ items: [] });
   vi.restoreAllMocks();
+  vi.spyOn(api, 'getCheckoutConfig').mockResolvedValue({
+    provider: 'mock',
+    environment: 'sandbox',
+    clientId: '',
+    currency: 'SEK',
+    locale: 'sv-SE',
+    methods: { cardFields: false, paypalButton: false, redirect: true },
+  });
 });
 
 describe('CheckoutPage', () => {
@@ -48,7 +56,7 @@ describe('CheckoutPage', () => {
     useCartStore.setState({ items: [{ product: cartProduct(), quantity: 1 }] });
     renderApp('/checkout');
     expect(await screen.findByText('Shipping & contact')).toBeInTheDocument();
-    expect(screen.getByText('Pay securely')).toBeInTheDocument();
+    expect(screen.getByText('Pay now')).toBeInTheDocument();
   });
 });
 
@@ -60,7 +68,7 @@ describe('CheckoutSuccessPage', () => {
 
     expect(await screen.findByText(/Thank you for your order/i)).toBeInTheDocument();
     expect(screen.getByText('ord_1')).toBeInTheDocument();
-    expect(screen.getByText(/two emails/i)).toBeInTheDocument();
+    expect(screen.getByText(/order confirmation from One More Rip/i)).toBeInTheDocument();
     expect(screen.getByText(/of which VAT \(25%\)/)).toBeInTheDocument();
     await waitFor(() => expect(useCartStore.getState().items).toHaveLength(0));
   });
@@ -70,8 +78,9 @@ describe('CheckoutSuccessPage', () => {
     vi.spyOn(api, 'getOrder').mockResolvedValue({
       order: { ...order, status: 'pending' },
     });
+    vi.spyOn(api, 'capturePayPalOrder').mockRejectedValue(new Error('still pending'));
     renderApp('/checkout/success?order_id=ord_1');
-    expect(await screen.findByText(/Thank you for your order/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Finishing your payment/i)).toBeInTheDocument();
     expect(useCartStore.getState().items).toHaveLength(1);
   });
 

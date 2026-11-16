@@ -33,6 +33,88 @@ describe('PayPal capture webhook', () => {
     expect(settled?.status).toBe('paid');
   });
 
+  it('ignores unsigned webhook events', async () => {
+    const env = loadEnv({
+      PAYPAL_API_KEY: 'test_paypal_client',
+      PAYPAL_SECRET_KEY: 'test_secret',
+      PAYPAL_WEBHOOK_ID: 'wh_test',
+    });
+    const { app, deps } = createApp({ env, payments: new PaymentService(env) });
+    const order = await deps.orders.create({
+      email: 'buyer@example.com',
+      lines: [{ productId: 'p1', name: 'Card', unitPrice: 1000, quantity: 1 }],
+      subtotal: 1000,
+      shipping: 0,
+      total: 1000,
+      currency: 'sek',
+    });
+    await deps.orders.attachSession(order.id, `PAYPAL_TEST_${order.id}`);
+
+    const res = await app.request('/api/webhooks/paypal', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'paypal-transmission-id': 'forged',
+      },
+      body: JSON.stringify({
+        event_type: 'PAYMENT.CAPTURE.COMPLETED',
+        resource: {
+          custom_id: order.id,
+          supplementary_data: { related_ids: { order_id: `PAYPAL_TEST_${order.id}` } },
+        },
+      }),
+    });
+    expect(res.status).toBe(200);
+    expect((await deps.orders.get(order.id))?.status).toBe('pending');
+  });
+
+  it('settles once for a valid signed capture webhook', async () => {
+    const env = loadEnv({
+      PAYPAL_API_KEY: 'test_paypal_client',
+      PAYPAL_SECRET_KEY: 'test_secret',
+      PAYPAL_WEBHOOK_ID: 'wh_test',
+    });
+    const { app, deps } = createApp({ env, payments: new PaymentService(env) });
+    const order = await deps.orders.create({
+      email: 'buyer@example.com',
+      lines: [{ productId: 'p1', name: 'Card', unitPrice: 1000, quantity: 1 }],
+      subtotal: 1000,
+      shipping: 0,
+      total: 1000,
+      currency: 'sek',
+    });
+    await deps.orders.attachSession(order.id, `PAYPAL_TEST_${order.id}`);
+
+    const payload = JSON.stringify({
+      event_type: 'PAYMENT.CAPTURE.COMPLETED',
+      resource: {
+        custom_id: order.id,
+        supplementary_data: { related_ids: { order_id: `PAYPAL_TEST_${order.id}` } },
+      },
+    });
+
+    const headers = {
+      'content-type': 'application/json',
+      'paypal-transmission-id': 'valid',
+    };
+
+    const first = await app.request('/api/webhooks/paypal', {
+      method: 'POST',
+      headers,
+      body: payload,
+    });
+    expect(first.status).toBe(200);
+    expect((await deps.orders.get(order.id))?.status).toBe('paid');
+
+    const second = await app.request('/api/webhooks/paypal', {
+      method: 'POST',
+      headers,
+      body: payload,
+    });
+    expect(second.status).toBe(200);
+    expect((await deps.orders.get(order.id))?.status).toBe('paid');
+  });
+
   it('returns 410 for legacy Stripe webhook path', async () => {
     const { app } = createApp();
     const res = await app.request('/api/webhooks/stripe', { method: 'POST' });

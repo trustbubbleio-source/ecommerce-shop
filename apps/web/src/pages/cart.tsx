@@ -8,6 +8,7 @@ import { EmptyState } from '../components/common/empty-state';
 import { PageHeader } from '../components/common/page-header';
 import { PRELAUNCH, usePurchaseLocked } from '../config/launch';
 import { useAbandonCheckout } from '../hooks/use-abandon-checkout';
+import { useCheckoutConfig } from '../hooks/use-checkout-config';
 import { useReconcileCart } from '../hooks/use-reconcile-cart';
 import { useCartStore } from '../store/cart';
 
@@ -17,6 +18,8 @@ export function CartPage() {
   const prelaunch = usePurchaseLocked();
   const abandonStatus = useAbandonCheckout();
   const reconcileStatus = useReconcileCart({ enabled: abandonStatus === 'done' });
+  // Warm checkout config before the buyer reaches checkout.
+  useCheckoutConfig();
 
   if (items.length === 0) {
     return (

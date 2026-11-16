@@ -24,6 +24,14 @@ function cartProduct(): CartProduct {
 beforeEach(() => {
   useCartStore.setState({ items: [{ product: cartProduct(), quantity: 1 }] });
   vi.restoreAllMocks();
+  vi.spyOn(api, 'getCheckoutConfig').mockResolvedValue({
+    provider: 'mock',
+    environment: 'sandbox',
+    clientId: '',
+    currency: 'SEK',
+    locale: 'sv-SE',
+    methods: { cardFields: false, paypalButton: false, redirect: true },
+  });
 });
 
 async function fillAddress() {
@@ -39,7 +47,7 @@ describe('CheckoutForm', () => {
   it('validates required fields before submitting', async () => {
     const spy = vi.spyOn(api, 'checkout');
     renderWithProviders(<CheckoutForm />);
-    await userEvent.click(screen.getByRole('button', { name: /pay securely/i }));
+    await userEvent.click(screen.getByRole('button', { name: /pay now/i }));
     expect(await screen.findByText(/valid email/i)).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
   });
@@ -48,7 +56,7 @@ describe('CheckoutForm', () => {
     const spy = vi.spyOn(api, 'checkout');
     renderWithProviders(<CheckoutForm />);
     await fillAddress();
-    await userEvent.click(screen.getByRole('button', { name: /pay securely/i }));
+    await userEvent.click(screen.getByRole('button', { name: /pay now/i }));
     expect(await screen.findByText(/accept the Terms and Returns/i)).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
   });
@@ -67,7 +75,7 @@ describe('CheckoutForm', () => {
     renderWithProviders(<CheckoutForm />);
     await fillAddress();
     await userEvent.click(screen.getByRole('checkbox', { name: /I agree to the/i }));
-    await userEvent.click(screen.getByRole('button', { name: /pay securely/i }));
+    await userEvent.click(screen.getByRole('button', { name: /pay now/i }));
 
     await waitFor(() => expect(api.checkout).toHaveBeenCalled());
     const input = vi.mocked(api.checkout).mock.calls[0]![0];

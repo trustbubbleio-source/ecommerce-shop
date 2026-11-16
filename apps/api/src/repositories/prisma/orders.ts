@@ -168,6 +168,18 @@ export class PrismaOrderRepository implements OrderRepository {
     return rows.map(toOrder);
   }
 
+  async listPendingOlderThan(date: Date) {
+    const rows = await prisma.order.findMany({
+      where: {
+        status: 'pending',
+        channel: 'online',
+        createdAt: { lt: date },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+    return rows.map(toOrder);
+  }
+
   async hasPurchasedProduct(userId: string, productId: string): Promise<boolean> {
     const rows = await prisma.order.findMany({
       where: {

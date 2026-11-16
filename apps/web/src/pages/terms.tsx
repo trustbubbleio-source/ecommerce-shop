@@ -56,8 +56,8 @@ const SECTIONS: PolicySection[] = [
     id: 'payment',
     title: '5. Payment',
     body: [
-      'Payment is processed by PayPal. We do not store full card numbers on our servers.',
-      'You authorise us (and our payment provider) to charge the selected payment method for the order total including shipping.',
+      'Payment is processed by PayPal (PayPal wallet and/or advanced card payments). We do not store full card numbers on our servers.',
+      'By clicking Pay now you agree to pay the order total including shipping. You authorise us (and PayPal) to charge the selected payment method.',
     ],
   },
   {

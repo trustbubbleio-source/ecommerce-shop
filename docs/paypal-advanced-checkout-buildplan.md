@@ -4,7 +4,7 @@
 **Researched:** 2026-11-14 against developer.paypal.com (links in section 15)  
 **Goal:** card payment on-site (PayPal-hosted iframes in our checkout), PayPal wallet as a second method, current redirect kept as fallback and kill switch.
 
-**Status:** planned — do not implement until product review / Phase 0 hardening
+**Status:** implemented (Phases 0–3) — ship with `PAYPAL_CARD_FIELDS=off|admin|on`; kill switch is API-only
 
 ---
 
@@ -19,17 +19,17 @@ These are exploitable or incorrect **today**, independent of Advanced Checkout:
 
 ## 1. Decisions
 
-| Topic | Decision | Why |
-| --- | --- | --- |
-| SDK | JS SDK v6 (`https://www.paypal.com/web-sdk/v6/core`) | PayPal's integrate guide says v5 "remains supported" and points new integrations to v6. |
-| Card UI | v6 `card-fields` component (number, expiry, CVV, name) | Keeps the buyer on our page; card data never touches our code. |
-| React binding | `@paypal/react-paypal-js/sdk-v6` (9.x), loaded only in a lazy checkout chunk | Official wrapper; documents field events (`validitychange`, `cardtypechange`) that the vanilla reference does not. |
-| SDK auth | `clientId`, served by our API | The v6 setup page says client ID is recommended and client token is for Fastlane only. The card-fields guide contradicts this (open question 2). |
-| Wallet | v6 `paypal-payments` button, `presentationMode: "auto"` (phase 3) | Popup or modal instead of a full redirect. |
-| Fallback | Existing server redirect (`approve` URL) stays | Used when `advanced_cards` is ineligible, the SDK fails to load, or the flag is off. |
-| 3DS | `SCA_ALWAYS` by default, switchable by env to `SCA_WHEN_REQUIRED` | Advanced card payments carry no PayPal Seller Protection; trading cards are fraud-prone. Liability shift is the main chargeback cover. |
-| Stock | Reserve at the Pay click, exactly as today | Avoids locking stock while the buyer types card details. |
-| Order creation | One call creates our order and the PayPal order; a separate endpoint creates a fresh PayPal order for retries | No second stock reservation on retry. |
+| Topic          | Decision                                                                                                      | Why                                                                                                                                              |
+| -------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| SDK            | JS SDK v6 (`https://www.paypal.com/web-sdk/v6/core`)                                                          | PayPal's integrate guide says v5 "remains supported" and points new integrations to v6.                                                          |
+| Card UI        | v6 `card-fields` component (number, expiry, CVV, name)                                                        | Keeps the buyer on our page; card data never touches our code.                                                                                   |
+| React binding  | `@paypal/react-paypal-js/sdk-v6` (9.x), loaded only in a lazy checkout chunk                                  | Official wrapper; documents field events (`validitychange`, `cardtypechange`) that the vanilla reference does not.                               |
+| SDK auth       | `clientId`, served by our API                                                                                 | The v6 setup page says client ID is recommended and client token is for Fastlane only. The card-fields guide contradicts this (open question 2). |
+| Wallet         | v6 `paypal-payments` button, `presentationMode: "auto"` (phase 3)                                             | Popup or modal instead of a full redirect.                                                                                                       |
+| Fallback       | Existing server redirect (`approve` URL) stays                                                                | Used when `advanced_cards` is ineligible, the SDK fails to load, or the flag is off.                                                             |
+| 3DS            | `SCA_ALWAYS` by default, switchable by env to `SCA_WHEN_REQUIRED`                                             | Advanced card payments carry no PayPal Seller Protection; trading cards are fraud-prone. Liability shift is the main chargeback cover.           |
+| Stock          | Reserve at the Pay click, exactly as today                                                                    | Avoids locking stock while the buyer types card details.                                                                                         |
+| Order creation | One call creates our order and the PayPal order; a separate endpoint creates a fresh PayPal order for retries | No second stock reservation on retry.                                                                                                            |
 
 Not chosen:
 
@@ -63,18 +63,18 @@ Do these before writing UI code. The first item can block the whole project.
 
 ## 4. Deprecated or wrong-context APIs to avoid
 
-| Avoid | Use instead | Source |
-| --- | --- | --- |
-| Top-level `payer` on create order | `payment_source.paypal` (email, name, address) | Orders v2 create reference: deprecated since 2.9 |
-| Top-level `application_context` (`brand_name`, `locale`, `landing_page`, `shipping_preference`, `user_action`, `return_url`, `cancel_url`) | `payment_source.<source>.experience_context` | Orders v2 definitions; v1→v2 guide |
-| `application_context.stored_payment_source` | `payment_source.card.stored_credential` | Orders v2 reference |
-| Verification methods `3D_SECURE`, `AVS_CVV` | `SCA_ALWAYS`, `SCA_WHEN_REQUIRED` | `card_attributes` definition |
-| 3DS fields `liabilityShifted`, `authenticationStatus`, `AuthenticationReason` | `liability_shift`, `enrollment_status`, `authentication_status` | 3DS response parameters |
-| JS SDK v5 `HostedFields` | v6 `card-fields` | Integrate guide |
-| v5 `data-client-token` with `/v1/identity/generate-token` | v6 `clientId` | v6 setup page |
-| `PayPal-Auth-Assertion`, `PayPal-Partner-Attribution-Id` headers | Omit | Partner and marketplace only |
-| Relying on `CHECKOUT.ORDER.COMPLETED` | `PAYMENT.CAPTURE.COMPLETED` | Event list marks it marketplace/platform only |
-| `CHECKOUT.ORDER.VOIDED` (handled in `webhooks.ts`) | `CHECKOUT.PAYMENT-APPROVAL.REVERSED`, `PAYMENT.CAPTURE.DECLINED` | Not in PayPal's event list |
+| Avoid                                                                                                                                      | Use instead                                                      | Source                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------ |
+| Top-level `payer` on create order                                                                                                          | `payment_source.paypal` (email, name, address)                   | Orders v2 create reference: deprecated since 2.9 |
+| Top-level `application_context` (`brand_name`, `locale`, `landing_page`, `shipping_preference`, `user_action`, `return_url`, `cancel_url`) | `payment_source.<source>.experience_context`                     | Orders v2 definitions; v1→v2 guide               |
+| `application_context.stored_payment_source`                                                                                                | `payment_source.card.stored_credential`                          | Orders v2 reference                              |
+| Verification methods `3D_SECURE`, `AVS_CVV`                                                                                                | `SCA_ALWAYS`, `SCA_WHEN_REQUIRED`                                | `card_attributes` definition                     |
+| 3DS fields `liabilityShifted`, `authenticationStatus`, `AuthenticationReason`                                                              | `liability_shift`, `enrollment_status`, `authentication_status`  | 3DS response parameters                          |
+| JS SDK v5 `HostedFields`                                                                                                                   | v6 `card-fields`                                                 | Integrate guide                                  |
+| v5 `data-client-token` with `/v1/identity/generate-token`                                                                                  | v6 `clientId`                                                    | v6 setup page                                    |
+| `PayPal-Auth-Assertion`, `PayPal-Partner-Attribution-Id` headers                                                                           | Omit                                                             | Partner and marketplace only                     |
+| Relying on `CHECKOUT.ORDER.COMPLETED`                                                                                                      | `PAYMENT.CAPTURE.COMPLETED`                                      | Event list marks it marketplace/platform only    |
+| `CHECKOUT.ORDER.VOIDED` (handled in `webhooks.ts`)                                                                                         | `CHECKOUT.PAYMENT-APPROVAL.REVERSED`, `PAYMENT.CAPTURE.DECLINED` | Not in PayPal's event list                       |
 
 The current `createCheckout` payload already uses `payment_source.paypal.experience_context` and no `payer` or `application_context`. Keep it that way.
 
@@ -84,15 +84,15 @@ The current `createCheckout` payload already uses `payment_source.paypal.experie
 
 ### 5.1 Endpoints
 
-| Method and path | Auth | Rate limit | Purpose |
-| --- | --- | --- | --- |
-| `GET /api/checkout/config` (new) | Public, optional session | none | SDK and feature config |
-| `POST /api/checkout` (changed) | Public, optional session | `checkout` | Price, reserve, create our order and the PayPal order |
-| `POST /api/checkout/:orderId/payment-session` (new) | Order access rule | `checkout` | Fresh PayPal order for a pending order (retry or method switch) |
-| `POST /api/checkout/:orderId/capture` (new) | Order access rule | `checkout` | Verify, apply 3DS policy, capture, settle |
-| `POST /api/webhooks/paypal/capture` (existing) | — | — | Thin alias to the new capture logic during migration |
-| `POST /api/webhooks/paypal` (changed) | PayPal signature | none | Verified, idempotent settlement |
-| `POST /api/orders/:id/abandon` (existing) | Order access rule | — | Unchanged; also called when leaving checkout |
+| Method and path                                     | Auth                     | Rate limit | Purpose                                                         |
+| --------------------------------------------------- | ------------------------ | ---------- | --------------------------------------------------------------- |
+| `GET /api/checkout/config` (new)                    | Public, optional session | none       | SDK and feature config                                          |
+| `POST /api/checkout` (changed)                      | Public, optional session | `checkout` | Price, reserve, create our order and the PayPal order           |
+| `POST /api/checkout/:orderId/payment-session` (new) | Order access rule        | `checkout` | Fresh PayPal order for a pending order (retry or method switch) |
+| `POST /api/checkout/:orderId/capture` (new)         | Order access rule        | `checkout` | Verify, apply 3DS policy, capture, settle                       |
+| `POST /api/webhooks/paypal/capture` (existing)      | —                        | —          | Thin alias to the new capture logic during migration            |
+| `POST /api/webhooks/paypal` (changed)               | PayPal signature         | none       | Verified, idempotent settlement                                 |
+| `POST /api/orders/:id/abandon` (existing)           | Order access rule        | —          | Unchanged; also called when leaving checkout                    |
 
 "Order access rule" is `canAccessOrder` in `routes/orders.ts`: a guest order id is a capability token, and account orders need the owning session. Export it and reuse it.
 
@@ -147,11 +147,11 @@ Request `{ "paypalOrderId": "…" }`.
 6. `POST /v2/checkout/orders/{id}/capture` with `PayPal-Request-Id: capture-<paypalOrderId>`.
 7. Decide on `purchase_units[0].payments.captures[0].status`, not the order status:
 
-| Capture status | Action | Response |
-| --- | --- | --- |
-| `COMPLETED` | `markPaidBySession`, `clearWelcomeDiscountAfterPurchase`, `notifyPaidOrder` | 200 `{ ok: true, status: "paid" }` |
-| `PENDING` | Leave pending; the webhook finalises | 202 `{ status: "pending", code: "PENDING_REVIEW" }` |
-| `DECLINED` or `FAILED`, or a 422 such as `INSTRUMENT_DECLINED` | Leave pending for retry; log `processor_response.response_code` | 402 `{ code: "PAYMENT_DECLINED", retryable: true }` |
+| Capture status                                                 | Action                                                                      | Response                                            |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------- |
+| `COMPLETED`                                                    | `markPaidBySession`, `clearWelcomeDiscountAfterPurchase`, `notifyPaidOrder` | 200 `{ ok: true, status: "paid" }`                  |
+| `PENDING`                                                      | Leave pending; the webhook finalises                                        | 202 `{ status: "pending", code: "PENDING_REVIEW" }` |
+| `DECLINED` or `FAILED`, or a 422 such as `INSTRUMENT_DECLINED` | Leave pending for retry; log `processor_response.response_code`             | 402 `{ code: "PAYMENT_DECLINED", retryable: true }` |
 
 8. If the capture completed but the order was cancelled in the meantime (abandon or cleanup race): try `reserveStockSynced` again. If it succeeds mark the order paid; if not, refund through `refundOrder` and return 409.
 
@@ -215,14 +215,14 @@ Nothing currently cancels a pending order unless the buyer lands on the cancel U
 
 ### 5.4 Env vars
 
-| Var | New | Default | Notes |
-| --- | --- | --- | --- |
-| `PAYPAL_API_KEY`, `PAYPAL_SECRET_KEY`, `PAYPAL_MODE` | no | — | Unchanged |
-| `CHECKOUT_SUCCESS_URL`, `CHECKOUT_CANCEL_URL` | no | — | Also used as the card `return_url` / `cancel_url` |
-| `PAYPAL_WEBHOOK_ID` | yes | — | Required in production; add to `assertProductionEnv` |
-| `PAYPAL_CARD_FIELDS` | yes | `off` | `off`, `admin`, `on`; the kill switch |
-| `PAYPAL_SCA_METHOD` | yes | `SCA_ALWAYS` | or `SCA_WHEN_REQUIRED` |
-| `PENDING_ORDER_TTL_MINUTES` | yes | `30` | Cleanup threshold |
+| Var                                                  | New | Default      | Notes                                                |
+| ---------------------------------------------------- | --- | ------------ | ---------------------------------------------------- |
+| `PAYPAL_API_KEY`, `PAYPAL_SECRET_KEY`, `PAYPAL_MODE` | no  | —            | Unchanged                                            |
+| `CHECKOUT_SUCCESS_URL`, `CHECKOUT_CANCEL_URL`        | no  | —            | Also used as the card `return_url` / `cancel_url`    |
+| `PAYPAL_WEBHOOK_ID`                                  | yes | —            | Required in production; add to `assertProductionEnv` |
+| `PAYPAL_CARD_FIELDS`                                 | yes | `off`        | `off`, `admin`, `on`; the kill switch                |
+| `PAYPAL_SCA_METHOD`                                  | yes | `SCA_ALWAYS` | or `SCA_WHEN_REQUIRED`                               |
+| `PENDING_ORDER_TTL_MINUTES`                          | yes | `30`         | Cleanup threshold                                    |
 
 No new `VITE_` variables. The web app reads everything from `/api/checkout/config`, so switching the flag needs no web rebuild.
 
@@ -240,20 +240,20 @@ No new `VITE_` variables. The web app reads everything from `/api/checkout/confi
 
 ### 6.2 Web files
 
-| File | Change |
-| --- | --- |
-| `hooks/use-checkout-config.ts` (new) | TanStack Query, `staleTime: Infinity`; warm it from the cart page |
-| `store/checkout.ts` (new, Zustand) | `{ orderId, paypalOrderId, method, phase, error }`; persist `orderId` in `sessionStorage` so a reload can abandon or resume |
-| `components/checkout/payment-section.tsx` (new, lazy) | `PayPalProvider` with `clientId`, `environment`, `components`, `pageType="checkout"`, `locale`; method selector (Card / PayPal) |
-| `components/checkout/card-payment-fields.tsx` (new) | `PayPalCardFieldsProvider`, name / number / expiry / CVV fields, validity state |
-| `components/checkout/paypal-wallet-button.tsx` (new, phase 3) | `PayPalOneTimePaymentButton` with `createOrder`, `onApprove`, `onCancel` |
-| `lib/paypal.ts` (new) | The single import point for the PayPal wrapper, so tests mock one module |
-| `components/checkout/checkout-form.tsx` | Split validation from submission; branch by method |
-| `pages/checkout.tsx` | Mount the payment section with `React.lazy` and `Suspense`; the route itself stays eager |
-| `pages/checkout-success.tsx` | Keep the `token` capture path for redirect; skip capture when already paid; make the PayPal-receipt sentence conditional |
-| `hooks/use-abandon-checkout.ts` | Also abandon a stored pending order when the buyer leaves checkout for the cart |
-| `apps/web/server.mjs` | CSP update (6.4) |
-| `pages/terms.tsx`, privacy copy | PayPal notice |
+| File                                                          | Change                                                                                                                          |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `hooks/use-checkout-config.ts` (new)                          | TanStack Query, `staleTime: Infinity`; warm it from the cart page                                                               |
+| `store/checkout.ts` (new, Zustand)                            | `{ orderId, paypalOrderId, method, phase, error }`; persist `orderId` in `sessionStorage` so a reload can abandon or resume     |
+| `components/checkout/payment-section.tsx` (new, lazy)         | `PayPalProvider` with `clientId`, `environment`, `components`, `pageType="checkout"`, `locale`; method selector (Card / PayPal) |
+| `components/checkout/card-payment-fields.tsx` (new)           | `PayPalCardFieldsProvider`, name / number / expiry / CVV fields, validity state                                                 |
+| `components/checkout/paypal-wallet-button.tsx` (new, phase 3) | `PayPalOneTimePaymentButton` with `createOrder`, `onApprove`, `onCancel`                                                        |
+| `lib/paypal.ts` (new)                                         | The single import point for the PayPal wrapper, so tests mock one module                                                        |
+| `components/checkout/checkout-form.tsx`                       | Split validation from submission; branch by method                                                                              |
+| `pages/checkout.tsx`                                          | Mount the payment section with `React.lazy` and `Suspense`; the route itself stays eager                                        |
+| `pages/checkout-success.tsx`                                  | Keep the `token` capture path for redirect; skip capture when already paid; make the PayPal-receipt sentence conditional        |
+| `hooks/use-abandon-checkout.ts`                               | Also abandon a stored pending order when the buyer leaves checkout for the cart                                                 |
+| `apps/web/server.mjs`                                         | CSP update (6.4)                                                                                                                |
+| `pages/terms.tsx`, privacy copy                               | PayPal notice                                                                                                                   |
 
 Card submit flow in `checkout-form.tsx`:
 
@@ -303,13 +303,13 @@ PayPal's CSP guidance was written for v5 and also suggests `'unsafe-inline'` or 
 
 Server policy, following PayPal's response-parameter table:
 
-| `liability_shift` | `enrollment_status` | `authentication_status` | Action |
-| --- | --- | --- | --- |
-| `POSSIBLE` | `Y` | `Y` or `A` | Capture |
-| `NO` | `N`, `U` or `B` | — | Capture (PayPal: continue; liability stays with us) |
-| `NO` | `Y` | `N`, `R`, `U` or empty | Do not capture; ask to retry or use another card |
-| `UNKNOWN` | any | any | Do not capture; ask to retry |
-| absent | — | — | Capture and log (3DS did not run) |
+| `liability_shift` | `enrollment_status` | `authentication_status` | Action                                              |
+| ----------------- | ------------------- | ----------------------- | --------------------------------------------------- |
+| `POSSIBLE`        | `Y`                 | `Y` or `A`              | Capture                                             |
+| `NO`              | `N`, `U` or `B`     | —                       | Capture (PayPal: continue; liability stays with us) |
+| `NO`              | `Y`                 | `N`, `R`, `U` or empty  | Do not capture; ask to retry or use another card    |
+| `UNKNOWN`         | any                 | any                     | Do not capture; ask to retry                        |
+| absent            | —                   | —                       | Capture and log (3DS did not run)                   |
 
 - Optional strict mode: capture only on `POSSIBLE`. This is an owner decision (open question 6).
 - If the page is lost during a challenge, the buyer lands on `return_url` (the success page). That page already calls capture by `orderId` when the order is still pending, and the server policy applies there too.
@@ -396,24 +396,24 @@ sequenceDiagram
 
 **Sandbox manual matrix** (set `testBuyerCountry="SE"`, currency SEK)
 
-| Case | Card or trigger | Expect |
-| --- | --- | --- |
-| Plain success | Visa `4012888888881881`, MC `2223000048400011`, Amex `371449635398431` | Paid; email; Zettle quantity down |
-| 3DS frictionless success | Visa `4868719196829038` | Paid; shift `POSSIBLE` |
-| 3DS challenge success | Visa `4868719166101368`, MC `5329879735316929` | Modal, then paid |
-| 3DS challenge failed | Visa `4868719181895556` | Not captured; retry offered |
-| 3DS unavailable | Visa `4868719557718580` | Not captured |
-| Close 3DS modal | any challenge card | `canceled`; order pending; retry works |
-| Declines (name field) | `CCREJECT-REFUSED`, `CCREJECT-IF`, `CCREJECT-EC`, `CCREJECT-CVV_F` | 402; pending; stock still held |
-| Decline then PayPal | decline, then switch method | Paid once; one stock reservation |
-| Abandon | pay attempt, then leave to cart | Cancelled; stock back in DB and Zettle |
-| Timeout | close the tab mid-flow | Cleanup job cancels after the TTL |
-| Double capture | repeat the capture call | Second call 200; no duplicate email |
-| Discount and shipping | welcome code plus paid shipping | PayPal breakdown equals the order total |
-| Refund | admin refund | Still works for card captures |
-| Webhooks | simulator, then real sandbox events | Verified; idempotent |
-| CSP | production build served by `server.mjs` | No CSP errors; fields render |
-| Devices | iOS Safari, Android Chrome, one in-app browser | Fields usable; fallback button reachable |
+| Case                     | Card or trigger                                                        | Expect                                   |
+| ------------------------ | ---------------------------------------------------------------------- | ---------------------------------------- |
+| Plain success            | Visa `4012888888881881`, MC `2223000048400011`, Amex `371449635398431` | Paid; email; Zettle quantity down        |
+| 3DS frictionless success | Visa `4868719196829038`                                                | Paid; shift `POSSIBLE`                   |
+| 3DS challenge success    | Visa `4868719166101368`, MC `5329879735316929`                         | Modal, then paid                         |
+| 3DS challenge failed     | Visa `4868719181895556`                                                | Not captured; retry offered              |
+| 3DS unavailable          | Visa `4868719557718580`                                                | Not captured                             |
+| Close 3DS modal          | any challenge card                                                     | `canceled`; order pending; retry works   |
+| Declines (name field)    | `CCREJECT-REFUSED`, `CCREJECT-IF`, `CCREJECT-EC`, `CCREJECT-CVV_F`     | 402; pending; stock still held           |
+| Decline then PayPal      | decline, then switch method                                            | Paid once; one stock reservation         |
+| Abandon                  | pay attempt, then leave to cart                                        | Cancelled; stock back in DB and Zettle   |
+| Timeout                  | close the tab mid-flow                                                 | Cleanup job cancels after the TTL        |
+| Double capture           | repeat the capture call                                                | Second call 200; no duplicate email      |
+| Discount and shipping    | welcome code plus paid shipping                                        | PayPal breakdown equals the order total  |
+| Refund                   | admin refund                                                           | Still works for card captures            |
+| Webhooks                 | simulator, then real sandbox events                                    | Verified; idempotent                     |
+| CSP                      | production build served by `server.mjs`                                | No CSP errors; fields render             |
+| Devices                  | iOS Safari, Android Chrome, one in-app browser                         | Fields usable; fallback button reachable |
 
 The 3DS card numbers are from the first set on PayPal's 3DS test page. The page groups them by country tab and has no Sweden tab, so confirm the set when testing.
 
@@ -442,19 +442,19 @@ The 3DS card numbers are from the first set on PayPal's 3DS test page. The page 
 
 ## 11. Risks
 
-| Risk | Mitigation |
-| --- | --- |
-| Live vetting delayed or refused | Check in phase 0; redirect stays; evaluate `paypal-guest-payments` |
+| Risk                                                 | Mitigation                                                                          |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Live vetting delayed or refused                      | Check in phase 0; redirect stays; evaluate `paypal-guest-payments`                  |
 | Card fraud and chargebacks without Seller Protection | `SCA_ALWAYS`; server liability policy; billing address always sent; dispute webhook |
-| PCI scope rises to SAQ A-EP | Strict CSP; SDK loaded only from PayPal; owner sign-off |
-| Stock locked by abandoned attempts | Cleanup job; abandon on leaving checkout |
-| Money captured after the order was cancelled | Re-reserve or auto-refund branch in capture |
-| Double charge on retry | Check the previous PayPal order before creating a new one; request ids |
-| Forged webhooks | Signature verification |
-| CSP blocks the SDK in production only | Test against `server.mjs` before release |
-| v6 documentation is inconsistent | Pin the wrapper version; sandbox run of the full matrix |
-| 3DS modal fails in in-app browsers | Always-visible redirect fallback |
-| Cleanup job on several API instances | Cancel is already idempotent; move to cron if scaled out |
+| PCI scope rises to SAQ A-EP                          | Strict CSP; SDK loaded only from PayPal; owner sign-off                             |
+| Stock locked by abandoned attempts                   | Cleanup job; abandon on leaving checkout                                            |
+| Money captured after the order was cancelled         | Re-reserve or auto-refund branch in capture                                         |
+| Double charge on retry                               | Check the previous PayPal order before creating a new one; request ids              |
+| Forged webhooks                                      | Signature verification                                                              |
+| CSP blocks the SDK in production only                | Test against `server.mjs` before release                                            |
+| v6 documentation is inconsistent                     | Pin the wrapper version; sandbox run of the full matrix                             |
+| 3DS modal fails in in-app browsers                   | Always-visible redirect fallback                                                    |
+| Cleanup job on several API instances                 | Cancel is already idempotent; move to cron if scaled out                            |
 
 ## 12. Open questions
 
@@ -573,4 +573,4 @@ Acceptance:
 
 ---
 
-*Produced from PayPal docs research ([PayPal Advanced Checkout research](13165599-19c6-4944-8a44-d9e6e268c2f7)) + repo-specific checkout/Zettle constraints.*
+_Produced from PayPal docs research ([PayPal Advanced Checkout research](13165599-19c6-4944-8a44-d9e6e268c2f7)) + repo-specific checkout/Zettle constraints._

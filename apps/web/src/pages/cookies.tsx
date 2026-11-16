@@ -41,7 +41,7 @@ const SECTIONS: PolicySection[] = [
       'Authentication tokens / session data for logged-in customers.',
       'Cart and checkout-related local storage so your basket persists between visits.',
       'Cookie preference storage (your necessary / analytics choice).',
-      'Security and fraud-prevention signals used by our hosting and payment providers (for example Stripe) during checkout.',
+      'Security and fraud-prevention signals used by our hosting and payment providers (for example PayPal) during checkout.',
     ],
   },
   {
@@ -64,7 +64,7 @@ const SECTIONS: PolicySection[] = [
     id: 'third-parties',
     title: '6. Third-party cookies',
     body: [
-      'Payment and infrastructure providers may set their own cookies or similar technologies when you use checkout or embedded services. Those providers are responsible for their own technologies; see Stripe’s and our hosts’ documentation for details.',
+      'Payment and infrastructure providers may set their own cookies or similar technologies when you use checkout or embedded services. Those providers are responsible for their own technologies; see PayPal’s and our hosts’ documentation for details.',
       'The Contact page map loads map tiles from OpenStreetMap / CARTO (and the “Open in Google Maps” link goes to Google when you choose it).',
     ],
   },

@@ -2,8 +2,12 @@ import type {
   AuthResponse,
   CatalogStats,
   AppNotification,
+  CapturePaymentInput,
+  CaptureResult,
+  CheckoutConfig,
   CheckoutInput,
   CheckoutSession,
+  PaymentSessionInput,
   ContactInput,
   NewsletterSubscribeInput,
   NewsletterUnsubscribeInput,
@@ -70,8 +74,14 @@ export interface ApiClient {
   forgotPassword(input: ForgotPasswordInput): Promise<{ ok: boolean; message: string }>;
   resetPassword(input: ResetPasswordInput): Promise<{ ok: boolean; message: string }>;
   me(): Promise<{ user: PublicUser }>;
+  getCheckoutConfig(): Promise<CheckoutConfig>;
   checkout(input: CheckoutInput): Promise<CheckoutSession>;
-  /** Capture a PayPal order after the buyer returns from approval. */
+  createPaymentSession(
+    orderId: string,
+    input: PaymentSessionInput,
+  ): Promise<CheckoutSession>;
+  capturePayment(orderId: string, input: CapturePaymentInput): Promise<CaptureResult>;
+  /** Capture a PayPal order after the buyer returns from approval (redirect flow). */
   capturePayPalOrder(input: {
     orderId?: string;
     paypalOrderId?: string;
@@ -276,8 +286,23 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     me() {
       return request('/auth/me');
     },
+    getCheckoutConfig() {
+      return request('/checkout/config');
+    },
     checkout(input) {
       return request('/checkout', { method: 'POST', body: JSON.stringify(input) });
+    },
+    createPaymentSession(orderId, input) {
+      return request(`/checkout/${encodeURIComponent(orderId)}/payment-session`, {
+        method: 'POST',
+        body: JSON.stringify(input),
+      });
+    },
+    capturePayment(orderId, input) {
+      return request(`/checkout/${encodeURIComponent(orderId)}/capture`, {
+        method: 'POST',
+        body: JSON.stringify(input),
+      });
     },
     capturePayPalOrder(input) {
       return request('/webhooks/paypal/capture', {

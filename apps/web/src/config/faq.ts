@@ -59,7 +59,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What payment methods do you accept?',
         answer:
-          'We accept all major credit and debit cards (Visa, Mastercard, American Express) through our secure checkout. Apple Pay and Google Pay are available on supported devices. Local payment methods may appear at checkout depending on your region.',
+          'We accept PayPal and major credit and debit cards (Visa, Mastercard, American Express) through our secure PayPal checkout. Apple Pay and Google Pay may appear on supported devices later. Local methods like Swish are not available online yet.',
       },
       {
         question: 'Is checkout secure?',

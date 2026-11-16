@@ -16,7 +16,7 @@ describe('FaqPage', () => {
     expect(paymentButton).toHaveAttribute('aria-expanded', 'false');
     await userEvent.click(paymentButton);
     expect(paymentButton).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByText(/Stripe/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/PayPal/i).length).toBeGreaterThan(0);
   });
 
   it('links to the contact page', async () => {

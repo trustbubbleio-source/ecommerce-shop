@@ -9,7 +9,7 @@ async function withInvoiceUrl(_deps: AppDeps, order: Order): Promise<Order> {
 }
 
 /** Same access rules as GET /:id — owner session, or guest capability token. */
-function canAccessOrder(order: Order, userSub: string | undefined): 'ok' | 401 | 403 {
+export function canAccessOrder(order: Order, userSub: string | undefined): 'ok' | 401 | 403 {
   if (!order.userId) return 'ok';
   if (!userSub) return 401;
   if (order.userId !== userSub) return 403;

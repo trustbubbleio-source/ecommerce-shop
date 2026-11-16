@@ -1,6 +1,9 @@
 /** Default JWT secret used only for local/dev — never acceptable in production. */
 export const DEV_JWT_SECRET = 'dev-super-secret-change-me-in-production';
 
+export type PaypalCardFieldsMode = 'off' | 'admin' | 'on';
+export type PaypalScaMethod = 'SCA_ALWAYS' | 'SCA_WHEN_REQUIRED';
+
 /** Environment configuration, parsed once and shared across the app. */
 export interface Env {
   port: number;
@@ -10,6 +13,14 @@ export interface Env {
   paypalClientSecret: string;
   /** `sandbox` (default) or `live`. */
   paypalMode: 'sandbox' | 'live';
+  /** Dashboard webhook id for signature verification. */
+  paypalWebhookId: string;
+  /** Kill switch / canary for on-site card fields. */
+  paypalCardFields: PaypalCardFieldsMode;
+  /** 3DS verification method sent on card Orders. */
+  paypalScaMethod: PaypalScaMethod;
+  /** Cancel stale pending online orders older than this many minutes. */
+  pendingOrderTtlMinutes: number;
   checkoutSuccessUrl: string;
   checkoutCancelUrl: string;
   /**
@@ -89,6 +100,18 @@ function truthyFlag(value: string | undefined): boolean {
   return normalized === '1' || normalized === 'true' || normalized === 'yes';
 }
 
+function parseCardFieldsMode(value: string | undefined): PaypalCardFieldsMode {
+  const normalized = (value ?? 'off').trim().toLowerCase();
+  if (normalized === 'on' || normalized === 'admin' || normalized === 'off') return normalized;
+  return 'off';
+}
+
+function parseScaMethod(value: string | undefined): PaypalScaMethod {
+  const normalized = (value ?? 'SCA_ALWAYS').trim().toUpperCase();
+  if (normalized === 'SCA_WHEN_REQUIRED') return 'SCA_WHEN_REQUIRED';
+  return 'SCA_ALWAYS';
+}
+
 /** True on Railway / NODE_ENV=production — local vitest and `pnpm dev` stay lenient. */
 export function isProductionRuntime(source: NodeJS.ProcessEnv = process.env): boolean {
   if (source.NODE_ENV === 'test') return false;
@@ -122,6 +145,11 @@ export function assertProductionEnv(env: Env, source: NodeJS.ProcessEnv = proces
   if (env.paypalEnabled && env.paypalMode !== 'live') {
     problems.push(
       'PAYPAL_MODE must be "live" in production (unset defaults to sandbox and breaks live credentials).',
+    );
+  }
+  if (env.paypalEnabled && !env.paypalWebhookId) {
+    problems.push(
+      'PAYPAL_WEBHOOK_ID must be set in production so PayPal webhook signatures can be verified.',
     );
   }
   if (
@@ -172,6 +200,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     webOrigins[0] ??
     'http://localhost:5173'
   ).replace(/\/$/, '');
+  const ttlRaw = Number.parseInt(source.PENDING_ORDER_TTL_MINUTES ?? '30', 10);
   return {
     port: Number.parseInt(source.PORT ?? '4000', 10),
     webOrigins,
@@ -179,6 +208,10 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     paypalClientId,
     paypalClientSecret,
     paypalMode,
+    paypalWebhookId: (source.PAYPAL_WEBHOOK_ID ?? '').trim(),
+    paypalCardFields: parseCardFieldsMode(source.PAYPAL_CARD_FIELDS),
+    paypalScaMethod: parseScaMethod(source.PAYPAL_SCA_METHOD),
+    pendingOrderTtlMinutes: Number.isFinite(ttlRaw) && ttlRaw > 0 ? ttlRaw : 30,
     checkoutSuccessUrl: source.CHECKOUT_SUCCESS_URL ?? 'http://localhost:5173/checkout/success',
     checkoutCancelUrl: source.CHECKOUT_CANCEL_URL ?? 'http://localhost:5173/cart',
     instoreCheckoutBaseUrl,

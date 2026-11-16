@@ -202,10 +202,41 @@ export interface RegisterPendingResponse {
   message: string;
 }
 
+export type PaymentMethod = 'card' | 'paypal' | 'redirect';
+
+export type PaymentErrorCode =
+  | 'PAYMENT_DECLINED'
+  | 'SCA_FAILED'
+  | 'ORDER_MISMATCH'
+  | 'PENDING_REVIEW';
+
+export interface CheckoutConfig {
+  provider: 'paypal' | 'mock';
+  environment: 'sandbox' | 'live';
+  clientId: string;
+  currency: 'SEK';
+  locale: string;
+  methods: {
+    cardFields: boolean;
+    paypalButton: boolean;
+    redirect: boolean;
+  };
+}
+
 export interface CheckoutSession {
-  /** URL to redirect the customer to (Stripe Checkout). */
-  url: string;
   orderId: string;
+  /** Approve URL for redirect checkout; null for on-site card/wallet. */
+  url?: string | null;
+  /** PayPal Orders v2 id for on-site capture. */
+  paypalOrderId?: string;
+  status?: 'pending' | 'paid';
+}
+
+export interface CaptureResult {
+  ok?: boolean;
+  status: 'paid' | 'pending';
+  code?: PaymentErrorCode;
+  retryable?: boolean;
 }
 
 /** In-app notification for order updates (bell icon). */

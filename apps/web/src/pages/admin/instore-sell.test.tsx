@@ -1,7 +1,9 @@
+import type { PublicUser } from '@akknerds/shared';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '@akknerds/api-client';
+import { useAuthStore } from '../../store/auth';
 import { renderApp } from '../../test/utils';
 
 vi.mock('@akknerds/api-client', async () => {
@@ -16,60 +18,61 @@ vi.mock('@akknerds/api-client', async () => {
   };
 });
 
+const admin: PublicUser = {
+  id: 'usr_admin',
+  email: 'admin@test.local',
+  name: 'Admin',
+  role: 'admin',
+  emailVerifiedAt: '2024-01-01T00:00:00.000Z',
+  hasPassword: true,
+  profile: {
+    phone: null,
+    country: null,
+    city: null,
+    bio: null,
+    shippingAddress: null,
+    discountCode: null,
+    preferredCurrency: 'sek',
+    marketingOptIn: false,
+    updatedAt: '2024-01-01T00:00:00.000Z',
+  },
+  createdAt: '2024-01-01T00:00:00.000Z',
+};
+
+const product = {
+  id: 'prod_1',
+  slug: 'test-card',
+  name: 'Test Card',
+  description: '',
+  category: 'single-card' as const,
+  set: '151' as const,
+  series: 'Scarlet & Violet' as const,
+  price: 2500,
+  currency: 'sek',
+  images: [] as string[],
+  accent: '#000',
+  stock: 3,
+  featured: false,
+  isNew: false,
+  storeOnly: false,
+  inactive: false,
+  rating: 0,
+  reviewCount: 0,
+  tags: [] as string[],
+  language: 'english' as const,
+  releaseDate: '2024-01-01',
+};
+
 describe('AdminInstoreSellPage', () => {
   beforeEach(() => {
-    vi.mocked(api.adminGetProduct).mockResolvedValue({
-      product: {
-        id: 'prod_1',
-        slug: 'test-card',
-        name: 'Test Card',
-        description: '',
-        category: 'single-card',
-        set: '151',
-        series: 'Scarlet & Violet',
-        price: 2500,
-        currency: 'sek',
-        images: [],
-        accent: '#000',
-        stock: 3,
-        featured: false,
-        isNew: false,
-        storeOnly: false,
-        inactive: false,
-        rating: 0,
-        reviewCount: 0,
-        tags: [],
-        language: 'english',
-        releaseDate: '2024-01-01',
-      },
-    });
+    useAuthStore.setState({ token: 'tok_admin', user: admin, mustSetPassword: false });
+    vi.mocked(api.adminGetProduct).mockResolvedValue({ product });
+    vi.spyOn(api, 'me').mockResolvedValue({ user: admin });
   });
 
   it('logs a card/cash sale without Swish', async () => {
     vi.mocked(api.adminSellInStore).mockResolvedValue({
-      product: {
-        id: 'prod_1',
-        slug: 'test-card',
-        name: 'Test Card',
-        description: '',
-        category: 'single-card',
-        set: '151',
-        series: 'Scarlet & Violet',
-        price: 2500,
-        currency: 'sek',
-        images: [],
-        accent: '#000',
-        stock: 2,
-        featured: false,
-        isNew: false,
-        storeOnly: false,
-        inactive: false,
-        rating: 0,
-        reviewCount: 0,
-        tags: [],
-        language: 'english',
-        releaseDate: '2024-01-01',
-      },
+      product: { ...product, stock: 2 },
       order: {
         id: 'ord_1',
         email: 'admin@test.local',

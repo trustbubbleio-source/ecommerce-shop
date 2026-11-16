@@ -1,15 +1,15 @@
 import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
 import { cancelOrderAndReleaseStock } from '../lib/inventory.js';
-import { clearWelcomeDiscountAfterPurchase } from '../lib/welcome-discount.js';
-import { notifyPaidOrder, notifyRefundedOrder } from '../lib/order-alert.js';
+import { notifyRefundedOrder } from '../lib/order-alert.js';
+import { captureAndSettle, settlePaidBySession } from '../lib/settle-payment.js';
 
 /**
  * PayPal webhook + capture helper routes.
  *
  * Browser return from PayPal hits checkout success with `token=<PAYPAL_ORDER_ID>`;
  * the web app calls POST /api/webhooks/paypal/capture to finish settlement.
- * Optional PayPal Dashboard webhooks can also POST here for capture/refund events.
+ * Dashboard webhooks POST to /api/webhooks/paypal (signature verified).
  */
 export function webhookRoutes(deps: AppDeps) {
   const app = new Hono<AppEnv>();
@@ -28,39 +28,55 @@ export function webhookRoutes(deps: AppDeps) {
     }
 
     let sessionId = paypalOrderId;
-    if (!sessionId && orderId) {
-      const order = await deps.orders.get(orderId);
-      sessionId = order?.paymentSessionId ?? '';
+    let order = orderId ? await deps.orders.get(orderId) : undefined;
+    if (!sessionId && order) {
+      sessionId = order.paymentSessionId ?? '';
     }
     if (!sessionId) {
       return c.json({ error: 'No PayPal order to capture' }, 404);
     }
 
+    if (!order) {
+      order = await deps.orders.getByPaymentSession(sessionId);
+    }
+
     // Ensure the session is linked if PayPal only returned token on the success URL.
-    if (orderId && paypalOrderId) {
-      const order = await deps.orders.get(orderId);
-      if (order && !order.paymentSessionId) {
-        await deps.orders.attachSession(orderId, paypalOrderId);
+    if (order && !order.paymentSessionId && paypalOrderId) {
+      await deps.orders.attachSession(order.id, paypalOrderId);
+      order = { ...order, paymentSessionId: paypalOrderId };
+    }
+
+    if (!order) {
+      // Legacy path: try markPaidBySession after capture without local order lookup.
+      const capture = await deps.payments.captureOrder(sessionId);
+      if (capture.outcome !== 'completed') {
+        return c.json({ error: 'Capture not completed', status: capture.status }, 409);
       }
+      const settled = await settlePaidBySession(deps, sessionId);
+      return c.json({ ok: true, orderId: settled?.id, status: settled?.status ?? 'paid' });
     }
 
-    const capture = await deps.payments.captureOrder(sessionId);
-    if (!capture.captured) {
-      return c.json({ error: 'Capture not completed', status: capture.status }, 409);
+    const result = await captureAndSettle(deps, order, sessionId);
+    if (result.kind === 'paid') {
+      return c.json({ ok: true, orderId: result.order.id, status: result.order.status });
     }
-
-    const newlyPaid = await deps.orders.markPaidBySession(sessionId);
-    if (newlyPaid) {
-      await clearWelcomeDiscountAfterPurchase(deps, newlyPaid.userId);
-      await notifyPaidOrder(deps.email, deps.env, newlyPaid);
+    if (result.kind === 'pending') {
+      return c.json({ ok: false, status: 'pending', code: 'PENDING_REVIEW' }, 202);
     }
-
-    const order =
-      newlyPaid ??
-      (await deps.orders.getByPaymentSession(sessionId)) ??
-      (orderId ? await deps.orders.get(orderId) : undefined);
-
-    return c.json({ ok: true, orderId: order?.id, status: order?.status ?? 'paid' });
+    if (result.kind === 'declined' || result.kind === 'sca_failed') {
+      return c.json(
+        {
+          error: result.kind === 'sca_failed' ? result.reason : 'Capture not completed',
+          status: result.kind === 'declined' ? result.status : 'SCA_FAILED',
+        },
+        409,
+      );
+    }
+    if (result.kind === 'mismatch') {
+      return c.json({ error: result.message }, 409);
+    }
+    const status = result.status === 404 || result.status === 502 ? result.status : 409;
+    return c.json({ error: result.message }, status);
   });
 
   app.post('/paypal', async (c) => {
@@ -68,81 +84,62 @@ export function webhookRoutes(deps: AppDeps) {
       return c.json({ received: true, mock: true });
     }
 
-    const event = await c.req.json().catch(() => null);
-    if (!event || typeof event !== 'object') {
+    const rawBody = await c.req.text();
+    const headerBag: Record<string, string | undefined> = {};
+    for (const [key, value] of c.req.raw.headers.entries()) {
+      headerBag[key.toLowerCase()] = value;
+    }
+
+    const verified = await deps.payments.verifyWebhook(headerBag, rawBody);
+    if (!verified) {
+      console.warn('[paypal] webhook signature rejected');
+      // Return 200 so PayPal does not retry-storm on forgeries.
+      return c.json({ received: true, verified: false });
+    }
+
+    let event: { event_type?: string; resource?: Record<string, unknown> } | null = null;
+    try {
+      event = JSON.parse(rawBody) as { event_type?: string; resource?: Record<string, unknown> };
+    } catch {
       return c.json({ error: 'Invalid payload' }, 400);
     }
 
-    const eventType = String((event as { event_type?: string }).event_type ?? '');
-    const resource = (event as { resource?: Record<string, unknown> }).resource ?? {};
+    const eventType = String(event.event_type ?? '');
+    const resource = event.resource ?? {};
 
-    if (
-      eventType === 'PAYMENT.CAPTURE.COMPLETED' ||
-      eventType === 'CHECKOUT.ORDER.COMPLETED'
-    ) {
-      const customId =
-        (typeof resource.custom_id === 'string' && resource.custom_id) ||
-        (typeof (resource as { purchase_units?: Array<{ custom_id?: string }> }).purchase_units?.[0]
-          ?.custom_id === 'string' &&
-          (resource as { purchase_units: Array<{ custom_id?: string }> }).purchase_units[0]
-            .custom_id) ||
-        undefined;
-
-      const supplementary =
-        (resource as { supplementary_data?: { related_ids?: { order_id?: string } } })
-          .supplementary_data?.related_ids?.order_id;
+    if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
+      const customId = typeof resource.custom_id === 'string' ? resource.custom_id : undefined;
+      const supplementary = (
+        resource as { supplementary_data?: { related_ids?: { order_id?: string } } }
+      ).supplementary_data?.related_ids?.order_id;
 
       const paypalOrderId =
-        (typeof resource.id === 'string' && eventType === 'CHECKOUT.ORDER.COMPLETED'
-          ? resource.id
-          : undefined) ||
         supplementary ||
-        (customId
-          ? (await deps.orders.get(customId))?.paymentSessionId
-          : undefined);
+        (customId ? (await deps.orders.get(customId))?.paymentSessionId : undefined);
 
       if (paypalOrderId) {
-        const newlyPaid = await deps.orders.markPaidBySession(paypalOrderId);
-        if (newlyPaid) {
-          await clearWelcomeDiscountAfterPurchase(deps, newlyPaid.userId);
-          await notifyPaidOrder(deps.email, deps.env, newlyPaid);
-        }
-      } else if (customId) {
-        const existing = await deps.orders.get(customId);
-        if (existing?.status === 'pending') {
-          const paid = await deps.orders.setStatus(existing.id, 'paid');
-          if (paid) {
-            await clearWelcomeDiscountAfterPurchase(deps, paid.userId);
-            await notifyPaidOrder(deps.email, deps.env, paid);
-          }
-        }
+        await settlePaidBySession(deps, paypalOrderId, customId);
       }
     }
 
-    if (eventType === 'PAYMENT.CAPTURE.DENIED' || eventType === 'CHECKOUT.ORDER.VOIDED') {
+    if (
+      eventType === 'PAYMENT.CAPTURE.DECLINED' ||
+      eventType === 'PAYMENT.CAPTURE.DENIED' ||
+      eventType === 'PAYMENT.CAPTURE.PENDING'
+    ) {
+      // Leave pending; cleanup job / buyer retry handles it.
+      return c.json({ received: true, ignored: eventType });
+    }
+
+    if (eventType === 'PAYMENT.CAPTURE.REFUNDED' || eventType === 'PAYMENT.CAPTURE.REVERSED') {
       const customId = typeof resource.custom_id === 'string' ? resource.custom_id : undefined;
       if (customId) {
         const existing = await deps.orders.get(customId);
-        if (existing?.status === 'pending') {
-          await cancelOrderAndReleaseStock(
-            deps,
-            existing.id,
-            'PayPal checkout was voided or denied before payment.',
-          );
-        }
-      }
-    }
-
-    if (eventType === 'PAYMENT.CAPTURE.REFUNDED') {
-      const customId = typeof resource.custom_id === 'string' ? resource.custom_id : undefined;
-      const orderId = customId;
-      if (orderId) {
-        const existing = await deps.orders.get(orderId);
         if (existing && existing.status !== 'cancelled' && !existing.cancelReason) {
           const result = await cancelOrderAndReleaseStock(
             deps,
-            orderId,
-            'Refunded via PayPal.',
+            customId,
+            eventType === 'PAYMENT.CAPTURE.REVERSED' ? 'Payment reversed via PayPal.' : 'Refunded via PayPal.',
           );
           if (result?.order) {
             await notifyRefundedOrder(deps.email, deps.env, result.order);
@@ -151,7 +148,35 @@ export function webhookRoutes(deps: AppDeps) {
       }
     }
 
-    return c.json({ received: true });
+    if (eventType === 'CHECKOUT.ORDER.APPROVED') {
+      const paypalOrderId = typeof resource.id === 'string' ? resource.id : undefined;
+      if (paypalOrderId) {
+        const order = await deps.orders.getByPaymentSession(paypalOrderId);
+        if (order?.status === 'pending') {
+          await captureAndSettle(deps, order, paypalOrderId);
+        }
+      }
+    }
+
+    if (eventType === 'CHECKOUT.PAYMENT-APPROVAL.REVERSED') {
+      const paypalOrderId = typeof resource.id === 'string' ? resource.id : undefined;
+      const order = paypalOrderId
+        ? await deps.orders.getByPaymentSession(paypalOrderId)
+        : undefined;
+      if (order?.status === 'pending') {
+        await cancelOrderAndReleaseStock(
+          deps,
+          order.id,
+          'PayPal payment approval was reversed.',
+        );
+      }
+    }
+
+    if (eventType === 'CUSTOMER.DISPUTE.CREATED') {
+      console.warn('[paypal] dispute created', resource);
+    }
+
+    return c.json({ received: true, verified: true });
   });
 
   /**

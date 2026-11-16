@@ -24,6 +24,8 @@ export function CheckoutSuccessPage() {
 
   useEffect(() => {
     if (!orderId || isMock || captureStarted.current) return;
+    // Already settled (card capture finished before navigation) — skip.
+    if (data?.order?.status === 'paid' || data?.order?.status === 'fulfilled') return;
     if (!paypalToken && data?.order?.status !== 'pending') return;
 
     captureStarted.current = true;
@@ -96,10 +98,14 @@ export function CheckoutSuccessPage() {
         </p>
         {captureError ? (
           <p className="text-destructive max-w-md text-sm">{captureError}</p>
-        ) : (
+        ) : paypalToken || isMock ? (
           <p className="text-muted-foreground max-w-md text-sm">
             You will receive an order confirmation from One More Rip. PayPal may also send its own
             payment receipt — both are normal.
+          </p>
+        ) : (
+          <p className="text-muted-foreground max-w-md text-sm">
+            You will receive an order confirmation from One More Rip shortly.
           </p>
         )}
         <p className="text-muted-foreground text-sm">

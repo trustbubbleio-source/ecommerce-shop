@@ -50,7 +50,7 @@ const SECTIONS: { id: string; title: string; body: string[] }[] = [
     title: '5. Sharing with service providers',
     body: [
       'We do not sell your personal data. We share data only with trusted processors who help us run the business, under appropriate agreements, for example:',
-      'Payment processors (e.g. Stripe) to handle card payments securely — we do not store full card numbers on our servers.',
+      'Payment processors (PayPal) to handle wallet and card payments securely — card data is processed by PayPal and we do not store full card numbers on our servers.',
       'Hosting, infrastructure, and email delivery providers that process data on our instructions.',
       'Shipping and logistics partners needed to deliver your order.',
       'Professional advisers (legal, accounting) when strictly necessary.',

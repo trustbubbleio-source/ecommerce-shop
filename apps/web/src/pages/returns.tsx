@@ -90,7 +90,7 @@ const SECTIONS: PolicySection[] = [
     id: 'refunds',
     title: '8. How refunds are paid',
     body: [
-      'Refunds are issued to the original payment method used at checkout (for example the card charged via Stripe), unless we agree another method with you.',
+      'Refunds are issued to the original payment method used at checkout (for example the PayPal balance or card charged via PayPal), unless we agree another method with you.',
       `Questions about a refund status: email ${SITE.email.billing} with your order number.`,
       'Bank/card issuers may take several business days to show the credit on your statement after we submit the refund.',
     ],
