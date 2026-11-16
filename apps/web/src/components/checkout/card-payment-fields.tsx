@@ -10,24 +10,33 @@ import {
   type CardSubmitResult,
 } from '../../lib/paypal';
 
+/** Match `@akknerds/ui` Input tokens so PayPal iframes sit in the same shell. */
 const FIELD_STYLE = {
   input: {
-    'font-size': '16px',
+    'font-size': '14px',
     'font-family': 'system-ui, sans-serif',
-    color: '#f5f3ff',
+    'font-weight': '400',
+    'padding': '0 0.875rem',
+    color: 'hsl(var(--foreground))',
   },
   '.invalid': {
-    color: '#fca5a5',
+    color: 'hsl(var(--destructive))',
   },
   ':focus': {
-    color: '#ffffff',
+    color: 'hsl(var(--foreground))',
+  },
+  '.valid': {
+    color: 'hsl(var(--foreground))',
   },
 } as const;
 
 const FIELD_CONTAINER = {
-  height: '3rem',
+  height: '2.75rem',
   width: '100%',
 } as const;
+
+const fieldShellClass =
+  'border-input bg-background overflow-hidden rounded-lg border shadow-sm transition-colors focus-within:border-ring focus-within:ring-ring/40 focus-within:ring-2';
 
 export type CardSubmitFn = (
   paypalOrderId: string,
@@ -102,7 +111,7 @@ function CardFieldsInner({
     <div className="flex flex-col gap-4">
       <Field label="Name on card" required>
         {() => (
-          <div className="border-input bg-background overflow-hidden rounded-md border">
+          <div className={fieldShellClass}>
             <PayPalCardNameField
               style={FIELD_STYLE}
               containerStyles={FIELD_CONTAINER}
@@ -113,7 +122,7 @@ function CardFieldsInner({
       </Field>
       <Field label="Card number" required>
         {() => (
-          <div className="border-input bg-background overflow-hidden rounded-md border">
+          <div className={fieldShellClass}>
             <PayPalCardNumberField
               style={FIELD_STYLE}
               containerStyles={FIELD_CONTAINER}
@@ -125,7 +134,7 @@ function CardFieldsInner({
       <div className="grid grid-cols-2 gap-4">
         <Field label="Expiry" required>
           {() => (
-            <div className="border-input bg-background overflow-hidden rounded-md border">
+            <div className={fieldShellClass}>
               <PayPalCardExpiryField
                 style={FIELD_STYLE}
                 containerStyles={FIELD_CONTAINER}
@@ -136,7 +145,7 @@ function CardFieldsInner({
         </Field>
         <Field label="CVV" required>
           {() => (
-            <div className="border-input bg-background overflow-hidden rounded-md border">
+            <div className={fieldShellClass}>
               <PayPalCardCvvField
                 style={FIELD_STYLE}
                 containerStyles={FIELD_CONTAINER}

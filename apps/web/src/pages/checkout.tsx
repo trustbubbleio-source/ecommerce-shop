@@ -27,14 +27,7 @@ export function CheckoutPage() {
     <div className="container py-8">
       <PageHeader title="Checkout" seoOptions={{ robots: 'noindex,nofollow' }} />
       <div className="grid items-start gap-8 lg:grid-cols-[1fr_22rem]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Shipping & contact</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CheckoutForm disabled={reconcileStatus === 'loading'} />
-          </CardContent>
-        </Card>
+        <CheckoutForm disabled={reconcileStatus === 'loading'} />
 
         <Card className="sticky top-20">
           <CardHeader>

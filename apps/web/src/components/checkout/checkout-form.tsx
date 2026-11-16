@@ -5,7 +5,19 @@ import {
   isShippingCountry,
   toShippingCountryIso,
 } from '@akknerds/shared';
-import { Alert, Button, Field, Input, Select, Spinner, useToast } from '@akknerds/ui';
+import {
+  Alert,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Field,
+  Input,
+  Select,
+  Spinner,
+  useToast,
+} from '@akknerds/ui';
 import { ApiError, api } from '@akknerds/api-client';
 import { Lock } from 'lucide-react';
 import { lazy, Suspense, type FormEvent, useEffect, useRef, useState } from 'react';
@@ -314,207 +326,228 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
     (useCardUi && uiMethod === 'card' && !cardValid);
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-5" noValidate>
-      {!user && (
-        <Alert variant="info">
-          Checking out as a guest.{' '}
-          <Link to="/login" className="text-primary font-semibold hover:underline">
-            Sign in
-          </Link>{' '}
-          for faster checkout and order history.
-        </Alert>
-      )}
-      {user?.profile.shippingAddress && (
-        <Alert variant="info">
-          We prefilled your default shipping address from your profile. You can edit it for this
-          order.
-        </Alert>
-      )}
-
-      <Field label="Email" error={errors.email} required>
-        {(props) => (
-          <Input
-            {...props}
-            type="email"
-            autoComplete="email"
-            value={values.email}
-            onChange={set('email')}
-            placeholder="you@example.com"
-          />
-        )}
-      </Field>
-
-      <Field label="Full name" error={errors.fullName} required>
-        {(props) => (
-          <Input
-            {...props}
-            autoComplete="name"
-            value={values.fullName}
-            onChange={set('fullName')}
-            placeholder="Ash Ketchum"
-          />
-        )}
-      </Field>
-
-      <Field label="Address" error={errors.line1} required>
-        {(props) => (
-          <Input
-            {...props}
-            autoComplete="address-line1"
-            value={values.line1}
-            onChange={set('line1')}
-            placeholder="123 Route 1"
-          />
-        )}
-      </Field>
-
-      <Field label="Apartment, suite, etc. (optional)" error={errors.line2}>
-        {(props) => (
-          <Input
-            {...props}
-            autoComplete="address-line2"
-            value={values.line2 ?? ''}
-            onChange={set('line2')}
-          />
-        )}
-      </Field>
-
-      <div className="grid grid-cols-2 gap-4">
-        <Field label="City" error={errors.city} required>
-          {(props) => (
-            <Input
-              {...props}
-              autoComplete="address-level2"
-              value={values.city}
-              onChange={set('city')}
-            />
-          )}
-        </Field>
-        <Field label="Postal code" error={errors.postalCode} required>
-          {(props) => (
-            <Input
-              {...props}
-              autoComplete="postal-code"
-              value={values.postalCode}
-              onChange={set('postalCode')}
-            />
-          )}
-        </Field>
-      </div>
-
-      <Field label="Country" error={errors.country} required>
-        {(props) => (
-          <Select
-            {...props}
-            autoComplete="country-name"
-            value={values.country}
-            onChange={set('country')}
-            options={[
-              { value: '', label: 'Select country' },
-              ...SHIPPING_COUNTRIES.map((country) => ({ value: country, label: country })),
-            ]}
-          />
-        )}
-      </Field>
-
-      {cardFieldsEnabled && config ? (
-        <Suspense
-          fallback={
-            <div className="flex justify-center py-4">
-              <Spinner label="Loading payment" />
-            </div>
-          }
-        >
-          <PaymentSection
-            config={config}
-            amountOre={amountOre}
-            method={uiMethod}
-            onMethodChange={setUiMethod}
-            onCardValidityChange={setCardValid}
-            onUnavailable={() => {
-              setCardUiAvailable(false);
-              setCardValid(false);
-            }}
-            cardSubmitRef={cardSubmitRef}
-            ensurePaypalOrder={ensurePaypalOrder}
-            disabled={disabled || busy}
-          />
-        </Suspense>
-      ) : null}
-
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1.5">
-          <label className="flex cursor-pointer items-start gap-3 text-sm leading-snug">
-            <input
-              type="checkbox"
-              className="border-input text-primary focus-visible:ring-ring mt-0.5 size-4 shrink-0 rounded accent-primary"
-              checked={acceptTerms}
-              onChange={(e) => {
-                setAcceptTerms(e.target.checked);
-                if (errors.acceptTerms) {
-                  setErrors((current) => ({ ...current, acceptTerms: undefined }));
-                }
-              }}
-              aria-invalid={Boolean(errors.acceptTerms)}
-              aria-describedby={errors.acceptTerms ? 'checkout-accept-terms-error' : undefined}
-            />
-            <span className="text-muted-foreground">
-              I agree to the{' '}
-              <Link
-                to="/terms"
-                className="text-primary font-medium hover:underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Terms
+    <form onSubmit={onSubmit} className="flex flex-col gap-6" noValidate>
+      <Card>
+        <CardHeader>
+          <CardTitle>Shipping & contact</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5">
+          {!user && (
+            <Alert variant="info">
+              Checking out as a guest.{' '}
+              <Link to="/login" className="text-primary font-semibold hover:underline">
+                Sign in
               </Link>{' '}
-              and{' '}
-              <Link
-                to="/returns"
-                className="text-primary font-medium hover:underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Returns &amp; Refunds
-              </Link>{' '}
-              policy.
-            </span>
-          </label>
-          {errors.acceptTerms ? (
-            <p id="checkout-accept-terms-error" className="text-destructive text-xs" role="alert">
-              {errors.acceptTerms}
-            </p>
+              for faster checkout and order history.
+            </Alert>
+          )}
+          {user?.profile.shippingAddress && (
+            <Alert variant="info">
+              We prefilled your default shipping address from your profile. You can edit it for this
+              order.
+            </Alert>
+          )}
+
+          <Field label="Email" error={errors.email} required>
+            {(props) => (
+              <Input
+                {...props}
+                type="email"
+                autoComplete="email"
+                value={values.email}
+                onChange={set('email')}
+                placeholder="you@example.com"
+              />
+            )}
+          </Field>
+
+          <Field label="Full name" error={errors.fullName} required>
+            {(props) => (
+              <Input
+                {...props}
+                autoComplete="name"
+                value={values.fullName}
+                onChange={set('fullName')}
+                placeholder="Ash Ketchum"
+              />
+            )}
+          </Field>
+
+          <Field label="Address" error={errors.line1} required>
+            {(props) => (
+              <Input
+                {...props}
+                autoComplete="address-line1"
+                value={values.line1}
+                onChange={set('line1')}
+                placeholder="123 Route 1"
+              />
+            )}
+          </Field>
+
+          <Field label="Apartment, suite, etc. (optional)" error={errors.line2}>
+            {(props) => (
+              <Input
+                {...props}
+                autoComplete="address-line2"
+                value={values.line2 ?? ''}
+                onChange={set('line2')}
+              />
+            )}
+          </Field>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="City" error={errors.city} required>
+              {(props) => (
+                <Input
+                  {...props}
+                  autoComplete="address-level2"
+                  value={values.city}
+                  onChange={set('city')}
+                />
+              )}
+            </Field>
+            <Field label="Postal code" error={errors.postalCode} required>
+              {(props) => (
+                <Input
+                  {...props}
+                  autoComplete="postal-code"
+                  value={values.postalCode}
+                  onChange={set('postalCode')}
+                />
+              )}
+            </Field>
+          </div>
+
+          <Field label="Country" error={errors.country} required>
+            {(props) => (
+              <Select
+                {...props}
+                autoComplete="country-name"
+                value={values.country}
+                onChange={set('country')}
+                options={[
+                  { value: '', label: 'Select country' },
+                  ...SHIPPING_COUNTRIES.map((country) => ({ value: country, label: country })),
+                ]}
+              />
+            )}
+          </Field>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5">
+          {cardFieldsEnabled && config ? (
+            <Suspense
+              fallback={
+                <div className="flex justify-center py-4">
+                  <Spinner label="Loading payment" />
+                </div>
+              }
+            >
+              <PaymentSection
+                config={config}
+                amountOre={amountOre}
+                method={uiMethod}
+                onMethodChange={setUiMethod}
+                onCardValidityChange={setCardValid}
+                onUnavailable={() => {
+                  setCardUiAvailable(false);
+                  setCardValid(false);
+                }}
+                cardSubmitRef={cardSubmitRef}
+                ensurePaypalOrder={ensurePaypalOrder}
+                disabled={disabled || busy}
+              />
+            </Suspense>
           ) : null}
-        </div>
-      </div>
 
-      {inlineError || checkoutStore.error ? (
-        <Alert variant="destructive">{inlineError || checkoutStore.error}</Alert>
-      ) : null}
+          <div className="flex flex-col gap-1.5">
+            <label className="flex cursor-pointer items-start gap-3 text-sm leading-snug">
+              <input
+                type="checkbox"
+                className="border-input text-primary focus-visible:ring-ring mt-0.5 size-4 shrink-0 rounded accent-primary"
+                checked={acceptTerms}
+                onChange={(e) => {
+                  setAcceptTerms(e.target.checked);
+                  if (errors.acceptTerms) {
+                    setErrors((current) => ({ ...current, acceptTerms: undefined }));
+                  }
+                }}
+                aria-invalid={Boolean(errors.acceptTerms)}
+                aria-describedby={errors.acceptTerms ? 'checkout-accept-terms-error' : undefined}
+              />
+              <span className="text-muted-foreground">
+                I agree to the{' '}
+                <Link
+                  to="/terms"
+                  className="text-primary font-medium hover:underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Terms
+                </Link>{' '}
+                and{' '}
+                <Link
+                  to="/returns"
+                  className="text-primary font-medium hover:underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Returns &amp; Refunds
+                </Link>{' '}
+                policy.
+              </span>
+            </label>
+            {errors.acceptTerms ? (
+              <p id="checkout-accept-terms-error" className="text-destructive text-xs" role="alert">
+                {errors.acceptTerms}
+              </p>
+            ) : null}
+          </div>
 
-      {useCardUi && uiMethod === 'card' ? (
-        <p className="text-muted-foreground text-xs leading-relaxed">{CARD_PRIVACY_NOTICE}</p>
-      ) : null}
+          {inlineError || checkoutStore.error ? (
+            <Alert variant="destructive">{inlineError || checkoutStore.error}</Alert>
+          ) : null}
 
-      {!(useCardUi && uiMethod === 'paypal') ? (
-        <Button type="submit" size="lg" block disabled={payDisabled}>
-          {busy || checkout.isPending ? <Spinner className="text-primary-foreground" /> : <Lock />}
-          Pay now
-        </Button>
-      ) : null}
+          {useCardUi && uiMethod === 'card' ? (
+            <p className="text-muted-foreground text-xs leading-relaxed">{CARD_PRIVACY_NOTICE}</p>
+          ) : null}
 
-      {useCardUi ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          block
-          disabled={disabled || busy || items.length === 0}
-          onClick={(e) => void onRedirectPay(e as unknown as FormEvent)}
-        >
-          Pay with PayPal instead
-        </Button>
-      ) : null}
+          {!(useCardUi && uiMethod === 'paypal') ? (
+            <Button type="submit" size="lg" block disabled={payDisabled}>
+              {busy || checkout.isPending ? <Spinner className="text-primary-foreground" /> : <Lock />}
+              Pay now
+            </Button>
+          ) : null}
+
+          {!useCardUi ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              block
+              disabled={disabled || busy || items.length === 0}
+              onClick={(e) => void onRedirectPay(e as unknown as FormEvent)}
+            >
+              Continue with PayPal
+            </Button>
+          ) : (
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground text-center text-xs underline-offset-2 hover:underline disabled:opacity-50"
+              disabled={disabled || busy || items.length === 0}
+              onClick={(e) => void onRedirectPay(e as unknown as FormEvent)}
+            >
+              Trouble with the buttons? Continue on PayPal
+            </button>
+          )}
+        </CardContent>
+      </Card>
     </form>
   );
 }

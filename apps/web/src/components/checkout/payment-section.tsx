@@ -6,6 +6,7 @@ import {
   useEligibleMethods,
   type CardSubmitResult,
 } from '../../lib/paypal';
+import { CardBrandIcons } from './card-brand-icons';
 import { CardPaymentFields, type CardSubmitFn } from './card-payment-fields';
 import { PaypalWalletButton } from './paypal-wallet-button';
 
@@ -165,55 +166,50 @@ function EligibleMethods({
 
   useEffect(() => {
     if (method === 'card' && !showCard && showPaypal) onMethodChange('paypal');
+    if (method === 'paypal' && showCard) onMethodChange('card');
   }, [method, showCard, showPaypal, onMethodChange]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-2" role="tablist" aria-label="Payment method">
-        {showCard ? (
-          <button
-            type="button"
-            role="tab"
-            aria-selected={method === 'card'}
-            className={`rounded-md border px-3 py-2 text-sm font-medium ${
-              method === 'card'
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border text-muted-foreground'
-            }`}
-            onClick={() => onMethodChange('card')}
-            disabled={disabled}
-          >
-            Card
-          </button>
-        ) : null}
-        {showPaypal ? (
-          <button
-            type="button"
-            role="tab"
-            aria-selected={method === 'paypal'}
-            className={`rounded-md border px-3 py-2 text-sm font-medium ${
-              method === 'paypal'
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border text-muted-foreground'
-            }`}
-            onClick={() => onMethodChange('paypal')}
-            disabled={disabled}
-          >
-            PayPal
-          </button>
-        ) : null}
-      </div>
-
-      {method === 'card' && showCard ? (
-        <CardPaymentFields
-          amountValue={amountValue}
-          onValidityChange={onCardValidityChange}
-          submitRef={cardSubmitRef}
-        />
+    <div className="flex flex-col gap-6">
+      {showPaypal ? (
+        <div className="flex flex-col gap-3">
+          <div>
+            <p className="text-foreground text-sm font-medium">Express checkout</p>
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              Pay faster with your PayPal account.
+            </p>
+          </div>
+          <PaypalWalletButton ensurePaypalOrder={ensurePaypalOrder} disabled={disabled} />
+        </div>
       ) : null}
 
-      {method === 'paypal' && showPaypal ? (
-        <PaypalWalletButton ensurePaypalOrder={ensurePaypalOrder} disabled={disabled} />
+      {showPaypal && showCard ? (
+        <div className="relative flex items-center gap-3" role="separator" aria-label="Or">
+          <div className="border-border h-px flex-1 border-t" />
+          <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+            Or pay by card
+          </span>
+          <div className="border-border h-px flex-1 border-t" />
+        </div>
+      ) : null}
+
+      {showCard ? (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-foreground text-sm font-medium">Card details</p>
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                Secure card fields hosted by PayPal.
+              </p>
+            </div>
+            <CardBrandIcons />
+          </div>
+          <CardPaymentFields
+            amountValue={amountValue}
+            onValidityChange={onCardValidityChange}
+            submitRef={cardSubmitRef}
+          />
+        </div>
       ) : null}
     </div>
   );

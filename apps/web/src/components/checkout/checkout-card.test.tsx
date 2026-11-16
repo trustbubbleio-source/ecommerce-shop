@@ -160,7 +160,7 @@ describe('CheckoutForm card flow', () => {
     renderWithProviders(<CheckoutForm />);
     expect(await screen.findByRole('button', { name: /pay now/i })).toBeInTheDocument();
     expect(screen.queryByTestId('card-fields')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /pay with paypal instead/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /continue with paypal/i })).toBeInTheDocument();
   });
 
   it('still shows card UI when PayPal eligibility service errors', async () => {
@@ -172,7 +172,8 @@ describe('CheckoutForm card flow', () => {
 
     renderWithProviders(<CheckoutForm />);
     expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /card/i })).toBeInTheDocument();
+    expect(screen.getByText(/^Express checkout$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Card details$/i)).toBeInTheDocument();
     expect(screen.queryByText(/card fields could not load/i)).not.toBeInTheDocument();
   });
 
