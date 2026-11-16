@@ -163,11 +163,24 @@ describe('CheckoutForm card flow', () => {
     expect(screen.queryByRole('button', { name: /pay with paypal instead/i })).not.toBeInTheDocument();
   });
 
-  it('falls back to enabled Pay now redirect when PayPal eligibility fails', async () => {
+  it('still shows card UI when PayPal eligibility service errors', async () => {
     eligibleMethodsState.current = {
       eligiblePaymentMethods: null,
       isLoading: false,
       error: new Error('ERR_INIT_FIND_ELIGIBLE_METHODS'),
+    };
+
+    renderWithProviders(<CheckoutForm />);
+    expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /card/i })).toBeInTheDocument();
+    expect(screen.queryByText(/card fields could not load/i)).not.toBeInTheDocument();
+  });
+
+  it('falls back to enabled Pay now redirect when no methods are eligible', async () => {
+    eligibleMethodsState.current = {
+      eligiblePaymentMethods: { isEligible: () => false },
+      isLoading: false,
+      error: null,
     };
 
     vi.spyOn(api, 'checkout').mockResolvedValue({

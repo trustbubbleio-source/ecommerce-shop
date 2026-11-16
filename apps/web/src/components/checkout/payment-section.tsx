@@ -38,21 +38,28 @@ function EligibilityGate({
     } as never,
   });
 
-  const card = Boolean(
-    (eligiblePaymentMethods as { isEligible?: (method: string) => boolean } | null)?.isEligible?.(
-      'advanced_cards',
-    ),
-  );
-  const paypal = Boolean(
-    (eligiblePaymentMethods as { isEligible?: (method: string) => boolean } | null)?.isEligible?.(
-      'paypal',
-    ),
-  );
+  // PayPal's eligibility service can hard-fail (ERR_INIT_FIND_ELIGIBLE_METHODS) even when
+  // card-fields / paypal-payments sessions create successfully. In that case keep offering UI.
+  const eligibilityBroken = Boolean(error);
+  const card =
+    eligibilityBroken ||
+    Boolean(
+      (eligiblePaymentMethods as { isEligible?: (method: string) => boolean } | null)?.isEligible?.(
+        'advanced_cards',
+      ),
+    );
+  const paypal =
+    eligibilityBroken ||
+    Boolean(
+      (eligiblePaymentMethods as { isEligible?: (method: string) => boolean } | null)?.isEligible?.(
+        'paypal',
+      ),
+    );
 
   useEffect(() => {
-    if (isLoading) return;
-    if (error || (!card && !paypal)) onIneligible();
-  }, [isLoading, error, card, paypal, onIneligible]);
+    if (isLoading || eligibilityBroken) return;
+    if (!card && !paypal) onIneligible();
+  }, [isLoading, eligibilityBroken, card, paypal, onIneligible]);
 
   if (isLoading) {
     return (
@@ -62,7 +69,7 @@ function EligibilityGate({
     );
   }
 
-  if (error || (!card && !paypal)) {
+  if (!eligibilityBroken && !card && !paypal) {
     return (
       <Alert variant="info">
         Card fields could not load. You can still pay with PayPal below.
