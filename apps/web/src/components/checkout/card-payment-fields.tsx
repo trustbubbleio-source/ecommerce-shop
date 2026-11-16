@@ -1,5 +1,6 @@
 import { Field } from '@akknerds/ui';
-import { useEffect, useState, type MutableRefObject } from 'react';
+import { CircleHelp } from 'lucide-react';
+import { useEffect, useState, type MutableRefObject, type ReactNode } from 'react';
 import {
   PayPalCardCvvField,
   PayPalCardExpiryField,
@@ -9,6 +10,7 @@ import {
   usePayPalCardFieldsOneTimePaymentSession,
   type CardSubmitResult,
 } from '../../lib/paypal';
+import { CardBrandIcons } from './card-brand-icons';
 
 /** Match `@akknerds/ui` Input tokens so PayPal iframes sit in the same shell. */
 const FIELD_STYLE = {
@@ -35,8 +37,25 @@ const FIELD_CONTAINER = {
   width: '100%',
 } as const;
 
+/** Extra right padding inside PayPal iframe so overlay icons don't collide with typed digits. */
+const NUMBER_FIELD_STYLE = {
+  ...FIELD_STYLE,
+  input: {
+    ...FIELD_STYLE.input,
+    'padding-right': '7.5rem',
+  },
+} as const;
+
+const CVV_FIELD_STYLE = {
+  ...FIELD_STYLE,
+  input: {
+    ...FIELD_STYLE.input,
+    'padding-right': '2.25rem',
+  },
+} as const;
+
 const fieldShellClass =
-  'border-input bg-background overflow-hidden rounded-lg border shadow-sm transition-colors focus-within:border-ring focus-within:ring-ring/40 focus-within:ring-2';
+  'border-input bg-background relative overflow-hidden rounded-lg border shadow-sm transition-colors focus-within:border-ring focus-within:ring-ring/40 focus-within:ring-2';
 
 export type CardSubmitFn = (
   paypalOrderId: string,
@@ -54,6 +73,46 @@ export interface CardPaymentFieldsProps {
   submitRef: MutableRefObject<CardSubmitFn | null>;
 }
 
+function FieldShell({
+  children,
+  adornment,
+}: {
+  children: ReactNode;
+  adornment?: ReactNode;
+}) {
+  return (
+    <div className={fieldShellClass}>
+      {children}
+      {adornment ? (
+        <div className="pointer-events-none absolute inset-y-0 right-2 z-10 flex items-center gap-1">
+          {adornment}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** CSS-only hover/focus tooltip that works without a Tooltip primitive. */
+function CvvHelpTip() {
+  return (
+    <span className="group pointer-events-auto relative inline-flex">
+      <button
+        type="button"
+        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex size-6 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2"
+        aria-label="What is the security code?"
+      >
+        <CircleHelp className="size-4" aria-hidden="true" />
+      </button>
+      <span
+        role="tooltip"
+        className="border-border bg-popover text-popover-foreground pointer-events-none absolute bottom-[calc(100%+0.45rem)] right-0 z-20 hidden w-52 rounded-md border px-2.5 py-2 text-left text-xs leading-snug shadow-md group-hover:block group-focus-within:block"
+      >
+        The 3-digit code on the back of your card (or 4 digits on the front for American Express).
+      </span>
+    </span>
+  );
+}
+
 function CardFieldsInner({
   onValidityChange,
   submitRef,
@@ -64,7 +123,6 @@ function CardFieldsInner({
     resolve: (value: CardSubmitResult) => void;
   } | null>(null);
 
-  // Parent already tracks validity via provider events; keep hook for Pay gating.
   void onValidityChange;
 
   useEffect(() => {
@@ -109,52 +167,54 @@ function CardFieldsInner({
 
   return (
     <div className="flex flex-col gap-4">
-      <Field label="Name on card" required>
-        {() => (
-          <div className={fieldShellClass}>
-            <PayPalCardNameField
-              style={FIELD_STYLE}
-              containerStyles={FIELD_CONTAINER}
-              placeholder="Name on card"
-            />
-          </div>
-        )}
-      </Field>
       <Field label="Card number" required>
         {() => (
-          <div className={fieldShellClass}>
+          <FieldShell adornment={<CardBrandIcons />}>
             <PayPalCardNumberField
-              style={FIELD_STYLE}
+              style={NUMBER_FIELD_STYLE}
               containerStyles={FIELD_CONTAINER}
               placeholder="Card number"
             />
-          </div>
+          </FieldShell>
         )}
       </Field>
+
       <div className="grid grid-cols-2 gap-4">
         <Field label="Expiry" required>
           {() => (
-            <div className={fieldShellClass}>
+            <FieldShell>
               <PayPalCardExpiryField
                 style={FIELD_STYLE}
                 containerStyles={FIELD_CONTAINER}
                 placeholder="MM/YY"
               />
-            </div>
+            </FieldShell>
           )}
         </Field>
-        <Field label="CVV" required>
+        <Field label="Security code" required>
           {() => (
-            <div className={fieldShellClass}>
+            <FieldShell adornment={<CvvHelpTip />}>
               <PayPalCardCvvField
-                style={FIELD_STYLE}
+                style={CVV_FIELD_STYLE}
                 containerStyles={FIELD_CONTAINER}
                 placeholder="CVV"
               />
-            </div>
+            </FieldShell>
           )}
         </Field>
       </div>
+
+      <Field label="Name on card" required>
+        {() => (
+          <FieldShell>
+            <PayPalCardNameField
+              style={FIELD_STYLE}
+              containerStyles={FIELD_CONTAINER}
+              placeholder="Name on card"
+            />
+          </FieldShell>
+        )}
+      </Field>
     </div>
   );
 }

@@ -6,9 +6,8 @@ import {
   useEligibleMethods,
   type CardSubmitResult,
 } from '../../lib/paypal';
-import { CardBrandIcons } from './card-brand-icons';
 import { CardPaymentFields, type CardSubmitFn } from './card-payment-fields';
-import { PaypalWalletButton } from './paypal-wallet-button';
+import { ExpressCheckout } from './express-checkout';
 
 export type PaymentUiMethod = 'card' | 'paypal';
 
@@ -171,45 +170,26 @@ function EligibleMethods({
 
   return (
     <div className="flex flex-col gap-6">
-      {showPaypal ? (
-        <div className="flex flex-col gap-3">
-          <div>
-            <p className="text-foreground text-sm font-medium">Express checkout</p>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Pay faster with your PayPal account.
-            </p>
-          </div>
-          <PaypalWalletButton ensurePaypalOrder={ensurePaypalOrder} disabled={disabled} />
-        </div>
-      ) : null}
+      <ExpressCheckout
+        ensurePaypalOrder={ensurePaypalOrder}
+        showPaypal={showPaypal}
+        disabled={disabled}
+      />
 
       {showPaypal && showCard ? (
         <div className="relative flex items-center gap-3" role="separator" aria-label="Or">
           <div className="border-border h-px flex-1 border-t" />
-          <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-            Or pay by card
-          </span>
+          <span className="text-muted-foreground text-xs font-medium">Or pay with card</span>
           <div className="border-border h-px flex-1 border-t" />
         </div>
       ) : null}
 
       {showCard ? (
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-foreground text-sm font-medium">Card details</p>
-              <p className="text-muted-foreground mt-0.5 text-xs">
-                Secure card fields hosted by PayPal.
-              </p>
-            </div>
-            <CardBrandIcons />
-          </div>
-          <CardPaymentFields
-            amountValue={amountValue}
-            onValidityChange={onCardValidityChange}
-            submitRef={cardSubmitRef}
-          />
-        </div>
+        <CardPaymentFields
+          amountValue={amountValue}
+          onValidityChange={onCardValidityChange}
+          submitRef={cardSubmitRef}
+        />
       ) : null}
     </div>
   );

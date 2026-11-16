@@ -173,7 +173,7 @@ describe('CheckoutForm card flow', () => {
     renderWithProviders(<CheckoutForm />);
     expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
     expect(screen.getByText(/^Express checkout$/i)).toBeInTheDocument();
-    expect(screen.getByText(/^Card details$/i)).toBeInTheDocument();
+    expect(screen.getByText(/or pay with card/i)).toBeInTheDocument();
     expect(screen.queryByText(/card fields could not load/i)).not.toBeInTheDocument();
   });
 
