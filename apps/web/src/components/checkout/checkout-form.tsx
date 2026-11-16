@@ -439,6 +439,9 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
       <Card>
         <CardHeader>
           <CardTitle>Payment</CardTitle>
+          <p className="text-muted-foreground text-sm">
+            All transactions are secure and encrypted.
+          </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           {cardFieldsEnabled && config ? (

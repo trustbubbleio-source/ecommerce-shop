@@ -101,7 +101,7 @@ function CvvHelpTip() {
     <span className="pointer-events-auto relative inline-flex">
       <button
         type="button"
-        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring bg-background inline-flex size-9 items-center justify-center rounded-full shadow-sm focus-visible:outline-none focus-visible:ring-2"
+        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex size-9 items-center justify-center rounded-full bg-transparent focus-visible:outline-none focus-visible:ring-2"
         aria-label="What is the security code?"
         aria-expanded={open}
         onMouseEnter={() => setOpen(true)}

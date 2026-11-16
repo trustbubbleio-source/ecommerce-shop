@@ -19,7 +19,7 @@ export function ExpressCheckout({
   if (!showPaypal) return null;
 
   return (
-    <div className="border-border bg-muted/40 flex flex-col gap-4 rounded-xl border p-4 sm:p-5">
+    <div className="flex flex-col gap-4">
       <p className="text-foreground text-center text-sm font-semibold tracking-tight">
         Express checkout
       </p>
