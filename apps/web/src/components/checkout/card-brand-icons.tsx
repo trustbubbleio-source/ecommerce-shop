@@ -1,6 +1,4 @@
-import type { ReactNode } from 'react';
-
-/** Compact card-network marks for checkout trust signals (decorative). */
+/** Compact card-network marks — identical outer tiles so the row stays level. */
 export function CardBrandIcons({ className }: { className?: string }) {
   return (
     <ul
@@ -23,78 +21,66 @@ export function CardBrandIcons({ className }: { className?: string }) {
   );
 }
 
-function MarkShell({ children }: { children: ReactNode }) {
-  return (
-    <span className="bg-white inline-flex h-[18px] w-[28px] items-center justify-center rounded-[3px] shadow-sm">
-      {children}
-    </span>
-  );
-}
+const TILE = 'block h-5 w-8 shrink-0 overflow-hidden rounded-[3px] shadow-sm';
 
-/** Badge-style Visa wordmark — matches the other network tiles better than a sparse path. */
 function VisaMark() {
   return (
-    <MarkShell>
-      <svg width="24" height="10" viewBox="0 0 48 16" aria-hidden="true">
-        <rect width="48" height="16" rx="2" fill="#1A1F71" />
-        <text
-          x="24"
-          y="11.5"
-          textAnchor="middle"
-          fill="#fff"
-          fontSize="9"
-          fontFamily="Arial, Helvetica, sans-serif"
-          fontWeight="700"
-          letterSpacing="0.5"
-        >
-          VISA
-        </text>
-      </svg>
-    </MarkShell>
+    <svg className={TILE} viewBox="0 0 32 20" aria-hidden="true">
+      <rect width="32" height="20" fill="#1A1F71" />
+      <text
+        x="16"
+        y="13.5"
+        textAnchor="middle"
+        fill="#fff"
+        fontSize="8"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontWeight="700"
+        letterSpacing="0.8"
+      >
+        VISA
+      </text>
+    </svg>
   );
 }
 
 function MastercardMark() {
   return (
-    <MarkShell>
-      <svg width="24" height="14" viewBox="0 0 28 18" aria-hidden="true">
-        <circle cx="10" cy="9" r="7" fill="#EB001B" />
-        <circle cx="18" cy="9" r="7" fill="#F79E1B" />
-        <path fill="#FF5F00" d="M14 3.6a7 7 0 0 1 0 10.8 7 7 0 0 1 0-10.8z" />
-      </svg>
-    </MarkShell>
+    <svg className={`${TILE} bg-white`} viewBox="0 0 32 20" aria-hidden="true">
+      <rect width="32" height="20" fill="#fff" />
+      <circle cx="12.5" cy="10" r="6" fill="#EB001B" />
+      <circle cx="19.5" cy="10" r="6" fill="#F79E1B" />
+      <path fill="#FF5F00" d="M16 5.2a6 6 0 0 1 0 9.6 6 6 0 0 1 0-9.6z" />
+    </svg>
   );
 }
 
 function MaestroMark() {
   return (
-    <MarkShell>
-      <svg width="24" height="14" viewBox="0 0 28 18" aria-hidden="true">
-        <circle cx="10" cy="9" r="7" fill="#0099DF" />
-        <circle cx="18" cy="9" r="7" fill="#ED0006" />
-        <path fill="#6C6BBD" d="M14 3.6a7 7 0 0 1 0 10.8 7 7 0 0 1 0-10.8z" />
-      </svg>
-    </MarkShell>
+    <svg className={`${TILE} bg-white`} viewBox="0 0 32 20" aria-hidden="true">
+      <rect width="32" height="20" fill="#fff" />
+      <circle cx="12.5" cy="10" r="6" fill="#0099DF" />
+      <circle cx="19.5" cy="10" r="6" fill="#ED0006" />
+      <path fill="#6C6BBD" d="M16 5.2a6 6 0 0 1 0 9.6 6 6 0 0 1 0-9.6z" />
+    </svg>
   );
 }
 
 function AmexMark() {
   return (
-    <MarkShell>
-      <svg width="24" height="14" viewBox="0 0 28 18" aria-hidden="true">
-        <rect width="28" height="18" rx="2" fill="#2E77BC" />
-        <text
-          x="14"
-          y="12"
-          textAnchor="middle"
-          fill="#fff"
-          fontSize="7"
-          fontFamily="Arial, Helvetica, sans-serif"
-          fontWeight="700"
-        >
-          AMEX
-        </text>
-      </svg>
-    </MarkShell>
+    <svg className={TILE} viewBox="0 0 32 20" aria-hidden="true">
+      <rect width="32" height="20" fill="#2E77BC" />
+      <text
+        x="16"
+        y="13.5"
+        textAnchor="middle"
+        fill="#fff"
+        fontSize="7"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontWeight="700"
+        letterSpacing="0.4"
+      >
+        AMEX
+      </text>
+    </svg>
   );
 }

@@ -95,21 +95,30 @@ function FieldShell({
 
 /** Hover/focus tip rendered above the field (parent must not clip overflow). */
 function CvvHelpTip() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <span className="group/cvv pointer-events-auto relative inline-flex">
+    <span className="pointer-events-auto relative inline-flex">
       <button
         type="button"
-        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring bg-background/90 inline-flex size-8 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2"
+        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring bg-background inline-flex size-9 items-center justify-center rounded-full shadow-sm focus-visible:outline-none focus-visible:ring-2"
         aria-label="What is the security code?"
+        aria-expanded={open}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
       >
-        <CircleHelp className="size-5" strokeWidth={2} aria-hidden="true" />
+        <CircleHelp className="size-6" strokeWidth={2} aria-hidden="true" />
       </button>
-      <span
-        role="tooltip"
-        className="border-border bg-popover text-popover-foreground pointer-events-none absolute bottom-full right-0 z-50 mb-2 hidden w-56 rounded-md border px-3 py-2.5 text-left text-xs leading-snug shadow-lg group-hover/cvv:block group-focus-within/cvv:block"
-      >
-        The 3-digit code on the back of your card (or 4 digits on the front for American Express).
-      </span>
+      {open ? (
+        <span
+          role="tooltip"
+          className="border-border bg-popover text-popover-foreground absolute bottom-full right-0 z-50 mb-2 w-56 rounded-md border px-3 py-2.5 text-left text-xs leading-snug shadow-lg"
+        >
+          The 3-digit code on the back of your card (or 4 digits on the front for American Express).
+        </span>
+      ) : null}
     </span>
   );
 }
