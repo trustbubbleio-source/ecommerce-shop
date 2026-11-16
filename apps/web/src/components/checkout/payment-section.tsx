@@ -21,6 +21,7 @@ interface PaymentSectionProps {
   onUnavailable?: () => void;
   cardSubmitRef: MutableRefObject<CardSubmitFn | null>;
   ensurePaypalOrder: () => Promise<{ orderId: string; paypalOrderId: string }>;
+  onSwishPay?: () => Promise<void>;
   disabled?: boolean;
 }
 
@@ -89,6 +90,7 @@ export function PaymentSection({
   onUnavailable,
   cardSubmitRef,
   ensurePaypalOrder,
+  onSwishPay,
   disabled,
 }: PaymentSectionProps) {
   const [sdkIneligible, setSdkIneligible] = useState(false);
@@ -129,6 +131,7 @@ export function PaymentSection({
             onCardValidityChange={onCardValidityChange}
             cardSubmitRef={cardSubmitRef}
             ensurePaypalOrder={ensurePaypalOrder}
+            onSwishPay={onSwishPay}
             disabled={disabled}
           />
         )}
@@ -147,6 +150,7 @@ function EligibleMethods({
   onCardValidityChange,
   cardSubmitRef,
   ensurePaypalOrder,
+  onSwishPay,
   disabled,
 }: {
   card: boolean;
@@ -158,10 +162,12 @@ function EligibleMethods({
   onCardValidityChange: (valid: boolean) => void;
   cardSubmitRef: MutableRefObject<CardSubmitFn | null>;
   ensurePaypalOrder: () => Promise<{ orderId: string; paypalOrderId: string }>;
+  onSwishPay?: () => Promise<void>;
   disabled?: boolean;
 }) {
   const showCard = card && config.methods.cardFields;
   const showPaypal = paypal && config.methods.paypalButton;
+  const showSwish = Boolean(config.methods.swishButton && onSwishPay);
 
   useEffect(() => {
     if (method === 'card' && !showCard && showPaypal) onMethodChange('paypal');
@@ -172,7 +178,9 @@ function EligibleMethods({
     <div className="flex flex-col gap-6">
       <ExpressCheckout
         ensurePaypalOrder={ensurePaypalOrder}
+        onSwishPay={onSwishPay}
         showPaypal={showPaypal}
+        showSwish={showSwish}
         disabled={disabled}
       />
 

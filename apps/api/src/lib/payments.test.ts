@@ -120,6 +120,13 @@ describe('PaymentService (test stub)', () => {
     expect(result.url).toContain('checkoutnow');
   });
 
+  it('returns approve URL for swish method', async () => {
+    const service = new PaymentService(env);
+    const result = await service.createCheckout(mockOrder(), { method: 'swish' });
+    expect(result.url).toContain('checkoutnow');
+    expect(result.sessionId).toContain('_swish_');
+  });
+
   it('decides capture outcome from capture status not order status', async () => {
     const service = new PaymentService(env);
     service.fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -216,5 +223,54 @@ describe('PaymentService card payload (network stub)', () => {
       'cancel_url',
       'return_url',
     ]);
+  });
+
+  it('sends swish payment_source with auto-capture instruction', async () => {
+    let posted: unknown;
+    const env = loadEnv({
+      PAYPAL_API_KEY: 'real_client',
+      PAYPAL_SECRET_KEY: 'real_secret',
+      CHECKOUT_SUCCESS_URL: 'https://shop.test/success',
+      CHECKOUT_CANCEL_URL: 'https://shop.test/cart',
+    });
+    const service = new PaymentService(env);
+    service.fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/v1/oauth2/token')) {
+        return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
+          status: 200,
+        });
+      }
+      if (url.includes('/v2/checkout/orders') && init?.method === 'POST') {
+        posted = JSON.parse(String(init.body));
+        return new Response(
+          JSON.stringify({
+            id: 'SWISH123',
+            links: [{ rel: 'payer-action', href: 'https://www.sandbox.paypal.com/swish' }],
+          }),
+          { status: 201 },
+        );
+      }
+      return new Response('{}', { status: 404 });
+    }) as typeof fetch;
+
+    const result = await service.createCheckout(mockOrder(), { method: 'swish' });
+    expect(result.sessionId).toBe('SWISH123');
+    expect(result.url).toBe('https://www.sandbox.paypal.com/swish');
+
+    const payload = posted as {
+      processing_instruction?: string;
+      payment_source: {
+        swish: {
+          name: string;
+          country_code: string;
+          experience_context: Record<string, string>;
+        };
+      };
+    };
+    expect(payload.processing_instruction).toBe('ORDER_COMPLETE_ON_PAYMENT_APPROVAL');
+    expect(payload.payment_source.swish.country_code).toBe('SE');
+    expect(payload.payment_source.swish.name.length).toBeGreaterThan(0);
+    expect(payload.payment_source.swish.experience_context.locale).toBe('sv-SE');
   });
 });

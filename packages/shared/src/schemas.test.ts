@@ -160,6 +160,17 @@ describe('checkoutInputSchema', () => {
     ).toBe(true);
   });
 
+  it('accepts paymentMethod swish', () => {
+    expect(
+      checkoutInputSchema.safeParse({
+        items: [{ productId: 'bb-151', quantity: 1 }],
+        email: 'buyer@example.com',
+        shippingAddress,
+        paymentMethod: 'swish',
+      }).success,
+    ).toBe(true);
+  });
+
   it('rejects quantities above the per-line cap', () => {
     expect(
       checkoutInputSchema.safeParse({

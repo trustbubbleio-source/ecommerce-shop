@@ -204,7 +204,7 @@ export interface RegisterPendingResponse {
   message: string;
 }
 
-export type PaymentMethod = 'card' | 'paypal' | 'redirect';
+export type PaymentMethod = 'card' | 'paypal' | 'redirect' | 'swish';
 
 export type PaymentErrorCode =
   | 'PAYMENT_DECLINED'
@@ -221,6 +221,8 @@ export interface CheckoutConfig {
   methods: {
     cardFields: boolean;
     paypalButton: boolean;
+    /** PayPal Swish (SEK) — express strip + redirect to PayPal-hosted Swish. */
+    swishButton: boolean;
     redirect: boolean;
   };
 }

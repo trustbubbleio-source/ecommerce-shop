@@ -188,7 +188,7 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
 
   const ensureSession = async (
     data: FormValues,
-    paymentMethod: 'card' | 'paypal' | 'redirect',
+    paymentMethod: 'card' | 'paypal' | 'redirect' | 'swish',
   ) => {
     const input = buildInput(data);
     const fingerprint = checkoutFingerprint({
@@ -356,6 +356,39 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
     const session = await ensureSession(data, 'paypal');
     if (!session) throw new Error('Order already paid');
     return { orderId: session.orderId, paypalOrderId: session.paypalOrderId };
+  };
+
+  const onSwishPay = async () => {
+    const data = validateForm();
+    if (!data) {
+      toast({
+        title: isPickup ? 'Complete your contact details' : 'Complete shipping first',
+        description: isPickup
+          ? 'Name and email are required before Swish.'
+          : 'Fill in the shipping form before paying with Swish.',
+        variant: 'error',
+      });
+      return;
+    }
+    setInlineError(null);
+    setBusy(true);
+    try {
+      const session = await ensureSession(data, 'swish');
+      if (!session) return;
+      if (session.url) {
+        window.location.assign(session.url);
+        return;
+      }
+      throw new Error('PayPal did not return a Swish checkout URL');
+    } catch (error) {
+      toast({
+        title: 'Swish checkout failed',
+        description: error instanceof ApiError ? error.message : 'Please try again.',
+        variant: 'error',
+      });
+    } finally {
+      setBusy(false);
+    }
   };
 
   const amountOre = cartSubtotal(items) + cartShipping(items, deliveryMethod);
@@ -531,6 +564,7 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
                 }}
                 cardSubmitRef={cardSubmitRef}
                 ensurePaypalOrder={ensurePaypalOrder}
+                onSwishPay={onSwishPay}
                 disabled={disabled || busy}
               />
             </Suspense>
@@ -596,16 +630,30 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
           ) : null}
 
           {!useCardUi ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              block
-              disabled={disabled || busy || items.length === 0}
-              onClick={(e) => void onRedirectPay(e as unknown as FormEvent)}
-            >
-              Continue with PayPal
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                block
+                disabled={disabled || busy || items.length === 0}
+                onClick={(e) => void onRedirectPay(e as unknown as FormEvent)}
+              >
+                Continue with PayPal
+              </Button>
+              {config?.methods.swishButton ? (
+                <Button
+                  type="button"
+                  size="lg"
+                  block
+                  disabled={disabled || busy || items.length === 0}
+                  className="bg-[#ee2a7b] text-white hover:bg-[#ee2a7b]/90"
+                  onClick={() => void onSwishPay()}
+                >
+                  Pay with Swish
+                </Button>
+              ) : null}
+            </div>
           ) : (
             <button
               type="button"

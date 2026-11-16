@@ -94,7 +94,7 @@ beforeEach(() => {
     clientId: 'test-client',
     currency: 'SEK',
     locale: 'sv-SE',
-    methods: { cardFields: true, paypalButton: true, redirect: true },
+    methods: { cardFields: true, paypalButton: true, swishButton: true, redirect: true },
   });
 });
 
@@ -155,7 +155,7 @@ describe('CheckoutForm card flow', () => {
       clientId: 'test-client',
       currency: 'SEK',
       locale: 'sv-SE',
-      methods: { cardFields: false, paypalButton: false, redirect: true },
+      methods: { cardFields: false, paypalButton: false, swishButton: false, redirect: true },
     });
     renderWithProviders(<CheckoutForm />);
     expect(await screen.findByRole('button', { name: /pay now/i })).toBeInTheDocument();

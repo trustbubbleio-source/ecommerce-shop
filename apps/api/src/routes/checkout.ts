@@ -41,7 +41,7 @@ function buildCheckoutConfig(deps: AppDeps, isAdmin: boolean): CheckoutConfig {
       clientId: '',
       currency: 'SEK',
       locale: 'sv-SE',
-      methods: { cardFields: false, paypalButton: false, redirect: true },
+      methods: { cardFields: false, paypalButton: false, swishButton: false, redirect: true },
     };
   }
 
@@ -57,6 +57,8 @@ function buildCheckoutConfig(deps: AppDeps, isAdmin: boolean): CheckoutConfig {
     methods: {
       cardFields,
       paypalButton: cardFields,
+      // Swish rides the same PayPal live credentials; dashboard must have Swish enabled.
+      swishButton: true,
       redirect: true,
     },
   };
@@ -76,7 +78,7 @@ function checkoutResponse(
       status: 'paid' as const,
     };
   }
-  if (method === 'redirect') {
+  if (method === 'redirect' || method === 'swish') {
     return {
       orderId,
       url: checkout.url,

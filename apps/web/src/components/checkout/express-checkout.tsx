@@ -3,20 +3,26 @@ import { PaypalWalletButton } from './paypal-wallet-button';
 
 interface ExpressCheckoutProps {
   ensurePaypalOrder: () => Promise<{ orderId: string; paypalOrderId: string }>;
+  /** Starts Swish via PayPal (creates order + redirects to payer-action). */
+  onSwishPay?: () => Promise<void>;
   showPaypal: boolean;
+  showSwish?: boolean;
   disabled?: boolean;
 }
 
 /**
  * Express checkout strip — Apple/Google Pay shown as branded slots (enabled after
- * domain association + PayPal wallet eligibility). PayPal is live today.
+ * domain association + PayPal wallet eligibility). PayPal and Swish are live when
+ * the config flags say so.
  */
 export function ExpressCheckout({
   ensurePaypalOrder,
+  onSwishPay,
   showPaypal,
+  showSwish,
   disabled,
 }: ExpressCheckoutProps) {
-  if (!showPaypal) return null;
+  if (!showPaypal && !showSwish) return null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -24,7 +30,7 @@ export function ExpressCheckout({
         Express checkout
       </p>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         <ExpressSlot
           label="Apple Pay"
           title="Apple Pay needs domain verification in PayPal / Apple before it can go live."
@@ -47,15 +53,37 @@ export function ExpressCheckout({
           </span>
         </ExpressSlot>
 
-        <div
-          className={`bg-[#ffc439] flex min-h-11 items-center justify-center overflow-hidden rounded-lg ${
-            disabled ? 'pointer-events-none opacity-50' : ''
-          }`}
-        >
-          <div className="w-full scale-[0.92] px-1 [&_iframe]:!min-h-10">
-            <PaypalWalletButton ensurePaypalOrder={ensurePaypalOrder} disabled={disabled} />
+        {showPaypal ? (
+          <div
+            className={`bg-[#ffc439] flex min-h-11 items-center justify-center overflow-hidden rounded-lg ${
+              disabled ? 'pointer-events-none opacity-50' : ''
+            }`}
+          >
+            <div className="w-full scale-[0.92] px-1 [&_iframe]:!min-h-10">
+              <PaypalWalletButton ensurePaypalOrder={ensurePaypalOrder} disabled={disabled} />
+            </div>
           </div>
-        </div>
+        ) : (
+          <ExpressSlot label="PayPal" title="PayPal wallet is not enabled." disabled>
+            <span className="text-[15px] font-semibold tracking-tight text-white">PayPal</span>
+          </ExpressSlot>
+        )}
+
+        {showSwish && onSwishPay ? (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => void onSwishPay()}
+            aria-label="Pay with Swish"
+            className="flex min-h-11 items-center justify-center rounded-lg bg-[#ee2a7b] px-3 text-white transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <SwishWordmark />
+          </button>
+        ) : (
+          <ExpressSlot label="Swish" title="Swish is not enabled for this checkout yet." disabled>
+            <SwishWordmark />
+          </ExpressSlot>
+        )}
       </div>
     </div>
   );
@@ -83,6 +111,14 @@ function ExpressSlot({
       {children}
       <span className="sr-only">{label}</span>
     </button>
+  );
+}
+
+function SwishWordmark() {
+  return (
+    <span className="text-[15px] font-bold tracking-tight text-white" aria-hidden>
+      Swish
+    </span>
   );
 }
 

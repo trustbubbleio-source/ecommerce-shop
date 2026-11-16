@@ -333,6 +333,21 @@ export class PaymentService {
       };
     }
 
+    if (method === 'swish') {
+      const buyerName = (order.shippingAddress?.fullName ?? order.email ?? 'Customer').trim().slice(0, 300);
+      return {
+        swish: {
+          name: buyerName || 'Customer',
+          country_code: 'SE',
+          experience_context: {
+            locale: 'sv-SE',
+            return_url: returnUrl,
+            cancel_url: cancelUrl,
+          },
+        },
+      };
+    }
+
     const shippingCountry = toShippingCountryIso(order.shippingAddress?.country);
     const nameParts = (order.shippingAddress?.fullName ?? '').trim().split(/\s+/).filter(Boolean);
     const givenName = nameParts[0] ?? undefined;
@@ -381,7 +396,7 @@ export class PaymentService {
     // Deterministic stub for API tests — never hits the network.
     if (this.env.paypalClientId === 'test_paypal_client') {
       const sessionId = `PAYPAL_TEST_${order.id}_${method}_${this.nextAttempt(order.id, method)}`;
-      if (method === 'redirect') {
+      if (method === 'redirect' || method === 'swish') {
         return {
           sessionId,
           url: `https://www.sandbox.paypal.com/checkoutnow?token=${sessionId}`,
@@ -390,11 +405,15 @@ export class PaymentService {
       return { sessionId, url: null };
     }
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       intent: 'CAPTURE',
       purchase_units: [this.buildPurchaseUnit(order)],
       payment_source: this.buildPaymentSource(order, method),
     };
+    // Swish auto-captures on approval so return_url + webhook can settle without a second click.
+    if (method === 'swish') {
+      payload.processing_instruction = 'ORDER_COMPLETE_ON_PAYMENT_APPROVAL';
+    }
 
     const attempt = this.nextAttempt(order.id, method);
     const created = await this.paypalFetch<PayPalOrderDetails>('/v2/checkout/orders', {
@@ -407,7 +426,7 @@ export class PaymentService {
       throw new Error('PayPal did not return an order id');
     }
 
-    if (method === 'redirect') {
+    if (method === 'redirect' || method === 'swish') {
       const approve = created.links?.find((l) => l.rel === 'approve' || l.rel === 'payer-action');
       if (!approve?.href) {
         throw new Error('PayPal did not return an approve URL');
