@@ -13,6 +13,8 @@ import { useCartStore } from '../store/cart';
 export function CheckoutPage() {
   const formatMoney = useFormatMoney();
   const items = useCartStore((s) => s.items);
+  const deliveryMethod = useCartStore((s) => s.deliveryMethod);
+  const setDeliveryMethod = useCartStore((s) => s.setDeliveryMethod);
   const reconcileStatus = useReconcileCart();
   // Warm checkout config so the lazy payment chunk has data ready.
   useCheckoutConfig();
@@ -55,7 +57,13 @@ export function CheckoutPage() {
                 </li>
               ))}
             </ul>
-            <CartSummary items={items} className="border-border border-t pt-4" />
+            <CartSummary
+              items={items}
+              deliveryMethod={deliveryMethod}
+              onDeliveryMethodChange={setDeliveryMethod}
+              showDeliveryPicker={false}
+              className="border-border border-t pt-4"
+            />
           </CardContent>
         </Card>
       </div>

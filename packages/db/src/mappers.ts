@@ -1,12 +1,18 @@
 import type {
   Address,
+  DeliveryMethod,
   FulfillmentStep,
   Order,
   OrderLine,
   OrderStatus,
   Product,
 } from '@akknerds/shared';
-import { BASE_CURRENCY, primaryProductImage, repairMojibakeText } from '@akknerds/shared';
+import {
+  BASE_CURRENCY,
+  isDeliveryMethod,
+  primaryProductImage,
+  repairMojibakeText,
+} from '@akknerds/shared';
 import type { Order as DbOrder, Product as DbProduct } from '@prisma/client';
 import {
   fromPrismaCategory,
@@ -107,6 +113,10 @@ export function fromProduct(product: Product) {
   };
 }
 
+function toDeliveryMethod(value: string | null | undefined): DeliveryMethod {
+  return value && isDeliveryMethod(value) ? value : 'shipping';
+}
+
 export function toOrder(row: DbOrder): Order {
   return {
     id: row.id,
@@ -122,6 +132,7 @@ export function toOrder(row: DbOrder): Order {
     paymentSessionId: row.paymentSessionId ?? undefined,
     invoiceUrl: row.invoiceUrl ?? undefined,
     fulfillmentStep: (row.fulfillmentStep as FulfillmentStep | null) ?? undefined,
+    deliveryMethod: toDeliveryMethod(row.deliveryMethod),
     carrierName: row.carrierName ?? undefined,
     trackingUrl: row.trackingUrl ?? undefined,
     cancelReason: row.cancelReason ?? undefined,

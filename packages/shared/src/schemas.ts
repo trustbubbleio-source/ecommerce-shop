@@ -146,10 +146,18 @@ export const cartLineSchema = z.object({
 
 export const paymentMethodSchema = z.enum(['card', 'paypal', 'redirect']);
 
+export const deliveryMethodSchema = z.enum(['shipping', 'pickup']);
+
 export const checkoutInputSchema = z.object({
   items: z.array(cartLineSchema).min(1, 'Your cart is empty'),
   email: z.string().trim().email('A valid email is required'),
-  /** Required for physical fulfilment — never trust a client that omits ship-to. */
+  /**
+   * How the buyer receives the order. Defaults to shipping for older clients.
+   * Pickup still requires `shippingAddress.fullName`; the API overwrites the
+   * street fields with the store address.
+   */
+  deliveryMethod: deliveryMethodSchema.default('shipping'),
+  /** Required for fulfilment — ship-to or pickup contact + store address. */
   shippingAddress: addressSchema,
   /** Charge currency — SEK only. */
   currency: z.enum(['sek']).optional(),

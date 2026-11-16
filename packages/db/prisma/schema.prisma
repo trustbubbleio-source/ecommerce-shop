@@ -462,6 +462,8 @@ model Order {
   trackingUrl     String?  @map("tracking_url")
   /** Why an admin cancelled the order. Shown to the customer. */
   cancelReason    String?  @map("cancel_reason")
+  /** shipping (PostNord) or pickup (Båstad store). */
+  deliveryMethod  String   @default("shipping") @map("delivery_method")
   shippingAddress Json?    @map("shipping_address")
   createdAt       DateTime @default(now()) @map("created_at")
 

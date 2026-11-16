@@ -14,6 +14,8 @@ import { useCartStore } from '../store/cart';
 
 export function CartPage() {
   const items = useCartStore((s) => s.items);
+  const deliveryMethod = useCartStore((s) => s.deliveryMethod);
+  const setDeliveryMethod = useCartStore((s) => s.setDeliveryMethod);
   const clear = useCartStore((s) => s.clear);
   const prelaunch = usePurchaseLocked();
   const abandonStatus = useAbandonCheckout();
@@ -67,7 +69,11 @@ export function CartPage() {
             {reconcileStatus === 'loading' && (
               <p className="text-muted-foreground text-xs">Updating prices and stock…</p>
             )}
-            <CartSummary items={items} />
+            <CartSummary
+              items={items}
+              deliveryMethod={deliveryMethod}
+              onDeliveryMethodChange={setDeliveryMethod}
+            />
             {prelaunch ? (
               <Button block size="lg" disabled>
                 {PRELAUNCH.buttonLabel}

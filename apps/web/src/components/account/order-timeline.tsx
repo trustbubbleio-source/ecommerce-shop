@@ -1,16 +1,25 @@
 import { cn } from '@akknerds/ui';
 import { Check } from 'lucide-react';
-import { ORDER_STEPS, type OrderTimelineState } from '../../lib/order-progress';
+import {
+  ORDER_STEPS,
+  type OrderStep,
+  type OrderTimelineState,
+} from '../../lib/order-progress';
 
 interface OrderTimelineProps {
   state: OrderTimelineState;
   cancelled?: boolean;
+  steps?: readonly OrderStep[];
 }
 
-export function OrderTimeline({ state, cancelled = false }: OrderTimelineProps) {
+export function OrderTimeline({
+  state,
+  cancelled = false,
+  steps = ORDER_STEPS,
+}: OrderTimelineProps) {
   return (
     <ol className="flex flex-col">
-      {ORDER_STEPS.map((step, index) => {
+      {steps.map((step, index) => {
         const done = index < state.completedCount;
         const current = !cancelled && !done && index === state.currentIndex;
         const upcoming = !done && !current;
@@ -30,7 +39,7 @@ export function OrderTimeline({ state, cancelled = false }: OrderTimelineProps) 
               >
                 {done ? <Check className="size-3.5" /> : index + 1}
               </span>
-              {index < ORDER_STEPS.length - 1 && (
+              {index < steps.length - 1 && (
                 <span
                   className={cn(
                     'my-1 w-px flex-1 min-h-6',
@@ -40,7 +49,7 @@ export function OrderTimeline({ state, cancelled = false }: OrderTimelineProps) 
                 />
               )}
             </div>
-            <div className={cn('pb-4', index === ORDER_STEPS.length - 1 && 'pb-0')}>
+            <div className={cn('pb-4', index === steps.length - 1 && 'pb-0')}>
               <p
                 className={cn(
                   'text-sm font-semibold leading-6',

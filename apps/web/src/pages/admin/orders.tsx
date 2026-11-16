@@ -24,8 +24,15 @@ import {
 } from '../../lib/order-progress';
 import { downloadOrdersCsv } from '../../lib/orders-csv';
 
-function stepOf(order: { status: string; fulfillmentStep?: FulfillmentStep }) {
-  return order.fulfillmentStep ?? defaultFulfillmentStep(order.status);
+function stepOf(order: {
+  status: string;
+  fulfillmentStep?: FulfillmentStep;
+  deliveryMethod?: 'shipping' | 'pickup';
+}) {
+  return (
+    order.fulfillmentStep ??
+    defaultFulfillmentStep(order.status, order.deliveryMethod ?? 'shipping')
+  );
 }
 
 function statusBadgeLabel(order: Order): string {

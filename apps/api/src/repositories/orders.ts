@@ -13,7 +13,7 @@ function applyStatus(order: Order, status: OrderStatus): Order {
     order.fulfillmentStep = undefined;
     return order;
   }
-  const next = defaultFulfillmentStep(status);
+  const next = defaultFulfillmentStep(status, order.deliveryMethod ?? 'shipping');
   if (next && !order.fulfillmentStep) order.fulfillmentStep = next;
   if (status === 'fulfilled') order.fulfillmentStep = 'delivered';
   return order;
@@ -26,6 +26,7 @@ export class OrderRepository implements IOrderRepository {
 
   async create(input: CreateOrderInput): Promise<Order> {
     const status = input.status ?? 'pending';
+    const deliveryMethod = input.deliveryMethod ?? 'shipping';
     const order: Order = {
       id: `ord_${nanoid(20)}`,
       createdAt: new Date().toISOString(),
@@ -37,11 +38,14 @@ export class OrderRepository implements IOrderRepository {
       total: input.total,
       currency: input.currency,
       shippingAddress: input.shippingAddress,
+      deliveryMethod,
       status,
       channel: input.channel ?? 'online',
       fulfillmentStep:
         input.fulfillmentStep ??
-        (status === 'fulfilled' ? 'delivered' : defaultFulfillmentStep(status) ?? undefined),
+        (status === 'fulfilled'
+          ? 'delivered'
+          : defaultFulfillmentStep(status, deliveryMethod) ?? undefined),
     };
     this.byId.set(order.id, order);
     return order;

@@ -32,8 +32,10 @@ import { ApiError } from '@akknerds/api-client';
 import {
   formatAddress,
   formatOrderDate,
+  orderStepsFor,
   orderTimeline,
 } from '../../lib/order-progress';
+
 export function AdminOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const { data, isLoading, isError } = useAdminOrder(orderId);
@@ -78,8 +80,13 @@ export function AdminOrderDetailPage() {
   const delivered = order.status === 'fulfilled' || order.fulfillmentStep === 'delivered';
   const canCancel = !delivered && order.status !== 'cancelled';
   const busy = update.isPending || cancelOrder.isPending;
-  const currentStep = order.fulfillmentStep ?? defaultFulfillmentStep(order.status);
-  const timeline = orderTimeline(order.status, order.fulfillmentStep);
+  const isPickup = order.deliveryMethod === 'pickup';
+  const fulfillmentOptions: readonly FulfillmentStep[] = isPickup
+    ? (['awaiting_pickup', 'delivered'] as const)
+    : FULFILLMENT_STEPS;
+  const currentStep =
+    order.fulfillmentStep ?? defaultFulfillmentStep(order.status, order.deliveryMethod ?? 'shipping');
+  const timeline = orderTimeline(order.status, order.fulfillmentStep, order.deliveryMethod);
   const save = (fulfillmentStep: FulfillmentStep) => {
     update.mutate(
       {
@@ -136,7 +143,11 @@ export function AdminOrderDetailPage() {
                 {order.cancelReason ? <p>{order.cancelReason}</p> : null}
               </div>
             ) : (
-              <OrderTimeline state={timeline} cancelled={false} />
+              <OrderTimeline
+                state={timeline}
+                cancelled={false}
+                steps={orderStepsFor(order.deliveryMethod)}
+              />
             )}
             {paid ? (
               <div className="flex flex-col gap-2">
@@ -144,16 +155,20 @@ export function AdminOrderDetailPage() {
                   Set current step
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {FULFILLMENT_STEPS.map((step) => (
+                  {fulfillmentOptions.map((step) => (
                     <Button
                       key={step}
                       type="button"
                       size="sm"
                       variant={currentStep === step ? 'primary' : 'outline'}
-        disabled={busy}
-        onClick={() => save(step)}
+                      disabled={busy}
+                      onClick={() => save(step)}
                     >
-                      {FULFILLMENT_STEP_LABELS[step]}
+                      {isPickup && step === 'awaiting_pickup'
+                        ? 'Ready for pickup'
+                        : isPickup && step === 'delivered'
+                          ? 'Collected'
+                          : FULFILLMENT_STEP_LABELS[step]}
                     </Button>
                   ))}
                 </div>
@@ -167,53 +182,60 @@ export function AdminOrderDetailPage() {
         </Card>
 
         <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Carrier</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <p className="text-muted-foreground text-xs">
-                Every online order ships tracked. Add the carrier name and tracking URL when the
-                parcel is collected — they show on the customer order page.
-              </p>
-              <Field label="Carrier name">
-                {(props) => (
-                  <Input
-                    {...props}
-                    value={carrierName}
-                    onChange={(e) => setCarrierName(e.target.value)}
-                    placeholder="PostNord"
-                  />
-                )}
-              </Field>
-              <Field label="Tracking URL">
-                {(props) => (
-                  <Input
-                    {...props}
-                    value={trackingUrl}
-                    onChange={(e) => setTrackingUrl(e.target.value)}
-                    placeholder="https://"
-                  />
-                )}
-              </Field>
-              {paid && currentStep ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => save(currentStep)}
-                >
-                  Save carrier details
-                </Button>
-              ) : null}
-            </CardContent>
-          </Card>
+          {!isPickup ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Carrier</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <p className="text-muted-foreground text-xs">
+                  Every online order ships tracked. Add the carrier name and tracking URL when the
+                  parcel is collected — they show on the customer order page.
+                </p>
+                <Field label="Carrier name">
+                  {(props) => (
+                    <Input
+                      {...props}
+                      value={carrierName}
+                      onChange={(e) => setCarrierName(e.target.value)}
+                      placeholder="PostNord"
+                    />
+                  )}
+                </Field>
+                <Field label="Tracking URL">
+                  {(props) => (
+                    <Input
+                      {...props}
+                      value={trackingUrl}
+                      onChange={(e) => setTrackingUrl(e.target.value)}
+                      placeholder="https://"
+                    />
+                  )}
+                </Field>
+                {paid && currentStep ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={() => save(currentStep)}
+                  >
+                    Save carrier details
+                  </Button>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card>
             <CardHeader>
-              <CardTitle>Delivery</CardTitle>
+              <CardTitle>{isPickup ? 'Pickup' : 'Delivery'}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-sm">
+              {isPickup ? (
+                <Badge variant="muted" className="w-fit">
+                  Store pickup
+                </Badge>
+              ) : null}
               {order.shippingAddress ? (
                 <div className="flex gap-3">
                   <MapPin className="text-muted-foreground mt-0.5 size-4 shrink-0" />

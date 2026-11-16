@@ -1,3 +1,4 @@
+import type { DeliveryMethod } from './fulfillment.js';
 import type { CartLine, OrderLine, Product } from './types.js';
 import { BASE_CURRENCY, normalizeCurrency } from './currency.js';
 import {
@@ -16,21 +17,26 @@ export const FREE_SHIPPING_THRESHOLD = 90_000;
  */
 export const FLAT_SHIPPING_FEE = 6_900;
 
-export function calcShipping(subtotal: number): number {
+export function calcShipping(
+  subtotal: number,
+  deliveryMethod: DeliveryMethod = 'shipping',
+): number {
+  if (deliveryMethod === 'pickup') return 0;
   if (subtotal <= 0) return 0;
   return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING_FEE;
 }
 
 /**
- * Every paid online order ships with carrier tracking (PostNord / equivalent).
+ * Tracked PostNord (or equivalent) applies to ship-to orders only.
  * `subtotal` / `currency` stay on the signature for call-site compatibility.
  */
 export function hasCarrierTracking(
   subtotal: number,
   _currency: string = BASE_CURRENCY,
+  deliveryMethod: DeliveryMethod = 'shipping',
 ): boolean {
   void subtotal;
-  return true;
+  return deliveryMethod !== 'pickup';
 }
 
 /** Standard Swedish VAT on goods (percent). Catalogue prices are VAT-inclusive. */
@@ -60,13 +66,17 @@ export interface PricedCart {
   currency: string;
 }
 
+export type CartPricingOptions = ApplyDiscountOptions & {
+  deliveryMethod?: DeliveryMethod;
+};
+
 function finalizeCart(
   lines: OrderLine[],
   discountDef: DiscountCodeDef | null | undefined,
-  options: ApplyDiscountOptions = {},
+  options: CartPricingOptions = {},
 ): PricedCart {
   const subtotal = calcSubtotal(lines);
-  const baseShipping = calcShipping(subtotal);
+  const baseShipping = calcShipping(subtotal, options.deliveryMethod ?? 'shipping');
   const applied = applyDiscountDef(discountDef, subtotal, baseShipping, options);
   const shipping = applied?.shipping ?? baseShipping;
   const discount = applied?.amount ?? 0;
@@ -94,7 +104,7 @@ export function priceCart(
   lookup: (productId: string) => Product | undefined,
   currency: string = BASE_CURRENCY,
   discountCode?: string | null,
-  options: ApplyDiscountOptions = {},
+  options: CartPricingOptions = {},
 ): PricedCart {
   void normalizeCurrency(currency);
   const lines: OrderLine[] = [];
@@ -115,7 +125,7 @@ export function priceCart(
   return finalizeCart(lines, findDiscountCode(discountCode), options);
 }
 
-export type PriceCartAsyncOptions = ApplyDiscountOptions & {
+export type PriceCartAsyncOptions = CartPricingOptions & {
   /** Resolve admin/DB codes when the built-in catalogue misses. */
   resolveDiscount?: (code: string) => Promise<DiscountCodeDef | undefined>;
 };

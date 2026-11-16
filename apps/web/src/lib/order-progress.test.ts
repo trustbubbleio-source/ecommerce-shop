@@ -45,6 +45,21 @@ describe('orderTimeline', () => {
   it('has no active step when cancelled', () => {
     expect(orderTimeline('cancelled')).toEqual({ currentIndex: -1, completedCount: 0 });
   });
+
+  it('uses the shorter pickup path after payment', () => {
+    expect(orderTimeline('paid', undefined, 'pickup')).toEqual({
+      currentIndex: 1,
+      completedCount: 1,
+    });
+    expect(orderTimeline('paid', 'awaiting_pickup', 'pickup')).toEqual({
+      currentIndex: 1,
+      completedCount: 1,
+    });
+    expect(orderTimeline('fulfilled', 'delivered', 'pickup')).toEqual({
+      currentIndex: 2,
+      completedCount: 3,
+    });
+  });
 });
 
 describe('adminOrderTabOf', () => {
@@ -56,6 +71,10 @@ describe('adminOrderTabOf', () => {
   it('puts carrier steps in Deliver today', () => {
     expect(adminOrderTabOf({ status: 'paid', fulfillmentStep: 'awaiting_pickup' })).toBe('deliver');
     expect(adminOrderTabOf({ status: 'paid', fulfillmentStep: 'in_transit' })).toBe('deliver');
+  });
+
+  it('puts paid store-pickup orders in Deliver today', () => {
+    expect(adminOrderTabOf({ status: 'paid', deliveryMethod: 'pickup' })).toBe('deliver');
   });
 
   it('splits finished, unpaid, and cancelled', () => {
@@ -124,6 +143,13 @@ describe('orderCarrierDetails', () => {
     expect(details.tracked).toBe(true);
     expect(details.carrierName).toBe('PostNord');
     expect(details.trackingUrl).toBe('https://tracking.postnord.com/xyz');
+  });
+
+  it('hides carrier tracking for store pickup', () => {
+    const details = orderCarrierDetails({ ...order, deliveryMethod: 'pickup', shipping: 0 });
+    expect(details.tracked).toBe(false);
+    expect(details.carrierName).toBe('Store pickup');
+    expect(details.note).toMatch(/Båstad/i);
   });
 });
 

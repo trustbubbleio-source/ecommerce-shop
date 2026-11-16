@@ -4,13 +4,18 @@ import type { Prisma } from '@prisma/client';
 import { nanoid } from 'nanoid';
 import type { CreateOrderInput, OrderFulfillmentPatch, OrderRepository } from '../interfaces.js';
 
-function statusPatch(currentStep: string | null, status: OrderStatus): Prisma.OrderUpdateInput {
+function statusPatch(
+  currentStep: string | null,
+  status: OrderStatus,
+  deliveryMethod: string | null | undefined,
+): Prisma.OrderUpdateInput {
   const data: Prisma.OrderUpdateInput = { status };
   if (status === 'cancelled') {
     data.fulfillmentStep = null;
     return data;
   }
-  const next = defaultFulfillmentStep(status);
+  const method = deliveryMethod === 'pickup' ? 'pickup' : 'shipping';
+  const next = defaultFulfillmentStep(status, method);
   if (status === 'fulfilled') data.fulfillmentStep = 'delivered';
   else if (next && !currentStep) data.fulfillmentStep = next;
   return data;
@@ -20,14 +25,16 @@ export class PrismaOrderRepository implements OrderRepository {
   async create(input: CreateOrderInput) {
     const status = input.status ?? 'pending';
     const channel = input.channel ?? 'online';
+    const deliveryMethod = input.deliveryMethod ?? 'shipping';
     const fulfillmentStep =
       input.fulfillmentStep ??
-      (status === 'fulfilled' ? 'delivered' : defaultFulfillmentStep(status));
+      (status === 'fulfilled' ? 'delivered' : defaultFulfillmentStep(status, deliveryMethod));
     const row = await prisma.order.create({
       data: {
         id: `ord_${nanoid(20)}`,
         status,
         channel,
+        deliveryMethod,
         fulfillmentStep,
         email: input.email,
         userId: input.userId,
@@ -117,7 +124,7 @@ export class PrismaOrderRepository implements OrderRepository {
     if (!row) return undefined;
     const updated = await prisma.order.update({
       where: { id: row.id },
-      data: statusPatch(row.fulfillmentStep, status),
+      data: statusPatch(row.fulfillmentStep, status, row.deliveryMethod),
     });
     return toOrder(updated);
   }
@@ -137,12 +144,13 @@ export class PrismaOrderRepository implements OrderRepository {
       return toOrder(updated);
     }
 
-    const packing = defaultFulfillmentStep('paid');
+    const method = pending.deliveryMethod === 'pickup' ? 'pickup' : 'shipping';
+    const nextStep = defaultFulfillmentStep('paid', method);
     const result = await prisma.order.updateMany({
       where: { id: pending.id, status: 'pending' },
       data: {
         status: 'paid',
-        ...(packing ? { fulfillmentStep: packing } : {}),
+        ...(nextStep ? { fulfillmentStep: nextStep } : {}),
       },
     });
     if (result.count !== 1) return undefined;
@@ -154,8 +162,8 @@ export class PrismaOrderRepository implements OrderRepository {
     const existing = await prisma.order.findUnique({ where: { id: orderId } });
     if (!existing) return undefined;
     const updated = await prisma.order.update({
-      where: { id: orderId },
-      data: statusPatch(existing.fulfillmentStep, status),
+      where: { id: existing.id },
+      data: statusPatch(existing.fulfillmentStep, status, existing.deliveryMethod),
     });
     return toOrder(updated);
   }

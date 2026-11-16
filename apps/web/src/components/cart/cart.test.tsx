@@ -23,7 +23,7 @@ function cartProduct(overrides: Partial<CartProduct> = {}): CartProduct {
   };
 }
 
-beforeEach(() => useCartStore.setState({ items: [] }));
+beforeEach(() => useCartStore.setState({ items: [], deliveryMethod: 'shipping' }));
 
 describe('CartLineItem', () => {
   it('updates quantity and removes the item', async () => {
@@ -46,7 +46,10 @@ describe('CartLineItem', () => {
 describe('CartSummary', () => {
   it('shows subtotal, shipping and total with a free-shipping nudge', () => {
     renderWithProviders(
-      <CartSummary items={[{ product: cartProduct({ price: 22_600 }), quantity: 1 }]} />,
+      <CartSummary
+        items={[{ product: cartProduct({ price: 22_600 }), quantity: 1 }]}
+        deliveryMethod="shipping"
+      />,
     );
     expect(screen.getByText(/226[,.]00/)).toBeInTheDocument();
     expect(screen.getByText(/^69[,.]00/)).toBeInTheDocument(); // shipping
@@ -56,10 +59,25 @@ describe('CartSummary', () => {
 
   it('shows free shipping when the threshold is met', () => {
     renderWithProviders(
-      <CartSummary items={[{ product: cartProduct({ price: 90_000 }), quantity: 1 }]} />,
+      <CartSummary
+        items={[{ product: cartProduct({ price: 90_000 }), quantity: 1 }]}
+        deliveryMethod="shipping"
+      />,
     );
     expect(screen.getByText(/unlocked free shipping/i)).toBeInTheDocument();
     expect(screen.getByText('Free')).toBeInTheDocument();
+  });
+
+  it('shows free store pickup when pickup is selected', () => {
+    renderWithProviders(
+      <CartSummary
+        items={[{ product: cartProduct({ price: 22_600 }), quantity: 1 }]}
+        deliveryMethod="pickup"
+      />,
+    );
+    expect(screen.getByText(/Store pickup/i)).toBeInTheDocument();
+    expect(screen.getByText('Free')).toBeInTheDocument();
+    expect(screen.queryByText(/free shipping/i)).not.toBeInTheDocument();
   });
 });
 

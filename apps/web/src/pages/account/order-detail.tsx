@@ -15,6 +15,7 @@ import {
   ORDER_STATUS_VARIANT,
   formatAddress,
   formatOrderDate,
+  orderStepsFor,
   orderTimeline,
 } from '../../lib/order-progress';
 
@@ -49,7 +50,8 @@ export function AccountOrderDetailPage() {
   }
 
   const { order } = data;
-  const timeline = orderTimeline(order.status, order.fulfillmentStep);
+  const isPickup = order.deliveryMethod === 'pickup';
+  const timeline = orderTimeline(order.status, order.fulfillmentStep, order.deliveryMethod);
   const cancelled = order.status === 'cancelled';
 
   return (
@@ -87,11 +89,15 @@ export function AccountOrderDetailPage() {
               {order.cancelReason ? <p>{order.cancelReason}</p> : null}
             </div>
           ) : (
-            <OrderTimeline state={timeline} cancelled={cancelled} />
+            <OrderTimeline
+              state={timeline}
+              cancelled={cancelled}
+              steps={orderStepsFor(order.deliveryMethod)}
+            />
           )}
           <Separator />
           <OrderCarrierDetails order={order} />
-          <OrderRouteMap destination={order.shippingAddress} />
+          {!isPickup ? <OrderRouteMap destination={order.shippingAddress} /> : null}
         </CardContent>
       </Card>
 
@@ -115,7 +121,7 @@ export function AccountOrderDetailPage() {
             <span>{formatMoney(order.subtotal)}</span>
           </div>
           <div className="text-muted-foreground flex justify-between text-sm">
-            <span>Shipping</span>
+            <span>{isPickup ? 'Pickup' : 'Shipping'}</span>
             <span>{order.shipping === 0 ? 'Free' : formatMoney(order.shipping)}</span>
           </div>
           <div className="flex justify-between text-base font-bold">
@@ -131,7 +137,7 @@ export function AccountOrderDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Delivery</CardTitle>
+          <CardTitle>{isPickup ? 'Pickup' : 'Delivery'}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-sm">
           {order.shippingAddress ? (
@@ -145,7 +151,11 @@ export function AccountOrderDetailPage() {
               </div>
             </div>
           ) : (
-            <p className="text-muted-foreground">No delivery address was saved on this order.</p>
+            <p className="text-muted-foreground">
+              {isPickup
+                ? 'No pickup contact was saved on this order.'
+                : 'No delivery address was saved on this order.'}
+            </p>
           )}
           <p className="text-muted-foreground text-xs">
             Confirmation sent to {order.email}. Questions? {SITE.email.orders}

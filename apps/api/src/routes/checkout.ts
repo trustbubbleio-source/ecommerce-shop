@@ -3,7 +3,9 @@ import {
   checkoutInputSchema,
   paymentSessionInputSchema,
   priceCartAsync,
+  storePickupAddress,
   type CheckoutConfig,
+  type DeliveryMethod,
   type PaymentMethod,
 } from '@akknerds/shared';
 import { Hono } from 'hono';
@@ -115,6 +117,12 @@ export function checkoutRoutes(deps: AppDeps) {
       return c.json({ error: 'Purchases are temporarily unavailable.' }, 403);
     }
 
+    const deliveryMethod: DeliveryMethod = input.deliveryMethod ?? 'shipping';
+    const shippingAddress =
+      deliveryMethod === 'pickup'
+        ? storePickupAddress(input.shippingAddress.fullName)
+        : input.shippingAddress;
+
     const priced = await priceCartAsync(
       input.items,
       (id) => deps.products.getByIdOrSlug(id),
@@ -124,6 +132,7 @@ export function checkoutRoutes(deps: AppDeps) {
         hasCompletedOrder,
         userEmail: savedUser?.email,
         userId: auth?.sub,
+        deliveryMethod,
         resolveDiscount: (code) => deps.discounts.findActiveDef(code),
       },
     );
@@ -155,7 +164,8 @@ export function checkoutRoutes(deps: AppDeps) {
         shipping: priced.shipping,
         total: priced.total,
         currency: priced.currency,
-        shippingAddress: input.shippingAddress,
+        deliveryMethod,
+        shippingAddress,
       });
       orderId = order.id;
 

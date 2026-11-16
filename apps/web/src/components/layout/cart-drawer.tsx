@@ -19,6 +19,8 @@ import { EmptyState } from '../common/empty-state';
 export function CartDrawer() {
   const [open, setOpen] = useState(false);
   const items = useCartStore((s) => s.items);
+  const deliveryMethod = useCartStore((s) => s.deliveryMethod);
+  const setDeliveryMethod = useCartStore((s) => s.setDeliveryMethod);
   const count = cartCount(items);
   const navigate = useNavigate();
   const prelaunch = usePurchaseLocked();
@@ -71,7 +73,11 @@ export function CartDrawer() {
               ))}
             </div>
             <SheetFooter className="flex flex-col gap-3">
-              <CartSummary items={items} />
+              <CartSummary
+                items={items}
+                deliveryMethod={deliveryMethod}
+                onDeliveryMethodChange={setDeliveryMethod}
+              />
               {prelaunch ? (
                 <Button block size="lg" disabled>
                   {PRELAUNCH.buttonLabel}

@@ -2,6 +2,7 @@ import {
   defaultFulfillmentStep,
   FULFILLMENT_STEP_LABELS,
   type Address,
+  type DeliveryMethod,
   type FulfillmentStep,
   type Order,
   type OrderStatus,
@@ -22,16 +23,22 @@ export const ORDER_STATUS_VARIANT: Record<OrderStatus, BadgeProps['variant']> = 
   cancelled: 'destructive',
 };
 
-export function orderOpsLabel(order: Pick<Order, 'status' | 'fulfillmentStep' | 'channel'>): string {
+export function orderOpsLabel(
+  order: Pick<Order, 'status' | 'fulfillmentStep' | 'channel' | 'deliveryMethod'>,
+): string {
   if (order.channel === 'in_store') return 'In store';
   if (order.status === 'pending' || order.status === 'cancelled') {
     return ORDER_STATUS_LABEL[order.status];
   }
-  const step = order.fulfillmentStep ?? defaultFulfillmentStep(order.status);
+  if (order.deliveryMethod === 'pickup' && order.status === 'fulfilled') return 'Collected';
+  const step =
+    order.fulfillmentStep ??
+    defaultFulfillmentStep(order.status, order.deliveryMethod ?? 'shipping');
+  if (order.deliveryMethod === 'pickup' && step === 'awaiting_pickup') return 'Ready for pickup';
   return step ? FULFILLMENT_STEP_LABELS[step] : ORDER_STATUS_LABEL[order.status];
 }
 
-/** Admin Orders queue tabs. */
+/** Admin Orders board tabs. */
 export type AdminOrderTab = 'all' | 'pack' | 'deliver' | 'finished' | 'unpaid' | 'inactive';
 
 export const ADMIN_ORDER_TABS: { id: AdminOrderTab; label: string }[] = [
@@ -44,11 +51,13 @@ export const ADMIN_ORDER_TABS: { id: AdminOrderTab; label: string }[] = [
 ];
 
 export function adminOrderTabOf(
-  order: Pick<Order, 'status' | 'fulfillmentStep'>,
+  order: Pick<Order, 'status' | 'fulfillmentStep' | 'deliveryMethod'>,
 ): Exclude<AdminOrderTab, 'all'> {
   if (order.status === 'cancelled') return 'inactive';
   if (order.status === 'pending') return 'unpaid';
-  const step = order.fulfillmentStep ?? defaultFulfillmentStep(order.status);
+  const step =
+    order.fulfillmentStep ??
+    defaultFulfillmentStep(order.status, order.deliveryMethod ?? 'shipping');
   if (step === 'delivered' || order.status === 'fulfilled') return 'finished';
   if (step === 'awaiting_pickup' || step === 'handed_to_carrier' || step === 'in_transit') {
     return 'deliver';
@@ -57,7 +66,7 @@ export function adminOrderTabOf(
 }
 
 export function orderMatchesAdminTab(
-  order: Pick<Order, 'status' | 'fulfillmentStep'>,
+  order: Pick<Order, 'status' | 'fulfillmentStep' | 'deliveryMethod'>,
   tab: AdminOrderTab,
 ): boolean {
   return tab === 'all' || adminOrderTabOf(order) === tab;
@@ -96,7 +105,30 @@ export const ORDER_STEPS = [
   },
 ] as const;
 
-export type OrderStepId = (typeof ORDER_STEPS)[number]['id'];
+export const PICKUP_ORDER_STEPS = [
+  {
+    id: 'received',
+    label: 'Received',
+    description: 'Your order is confirmed and on our system.',
+  },
+  {
+    id: 'awaiting_pickup',
+    label: 'Ready for pickup',
+    description: 'Your order is ready to collect at our Båstad store.',
+  },
+  {
+    id: 'delivered',
+    label: 'Collected',
+    description: 'Picked up from the store.',
+  },
+] as const;
+
+export type OrderStep = (typeof ORDER_STEPS)[number] | (typeof PICKUP_ORDER_STEPS)[number];
+export type OrderStepId = OrderStep['id'];
+
+export function orderStepsFor(deliveryMethod?: DeliveryMethod | null): readonly OrderStep[] {
+  return deliveryMethod === 'pickup' ? PICKUP_ORDER_STEPS : ORDER_STEPS;
+}
 
 export interface OrderTimelineState {
   /** Index of the current step, or -1 when cancelled. */
@@ -112,12 +144,31 @@ const FULFILLMENT_INDEX: Record<FulfillmentStep, number> = {
   delivered: 5,
 };
 
+const PICKUP_FULFILLMENT_INDEX: Record<FulfillmentStep, number> = {
+  packing: 1,
+  awaiting_pickup: 1,
+  handed_to_carrier: 1,
+  in_transit: 1,
+  delivered: 2,
+};
+
 export function orderTimeline(
   status: OrderStatus,
   fulfillmentStep?: FulfillmentStep | null,
+  deliveryMethod: DeliveryMethod = 'shipping',
 ): OrderTimelineState {
   if (status === 'cancelled') return { currentIndex: -1, completedCount: 0 };
   if (status === 'pending') return { currentIndex: 0, completedCount: 0 };
+
+  if (deliveryMethod === 'pickup') {
+    const step = fulfillmentStep ?? defaultFulfillmentStep(status, 'pickup') ?? 'awaiting_pickup';
+    if (step === 'delivered' || status === 'fulfilled') {
+      return { currentIndex: 2, completedCount: 3 };
+    }
+    const currentIndex = PICKUP_FULFILLMENT_INDEX[step];
+    return { currentIndex, completedCount: currentIndex };
+  }
+
   const step = fulfillmentStep ?? defaultFulfillmentStep(status) ?? 'packing';
   if (step === 'delivered' || status === 'fulfilled') {
     return { currentIndex: 5, completedCount: 6 };
@@ -189,6 +240,16 @@ export function orderCarrierDetails(order: Order): OrderCarrierDetails {
       trackingUrl: null,
       trackingDisplay: '—',
       note: 'This order was cancelled, so no carrier handover applies.',
+    };
+  }
+
+  if (order.deliveryMethod === 'pickup') {
+    return {
+      tracked: false,
+      carrierName: 'Store pickup',
+      trackingUrl: null,
+      trackingDisplay: '—',
+      note: 'Collect at Hallandsvägen 21, 269 36 Båstad. Bring your order confirmation.',
     };
   }
 

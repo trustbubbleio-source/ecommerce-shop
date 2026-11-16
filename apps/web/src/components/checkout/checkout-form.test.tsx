@@ -22,7 +22,10 @@ function cartProduct(): CartProduct {
 }
 
 beforeEach(() => {
-  useCartStore.setState({ items: [{ product: cartProduct(), quantity: 1 }] });
+  useCartStore.setState({
+    items: [{ product: cartProduct(), quantity: 1 }],
+    deliveryMethod: 'shipping',
+  });
   vi.restoreAllMocks();
   vi.spyOn(api, 'getCheckoutConfig').mockResolvedValue({
     provider: 'mock',
@@ -81,8 +84,37 @@ describe('CheckoutForm', () => {
     const input = vi.mocked(api.checkout).mock.calls[0]![0];
     expect(input.email).toBe('buyer@example.com');
     expect(input.items).toEqual([{ productId: 'bb-151', quantity: 1 }]);
+    expect(input.deliveryMethod).toBe('shipping');
     expect(input.shippingAddress?.city).toBe('Pallet');
     await waitFor(() => expect(assign).toHaveBeenCalledWith('/checkout/success?order_id=ord_1'));
+  });
+
+  it('submits a store-pickup order without a shipping address form', async () => {
+    const assign = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, assign },
+      writable: true,
+    });
+    useCartStore.setState({ deliveryMethod: 'pickup' });
+    vi.spyOn(api, 'checkout').mockResolvedValue({
+      url: '/checkout/success?order_id=ord_pickup',
+      orderId: 'ord_pickup',
+    });
+
+    renderWithProviders(<CheckoutForm />);
+    expect(screen.getByText(/Collect at our store/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Address')).not.toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText('Email'), 'buyer@example.com');
+    await userEvent.type(screen.getByLabelText('Full name'), 'Ash Ketchum');
+    await userEvent.click(screen.getByRole('checkbox', { name: /I agree to the/i }));
+    await userEvent.click(screen.getByRole('button', { name: /pay now/i }));
+
+    await waitFor(() => expect(api.checkout).toHaveBeenCalled());
+    const input = vi.mocked(api.checkout).mock.calls[0]![0];
+    expect(input.deliveryMethod).toBe('pickup');
+    expect(input.shippingAddress?.city).toBe('Båstad');
+    expect(input.shippingAddress?.fullName).toBe('Ash Ketchum');
   });
 
   it('prompts guests to sign in', () => {

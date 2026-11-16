@@ -75,6 +75,7 @@ export const useCheckoutStore = create<CheckoutState>()(
 export function checkoutFingerprint(input: {
   email: string;
   items: Array<{ productId: string; quantity: number }>;
+  deliveryMethod?: string;
   shippingAddress: {
     fullName: string;
     line1: string;
@@ -87,6 +88,7 @@ export function checkoutFingerprint(input: {
   return JSON.stringify({
     email: input.email.trim().toLowerCase(),
     items: input.items,
+    deliveryMethod: input.deliveryMethod ?? 'shipping',
     shippingAddress: input.shippingAddress,
   });
 }

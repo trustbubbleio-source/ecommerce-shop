@@ -19,7 +19,29 @@ describe('POST /api/checkout', () => {
     const order = await deps.orders.get(data.orderId);
     expect(order?.status).toBe('paid'); // settled synchronously in mock mode
     expect(order?.total).toBeGreaterThan(0);
+    expect(order?.deliveryMethod).toBe('shipping');
     expect(order?.shippingAddress).toMatchObject({ city: 'Pallet Town' });
+  });
+
+  it('creates a free store-pickup order with the Båstad address', async () => {
+    const { app, deps } = makeApp();
+    const { res, data } = await jsonRequest(
+      app,
+      'POST',
+      '/api/checkout',
+      checkoutBody({ deliveryMethod: 'pickup' }),
+    );
+    expect(res.status).toBe(201);
+
+    const order = await deps.orders.get(data.orderId);
+    expect(order?.deliveryMethod).toBe('pickup');
+    expect(order?.shipping).toBe(0);
+    expect(order?.fulfillmentStep).toBe('awaiting_pickup');
+    expect(order?.shippingAddress).toMatchObject({
+      fullName: TEST_SHIPPING_ADDRESS.fullName,
+      city: 'Båstad',
+      line1: 'Hallandsvägen 21',
+    });
   });
 
   it('re-prices from the catalog and ignores client-sent prices', async () => {

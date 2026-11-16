@@ -51,13 +51,22 @@ describe('calcShipping', () => {
     expect(calcShipping(FREE_SHIPPING_THRESHOLD)).toBe(0);
     expect(calcShipping(FREE_SHIPPING_THRESHOLD + 5000)).toBe(0);
   });
+
+  it('is free for store pickup regardless of subtotal', () => {
+    expect(calcShipping(100, 'pickup')).toBe(0);
+    expect(calcShipping(FREE_SHIPPING_THRESHOLD - 1, 'pickup')).toBe(0);
+  });
 });
 
 describe('hasCarrierTracking', () => {
-  it('is included on every order (tracked PostNord / equivalent)', () => {
+  it('is included on ship-to orders (tracked PostNord / equivalent)', () => {
     expect(hasCarrierTracking(1)).toBe(true);
     expect(hasCarrierTracking(FREE_SHIPPING_THRESHOLD - 1)).toBe(true);
     expect(hasCarrierTracking(FREE_SHIPPING_THRESHOLD)).toBe(true);
+  });
+
+  it('is not included for store pickup', () => {
+    expect(hasCarrierTracking(1, 'sek', 'pickup')).toBe(false);
   });
 });
 

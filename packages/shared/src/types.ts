@@ -4,7 +4,7 @@
  */
 
 import type { SupportedCurrency } from './currency.js';
-import type { FulfillmentStep } from './fulfillment.js';
+import type { DeliveryMethod, FulfillmentStep } from './fulfillment.js';
 
 export type {
   CardCondition,
@@ -133,6 +133,8 @@ export interface Order {
   channel: OrderChannel;
   /** Warehouse progress after payment. Omitted while pending/cancelled. */
   fulfillmentStep?: FulfillmentStep;
+  /** How the buyer receives the order. Defaults to shipping for legacy rows. */
+  deliveryMethod?: DeliveryMethod;
   /** PayPal Order ID used to settle / refund the payment. */
   paymentSessionId?: string;
   /** Hosted invoice / receipt URL when the provider supplies one. */

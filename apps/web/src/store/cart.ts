@@ -1,4 +1,10 @@
-import { type Product, calcShipping, calcSubtotal, primaryProductImage } from '@akknerds/shared';
+import {
+  type DeliveryMethod,
+  type Product,
+  calcShipping,
+  calcSubtotal,
+  primaryProductImage,
+} from '@akknerds/shared';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -25,9 +31,11 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[];
+  deliveryMethod: DeliveryMethod;
   add: (product: CartProduct, quantity?: number) => void;
   remove: (productId: string) => void;
   setQuantity: (productId: string, quantity: number) => void;
+  setDeliveryMethod: (method: DeliveryMethod) => void;
   clear: () => void;
   /**
    * Refresh line snapshots from the live catalogue.
@@ -42,6 +50,7 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       items: [],
+      deliveryMethod: 'shipping',
       add: (product, quantity = 1) =>
         set((state) => {
           const existing = state.items.find((item) => item.product.id === product.id);
@@ -70,6 +79,7 @@ export const useCartStore = create<CartState>()(
             )
             .filter((item) => item.quantity > 0),
         })),
+      setDeliveryMethod: (method) => set({ deliveryMethod: method }),
       clear: () => set({ items: [] }),
       reconcile: (freshById) =>
         set((state) => ({
@@ -86,7 +96,13 @@ export const useCartStore = create<CartState>()(
           }),
         })),
     }),
-    { name: 'onemorerip-cart' },
+    {
+      name: 'onemorerip-cart',
+      partialize: (state) => ({
+        items: state.items,
+        deliveryMethod: state.deliveryMethod,
+      }),
+    },
   ),
 );
 
@@ -107,10 +123,16 @@ export function cartSubtotal(items: CartItem[]): number {
   );
 }
 
-export function cartShipping(items: CartItem[]): number {
-  return calcShipping(cartSubtotal(items));
+export function cartShipping(
+  items: CartItem[],
+  deliveryMethod: DeliveryMethod = 'shipping',
+): number {
+  return calcShipping(cartSubtotal(items), deliveryMethod);
 }
 
-export function cartTotal(items: CartItem[]): number {
-  return cartSubtotal(items) + cartShipping(items);
+export function cartTotal(
+  items: CartItem[],
+  deliveryMethod: DeliveryMethod = 'shipping',
+): number {
+  return cartSubtotal(items) + cartShipping(items, deliveryMethod);
 }

@@ -1,8 +1,10 @@
 import {
   type CheckoutInput,
   SHIPPING_COUNTRIES,
+  STORE_PICKUP,
   addressSchema,
   isShippingCountry,
+  storePickupAddress,
   toShippingCountryIso,
 } from '@akknerds/shared';
 import {
@@ -19,10 +21,11 @@ import {
   useToast,
 } from '@akknerds/ui';
 import { ApiError, api } from '@akknerds/api-client';
-import { Lock } from 'lucide-react';
+import { Lock, MapPin } from 'lucide-react';
 import { lazy, Suspense, type FormEvent, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { DeliveryMethodPicker } from '../cart/delivery-method-picker';
 import { useCheckoutConfig } from '../../hooks/use-checkout-config';
 import { useCheckout } from '../../hooks/use-checkout';
 import type { CardSubmitFn } from './card-payment-fields';
@@ -35,8 +38,13 @@ const PaymentSection = lazy(() =>
   import('./payment-section').then((m) => ({ default: m.PaymentSection })),
 );
 
-const checkoutFormSchema = addressSchema.extend({
+const shippingFormSchema = addressSchema.extend({
   email: z.string().trim().email('A valid email is required'),
+});
+
+const pickupFormSchema = z.object({
+  email: z.string().trim().email('A valid email is required'),
+  fullName: z.string().trim().min(1, 'Full name is required').max(100),
 });
 
 type FormValues = {
@@ -66,6 +74,8 @@ const CARD_PRIVACY_NOTICE =
 export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) {
   const user = useAuthStore((s) => s.user);
   const items = useCartStore((s) => s.items);
+  const deliveryMethod = useCartStore((s) => s.deliveryMethod);
+  const setDeliveryMethod = useCartStore((s) => s.setDeliveryMethod);
   const currency = 'sek';
   const checkout = useCheckout();
   const { toast } = useToast();
@@ -84,6 +94,7 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
   const [inlineError, setInlineError] = useState<string | null>(null);
   const cardSubmitRef = useRef<CardSubmitFn | null>(null);
 
+  const isPickup = deliveryMethod === 'pickup';
   const cardFieldsEnabled = Boolean(config?.methods.cardFields && config.provider === 'paypal');
   const useCardUi = cardFieldsEnabled && cardUiAvailable;
 
@@ -108,50 +119,82 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
     setValues((v) => ({ ...v, [key]: e.target.value }));
   };
 
-  const validateForm = () => {
-    const parsed = checkoutFormSchema.safeParse(values);
-    if (!parsed.success) {
-      const fieldErrors: FormErrors & { acceptTerms?: string } = {};
-      for (const issue of parsed.error.issues) {
-        const key = issue.path[0] as keyof FormValues;
-        fieldErrors[key] ??= issue.message;
+  const validateForm = (): FormValues | null => {
+    const fieldErrors: FormErrors & { acceptTerms?: string } = {};
+
+    if (isPickup) {
+      const parsed = pickupFormSchema.safeParse({
+        email: values.email,
+        fullName: values.fullName,
+      });
+      if (!parsed.success) {
+        for (const issue of parsed.error.issues) {
+          const key = issue.path[0] as keyof FormValues;
+          fieldErrors[key] ??= issue.message;
+        }
       }
-      if (!acceptTerms) {
-        fieldErrors.acceptTerms = 'Please accept the Terms and Returns policy to continue';
+    } else {
+      const parsed = shippingFormSchema.safeParse(values);
+      if (!parsed.success) {
+        for (const issue of parsed.error.issues) {
+          const key = issue.path[0] as keyof FormValues;
+          fieldErrors[key] ??= issue.message;
+        }
       }
+    }
+
+    if (!acceptTerms) {
+      fieldErrors.acceptTerms = 'Please accept the Terms and Returns policy to continue';
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
       return null;
     }
-    if (!acceptTerms) {
-      setErrors({
-        acceptTerms: 'Please accept the Terms and Returns policy to continue',
-      });
-      return null;
-    }
+
     setErrors({});
-    return parsed.data;
+    if (isPickup) {
+      const pickup = storePickupAddress(values.fullName);
+      return {
+        email: values.email.trim(),
+        fullName: pickup.fullName,
+        line1: pickup.line1,
+        line2: '',
+        city: pickup.city,
+        postalCode: pickup.postalCode,
+        country: pickup.country,
+      };
+    }
+    return values;
   };
 
-  const buildInput = (
-    data: z.infer<typeof checkoutFormSchema>,
-  ): Omit<CheckoutInput, 'paymentMethod'> => {
+  const buildInput = (data: FormValues): Omit<CheckoutInput, 'paymentMethod'> => {
     const { email, ...address } = data;
     return {
       email,
       currency,
+      deliveryMethod,
       items: items.map((item) => ({ productId: item.product.id, quantity: item.quantity })),
-      shippingAddress: address,
+      shippingAddress: {
+        fullName: address.fullName,
+        line1: address.line1,
+        line2: address.line2 || undefined,
+        city: address.city,
+        postalCode: address.postalCode,
+        country: address.country as CheckoutInput['shippingAddress']['country'],
+      },
     };
   };
 
   const ensureSession = async (
-    data: z.infer<typeof checkoutFormSchema>,
+    data: FormValues,
     paymentMethod: 'card' | 'paypal' | 'redirect',
   ) => {
     const input = buildInput(data);
     const fingerprint = checkoutFingerprint({
       email: input.email,
       items: input.items,
+      deliveryMethod: input.deliveryMethod,
       shippingAddress: input.shippingAddress,
     });
 
@@ -309,13 +352,13 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
 
   const ensurePaypalOrder = async () => {
     const data = validateForm();
-    if (!data) throw new Error('Please complete the shipping form first.');
+    if (!data) throw new Error(isPickup ? 'Please complete your contact details first.' : 'Please complete the shipping form first.');
     const session = await ensureSession(data, 'paypal');
     if (!session) throw new Error('Order already paid');
     return { orderId: session.orderId, paypalOrderId: session.paypalOrderId };
   };
 
-  const amountOre = cartSubtotal(items) + cartShipping(items);
+  const amountOre = cartSubtotal(items) + cartShipping(items, deliveryMethod);
 
   const onSubmit = useCardUi && uiMethod === 'card' ? onCardPay : onRedirectPay;
   const payDisabled =
@@ -329,9 +372,11 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
     <form onSubmit={onSubmit} className="flex flex-col gap-6" noValidate>
       <Card>
         <CardHeader>
-          <CardTitle>Shipping & contact</CardTitle>
+          <CardTitle>{isPickup ? 'Pickup & contact' : 'Shipping & contact'}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
+          <DeliveryMethodPicker value={deliveryMethod} onChange={setDeliveryMethod} />
+
           {!user && (
             <Alert variant="info">
               Checking out as a guest.{' '}
@@ -341,12 +386,30 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
               for faster checkout and order history.
             </Alert>
           )}
-          {user?.profile.shippingAddress && (
+          {!isPickup && user?.profile.shippingAddress && (
             <Alert variant="info">
               We prefilled your default shipping address from your profile. You can edit it for this
               order.
             </Alert>
           )}
+
+          {isPickup ? (
+            <div className="border-border bg-secondary/40 flex gap-3 rounded-xl border p-3 text-sm">
+              <MapPin className="text-primary mt-0.5 size-4 shrink-0" />
+              <div>
+                <p className="text-foreground font-semibold">Collect at our store</p>
+                <p className="text-muted-foreground mt-1 leading-relaxed">{STORE_PICKUP.line}</p>
+                <a
+                  href={STORE_PICKUP.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary mt-1 inline-block text-xs font-medium hover:underline"
+                >
+                  Open in Maps
+                </a>
+              </div>
+            </div>
+          ) : null}
 
           <Field label="Email" error={errors.email} required>
             {(props) => (
@@ -373,66 +436,70 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
             )}
           </Field>
 
-          <Field label="Address" error={errors.line1} required>
-            {(props) => (
-              <Input
-                {...props}
-                autoComplete="address-line1"
-                value={values.line1}
-                onChange={set('line1')}
-                placeholder="123 Route 1"
-              />
-            )}
-          </Field>
+          {!isPickup ? (
+            <>
+              <Field label="Address" error={errors.line1} required>
+                {(props) => (
+                  <Input
+                    {...props}
+                    autoComplete="address-line1"
+                    value={values.line1}
+                    onChange={set('line1')}
+                    placeholder="123 Route 1"
+                  />
+                )}
+              </Field>
 
-          <Field label="Apartment, suite, etc. (optional)" error={errors.line2}>
-            {(props) => (
-              <Input
-                {...props}
-                autoComplete="address-line2"
-                value={values.line2 ?? ''}
-                onChange={set('line2')}
-              />
-            )}
-          </Field>
+              <Field label="Apartment, suite, etc. (optional)" error={errors.line2}>
+                {(props) => (
+                  <Input
+                    {...props}
+                    autoComplete="address-line2"
+                    value={values.line2 ?? ''}
+                    onChange={set('line2')}
+                  />
+                )}
+              </Field>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="City" error={errors.city} required>
-              {(props) => (
-                <Input
-                  {...props}
-                  autoComplete="address-level2"
-                  value={values.city}
-                  onChange={set('city')}
-                />
-              )}
-            </Field>
-            <Field label="Postal code" error={errors.postalCode} required>
-              {(props) => (
-                <Input
-                  {...props}
-                  autoComplete="postal-code"
-                  value={values.postalCode}
-                  onChange={set('postalCode')}
-                />
-              )}
-            </Field>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="City" error={errors.city} required>
+                  {(props) => (
+                    <Input
+                      {...props}
+                      autoComplete="address-level2"
+                      value={values.city}
+                      onChange={set('city')}
+                    />
+                  )}
+                </Field>
+                <Field label="Postal code" error={errors.postalCode} required>
+                  {(props) => (
+                    <Input
+                      {...props}
+                      autoComplete="postal-code"
+                      value={values.postalCode}
+                      onChange={set('postalCode')}
+                    />
+                  )}
+                </Field>
+              </div>
 
-          <Field label="Country" error={errors.country} required>
-            {(props) => (
-              <Select
-                {...props}
-                autoComplete="country-name"
-                value={values.country}
-                onChange={set('country')}
-                options={[
-                  { value: '', label: 'Select country' },
-                  ...SHIPPING_COUNTRIES.map((country) => ({ value: country, label: country })),
-                ]}
-              />
-            )}
-          </Field>
+              <Field label="Country" error={errors.country} required>
+                {(props) => (
+                  <Select
+                    {...props}
+                    autoComplete="country-name"
+                    value={values.country}
+                    onChange={set('country')}
+                    options={[
+                      { value: '', label: 'Select country' },
+                      ...SHIPPING_COUNTRIES.map((country) => ({ value: country, label: country })),
+                    ]}
+                  />
+                )}
+              </Field>
+            </>
+          ) : null}
         </CardContent>
       </Card>
 

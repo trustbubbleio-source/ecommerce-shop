@@ -131,7 +131,7 @@ export function CheckoutSuccessPage() {
             <span>{formatPrice(order.subtotal, order.currency)}</span>
           </div>
           <div className="text-muted-foreground flex justify-between text-sm">
-            <span>Shipping</span>
+            <span>{order.deliveryMethod === 'pickup' ? 'Pickup' : 'Shipping'}</span>
             <span>
               {order.shipping === 0 ? 'Free' : formatPrice(order.shipping, order.currency)}
             </span>

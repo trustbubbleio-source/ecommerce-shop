@@ -125,14 +125,28 @@ describe('checkoutInputSchema', () => {
     ).toBe(true);
   });
 
-  it('defaults paymentMethod to redirect', () => {
+  it('defaults paymentMethod to redirect and deliveryMethod to shipping', () => {
     const parsed = checkoutInputSchema.safeParse({
       items: [{ productId: 'bb-151', quantity: 2 }],
       email: 'buyer@example.com',
       shippingAddress,
     });
     expect(parsed.success).toBe(true);
-    if (parsed.success) expect(parsed.data.paymentMethod).toBe('redirect');
+    if (parsed.success) {
+      expect(parsed.data.paymentMethod).toBe('redirect');
+      expect(parsed.data.deliveryMethod).toBe('shipping');
+    }
+  });
+
+  it('accepts store pickup', () => {
+    const parsed = checkoutInputSchema.safeParse({
+      items: [{ productId: 'bb-151', quantity: 1 }],
+      email: 'buyer@example.com',
+      deliveryMethod: 'pickup',
+      shippingAddress,
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.deliveryMethod).toBe('pickup');
   });
 
   it('accepts paymentMethod card', () => {

@@ -17,13 +17,23 @@ export const FULFILLMENT_STEP_LABELS: Record<FulfillmentStep, string> = {
   delivered: 'Delivered',
 };
 
+export const DELIVERY_METHODS = ['shipping', 'pickup'] as const;
+export type DeliveryMethod = (typeof DELIVERY_METHODS)[number];
+
+export function isDeliveryMethod(value: string): value is DeliveryMethod {
+  return (DELIVERY_METHODS as readonly string[]).includes(value);
+}
+
 export function isFulfillmentStep(value: string): value is FulfillmentStep {
   return (FULFILLMENT_STEPS as readonly string[]).includes(value);
 }
 
-/** Paid orders start in packing; fulfilled orders are delivered. */
-export function defaultFulfillmentStep(status: string): FulfillmentStep | null {
+/** Paid ship-to orders start in packing; pickup waits for collection; fulfilled = delivered. */
+export function defaultFulfillmentStep(
+  status: string,
+  deliveryMethod: DeliveryMethod = 'shipping',
+): FulfillmentStep | null {
   if (status === 'fulfilled') return 'delivered';
-  if (status === 'paid') return 'packing';
+  if (status === 'paid') return deliveryMethod === 'pickup' ? 'awaiting_pickup' : 'packing';
   return null;
 }
