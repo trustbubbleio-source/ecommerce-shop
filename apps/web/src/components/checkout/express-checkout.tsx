@@ -80,7 +80,11 @@ export function ExpressCheckout({
             <SwishWordmark />
           </button>
         ) : (
-          <ExpressSlot label="Swish" title="Swish is not enabled for this checkout yet." disabled>
+          <ExpressSlot
+            label="Swish"
+            title="Swish needs PayPal Business onboarding before it can go live."
+            disabled
+          >
             <SwishWordmark />
           </ExpressSlot>
         )}

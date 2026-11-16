@@ -57,8 +57,8 @@ function buildCheckoutConfig(deps: AppDeps, isAdmin: boolean): CheckoutConfig {
     methods: {
       cardFields,
       paypalButton: cardFields,
-      // Swish rides the same PayPal live credentials; dashboard must have Swish enabled.
-      swishButton: true,
+      // Off until PayPal Business has Swish onboarded (PAYMENT_SOURCE_CANNOT_BE_USED otherwise).
+      swishButton: false,
       redirect: true,
     },
   };
