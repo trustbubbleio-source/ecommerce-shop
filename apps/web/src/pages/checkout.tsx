@@ -42,9 +42,11 @@ export function CheckoutPage() {
             <ul className="flex flex-col gap-3">
               {items.map((item) => (
                 <li key={item.product.id} className="flex items-center gap-3">
-                  <div className="border-border relative size-14 shrink-0 overflow-hidden rounded-lg border">
-                    <ProductArt product={item.product} />
-                    <span className="bg-primary text-primary-foreground absolute -right-1 -top-1 grid size-5 place-items-center rounded-full text-[11px] font-bold">
+                  <div className="relative size-14 shrink-0">
+                    <div className="border-border size-full overflow-hidden rounded-lg border">
+                      <ProductArt product={item.product} />
+                    </div>
+                    <span className="bg-primary text-primary-foreground absolute -right-1.5 -top-1.5 z-10 grid size-5 place-items-center rounded-full text-[11px] font-bold shadow-sm">
                       {item.quantity}
                     </span>
                   </div>
