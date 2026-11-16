@@ -18,7 +18,11 @@ export function PaypalWalletButton({ ensurePaypalOrder, disabled }: PaypalWallet
   const setError = useCheckoutStore((s) => s.setError);
 
   return (
-    <div className={disabled ? 'pointer-events-none opacity-50' : undefined}>
+    <div
+      className={`flex h-full w-full items-center justify-center ${
+        disabled ? 'pointer-events-none opacity-50' : ''
+      }`}
+    >
       <PayPalOneTimePaymentButton
         presentationMode="auto"
         createOrder={async () => {

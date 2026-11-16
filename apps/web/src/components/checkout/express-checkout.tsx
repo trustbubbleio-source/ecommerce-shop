@@ -55,11 +55,11 @@ export function ExpressCheckout({
 
         {showPaypal ? (
           <div
-            className={`bg-[#ffc439] flex min-h-11 items-center justify-center overflow-hidden rounded-lg ${
+            className={`bg-[#ffc439] flex h-11 items-center justify-center overflow-hidden rounded-lg ${
               disabled ? 'pointer-events-none opacity-50' : ''
             }`}
           >
-            <div className="w-full scale-[0.92] px-1 [&_iframe]:!min-h-10">
+            <div className="flex h-full w-full items-center justify-center [&_iframe]:!h-11 [&_iframe]:!max-h-11">
               <PaypalWalletButton ensurePaypalOrder={ensurePaypalOrder} disabled={disabled} />
             </div>
           </div>
