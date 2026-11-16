@@ -7,6 +7,16 @@ import { useCheckoutStore } from '../../store/checkout';
 import { renderWithProviders } from '../../test/utils';
 import { CheckoutForm } from './checkout-form';
 
+const eligibleMethodsState = vi.hoisted(() => ({
+  current: {
+    eligiblePaymentMethods: { isEligible: () => true } as
+      | { isEligible: (method: string) => boolean }
+      | null,
+    isLoading: false,
+    error: null as Error | null,
+  },
+}));
+
 vi.mock('../../lib/paypal', () => {
   const React = require('react') as typeof import('react');
   return {
@@ -35,11 +45,7 @@ vi.mock('../../lib/paypal', () => {
     PayPalCardExpiryField: () => <div />,
     PayPalCardCvvField: () => <div />,
     PayPalOneTimePaymentButton: () => <button type="button">PayPal wallet</button>,
-    useEligibleMethods: () => ({
-      eligiblePaymentMethods: { isEligible: () => true },
-      isLoading: false,
-      error: null,
-    }),
+    useEligibleMethods: () => ({ ...eligibleMethodsState.current }),
     usePayPalCardFieldsOneTimePaymentSession: () => ({
       submit: vi.fn(async () => undefined),
       submitResponse: { state: 'succeeded', data: { orderId: 'pp_1' } },
@@ -77,6 +83,11 @@ beforeEach(() => {
   useCartStore.setState({ items: [{ product: cartProduct(), quantity: 1 }] });
   useCheckoutStore.getState().clear();
   vi.restoreAllMocks();
+  eligibleMethodsState.current = {
+    eligiblePaymentMethods: { isEligible: () => true },
+    isLoading: false,
+    error: null,
+  };
   vi.spyOn(api, 'getCheckoutConfig').mockResolvedValue({
     provider: 'paypal',
     environment: 'sandbox',
@@ -150,5 +161,35 @@ describe('CheckoutForm card flow', () => {
     expect(await screen.findByRole('button', { name: /pay now/i })).toBeInTheDocument();
     expect(screen.queryByTestId('card-fields')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /pay with paypal instead/i })).not.toBeInTheDocument();
+  });
+
+  it('falls back to enabled Pay now redirect when PayPal eligibility fails', async () => {
+    eligibleMethodsState.current = {
+      eligiblePaymentMethods: null,
+      isLoading: false,
+      error: new Error('ERR_INIT_FIND_ELIGIBLE_METHODS'),
+    };
+
+    vi.spyOn(api, 'checkout').mockResolvedValue({
+      orderId: 'ord_fallback_1',
+      paypalOrderId: 'pp_fallback_1',
+      url: 'https://paypal.test/approve',
+      status: 'pending',
+    });
+
+    renderWithProviders(<CheckoutForm />);
+    await waitFor(() => {
+      expect(screen.getByText(/card fields could not load/i)).toBeInTheDocument();
+    });
+
+    await fillAddress();
+    await userEvent.click(screen.getByRole('checkbox', { name: /I agree to the/i }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /pay now/i })).toBeEnabled();
+    });
+    await userEvent.click(screen.getByRole('button', { name: /pay now/i }));
+
+    await waitFor(() => expect(api.checkout).toHaveBeenCalled());
+    expect(vi.mocked(api.checkout).mock.calls[0]![0].paymentMethod).toBe('redirect');
   });
 });

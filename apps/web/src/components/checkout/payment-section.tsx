@@ -17,6 +17,8 @@ interface PaymentSectionProps {
   method: PaymentUiMethod;
   onMethodChange: (method: PaymentUiMethod) => void;
   onCardValidityChange: (valid: boolean) => void;
+  /** Fired once when the SDK cannot offer card/wallet UI — parent should fall back to redirect. */
+  onUnavailable?: () => void;
   cardSubmitRef: MutableRefObject<CardSubmitFn | null>;
   ensurePaypalOrder: () => Promise<{ orderId: string; paypalOrderId: string }>;
   disabled?: boolean;
@@ -32,22 +34,20 @@ function EligibilityGate({
   const { eligiblePaymentMethods, isLoading, error } = useEligibleMethods({
     payload: {
       currencyCode: 'SEK',
+      countryCode: 'SE',
     } as never,
   });
 
-  const card =
-    Boolean(
-      (eligiblePaymentMethods as { isEligible?: (method: string) => boolean } | null)?.isEligible?.(
-        'advanced_cards',
-      ),
-    ) ||
-    Boolean((eligiblePaymentMethods as { advanced_cards?: unknown } | null)?.advanced_cards);
-  const paypal =
-    Boolean(
-      (eligiblePaymentMethods as { isEligible?: (method: string) => boolean } | null)?.isEligible?.(
-        'paypal',
-      ),
-    ) || Boolean(eligiblePaymentMethods);
+  const card = Boolean(
+    (eligiblePaymentMethods as { isEligible?: (method: string) => boolean } | null)?.isEligible?.(
+      'advanced_cards',
+    ),
+  );
+  const paypal = Boolean(
+    (eligiblePaymentMethods as { isEligible?: (method: string) => boolean } | null)?.isEligible?.(
+      'paypal',
+    ),
+  );
 
   useEffect(() => {
     if (isLoading) return;
@@ -62,10 +62,10 @@ function EligibilityGate({
     );
   }
 
-  if (error) {
+  if (error || (!card && !paypal)) {
     return (
       <Alert variant="info">
-        Card fields could not load. You can still pay with PayPal redirect below.
+        Card fields could not load. You can still pay with PayPal below.
       </Alert>
     );
   }
@@ -79,6 +79,7 @@ export function PaymentSection({
   method,
   onMethodChange,
   onCardValidityChange,
+  onUnavailable,
   cardSubmitRef,
   ensurePaypalOrder,
   disabled,
@@ -86,8 +87,19 @@ export function PaymentSection({
   const [sdkIneligible, setSdkIneligible] = useState(false);
   const amountValue = useMemo(() => (amountOre / 100).toFixed(2), [amountOre]);
 
+  const markUnavailable = () => {
+    setSdkIneligible((already) => {
+      if (!already) onUnavailable?.();
+      return true;
+    });
+  };
+
   if (sdkIneligible) {
-    return null;
+    return (
+      <Alert variant="info">
+        Card fields could not load. You can still pay with PayPal below.
+      </Alert>
+    );
   }
 
   return (
@@ -98,59 +110,105 @@ export function PaymentSection({
       pageType="checkout"
       locale={config.locale}
     >
-      <EligibilityGate onIneligible={() => setSdkIneligible(true)}>
+      <EligibilityGate onIneligible={markUnavailable}>
         {({ card, paypal }) => (
-          <div className="flex flex-col gap-4">
-            <div className="flex gap-2" role="tablist" aria-label="Payment method">
-              {card && config.methods.cardFields ? (
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={method === 'card'}
-                  className={`rounded-md border px-3 py-2 text-sm font-medium ${
-                    method === 'card'
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border text-muted-foreground'
-                  }`}
-                  onClick={() => onMethodChange('card')}
-                  disabled={disabled}
-                >
-                  Card
-                </button>
-              ) : null}
-              {paypal && config.methods.paypalButton ? (
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={method === 'paypal'}
-                  className={`rounded-md border px-3 py-2 text-sm font-medium ${
-                    method === 'paypal'
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border text-muted-foreground'
-                  }`}
-                  onClick={() => onMethodChange('paypal')}
-                  disabled={disabled}
-                >
-                  PayPal
-                </button>
-              ) : null}
-            </div>
-
-            {method === 'card' && card && config.methods.cardFields ? (
-              <CardPaymentFields
-                amountValue={amountValue}
-                onValidityChange={onCardValidityChange}
-                submitRef={cardSubmitRef}
-              />
-            ) : null}
-
-            {method === 'paypal' && config.methods.paypalButton ? (
-              <PaypalWalletButton ensurePaypalOrder={ensurePaypalOrder} disabled={disabled} />
-            ) : null}
-          </div>
+          <EligibleMethods
+            card={card}
+            paypal={paypal}
+            config={config}
+            method={method}
+            onMethodChange={onMethodChange}
+            amountValue={amountValue}
+            onCardValidityChange={onCardValidityChange}
+            cardSubmitRef={cardSubmitRef}
+            ensurePaypalOrder={ensurePaypalOrder}
+            disabled={disabled}
+          />
         )}
       </EligibilityGate>
     </PayPalProvider>
+  );
+}
+
+function EligibleMethods({
+  card,
+  paypal,
+  config,
+  method,
+  onMethodChange,
+  amountValue,
+  onCardValidityChange,
+  cardSubmitRef,
+  ensurePaypalOrder,
+  disabled,
+}: {
+  card: boolean;
+  paypal: boolean;
+  config: CheckoutConfig;
+  method: PaymentUiMethod;
+  onMethodChange: (method: PaymentUiMethod) => void;
+  amountValue: string;
+  onCardValidityChange: (valid: boolean) => void;
+  cardSubmitRef: MutableRefObject<CardSubmitFn | null>;
+  ensurePaypalOrder: () => Promise<{ orderId: string; paypalOrderId: string }>;
+  disabled?: boolean;
+}) {
+  const showCard = card && config.methods.cardFields;
+  const showPaypal = paypal && config.methods.paypalButton;
+
+  useEffect(() => {
+    if (method === 'card' && !showCard && showPaypal) onMethodChange('paypal');
+  }, [method, showCard, showPaypal, onMethodChange]);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-2" role="tablist" aria-label="Payment method">
+        {showCard ? (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={method === 'card'}
+            className={`rounded-md border px-3 py-2 text-sm font-medium ${
+              method === 'card'
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border text-muted-foreground'
+            }`}
+            onClick={() => onMethodChange('card')}
+            disabled={disabled}
+          >
+            Card
+          </button>
+        ) : null}
+        {showPaypal ? (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={method === 'paypal'}
+            className={`rounded-md border px-3 py-2 text-sm font-medium ${
+              method === 'paypal'
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border text-muted-foreground'
+            }`}
+            onClick={() => onMethodChange('paypal')}
+            disabled={disabled}
+          >
+            PayPal
+          </button>
+        ) : null}
+      </div>
+
+      {method === 'card' && showCard ? (
+        <CardPaymentFields
+          amountValue={amountValue}
+          onValidityChange={onCardValidityChange}
+          submitRef={cardSubmitRef}
+        />
+      ) : null}
+
+      {method === 'paypal' && showPaypal ? (
+        <PaypalWalletButton ensurePaypalOrder={ensurePaypalOrder} disabled={disabled} />
+      ) : null}
+    </div>
   );
 }
 

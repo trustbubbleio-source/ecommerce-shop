@@ -66,11 +66,14 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
   const [prefilled, setPrefilled] = useState(false);
   const [uiMethod, setUiMethod] = useState<PaymentUiMethod>('card');
   const [cardValid, setCardValid] = useState(false);
+  /** False when PayPal SDK eligibility fails — fall back to redirect Pay now. */
+  const [cardUiAvailable, setCardUiAvailable] = useState(true);
   const [busy, setBusy] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const cardSubmitRef = useRef<CardSubmitFn | null>(null);
 
   const cardFieldsEnabled = Boolean(config?.methods.cardFields && config.provider === 'paypal');
+  const useCardUi = cardFieldsEnabled && cardUiAvailable;
 
   useEffect(() => {
     if (!user || prefilled) return;
@@ -302,13 +305,13 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
 
   const amountOre = cartSubtotal(items) + cartShipping(items);
 
-  const onSubmit = cardFieldsEnabled && uiMethod === 'card' ? onCardPay : onRedirectPay;
+  const onSubmit = useCardUi && uiMethod === 'card' ? onCardPay : onRedirectPay;
   const payDisabled =
     disabled ||
     busy ||
     checkout.isPending ||
     items.length === 0 ||
-    (cardFieldsEnabled && uiMethod === 'card' && !cardValid);
+    (useCardUi && uiMethod === 'card' && !cardValid);
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5" noValidate>
@@ -428,6 +431,10 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
             method={uiMethod}
             onMethodChange={setUiMethod}
             onCardValidityChange={setCardValid}
+            onUnavailable={() => {
+              setCardUiAvailable(false);
+              setCardValid(false);
+            }}
             cardSubmitRef={cardSubmitRef}
             ensurePaypalOrder={ensurePaypalOrder}
             disabled={disabled || busy}
@@ -485,18 +492,18 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
         <Alert variant="destructive">{inlineError || checkoutStore.error}</Alert>
       ) : null}
 
-      {cardFieldsEnabled && uiMethod === 'card' ? (
+      {useCardUi && uiMethod === 'card' ? (
         <p className="text-muted-foreground text-xs leading-relaxed">{CARD_PRIVACY_NOTICE}</p>
       ) : null}
 
-      {!(cardFieldsEnabled && uiMethod === 'paypal') ? (
+      {!(useCardUi && uiMethod === 'paypal') ? (
         <Button type="submit" size="lg" block disabled={payDisabled}>
           {busy || checkout.isPending ? <Spinner className="text-primary-foreground" /> : <Lock />}
           Pay now
         </Button>
       ) : null}
 
-      {cardFieldsEnabled ? (
+      {useCardUi ? (
         <Button
           type="button"
           variant="outline"
