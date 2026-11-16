@@ -334,10 +334,16 @@ export class PaymentService {
     }
 
     if (method === 'swish') {
-      const buyerName = (order.shippingAddress?.fullName ?? order.email ?? 'Customer').trim().slice(0, 300);
+      // PayPal Swish expects Name object (given_name / surname), not a plain string.
+      const parts = (order.shippingAddress?.fullName ?? '').trim().split(/\s+/).filter(Boolean);
+      const givenName = (parts[0] ?? 'Customer').slice(0, 140);
+      const surname = (parts.length > 1 ? parts.slice(1).join(' ') : givenName).slice(0, 140);
       return {
         swish: {
-          name: buyerName || 'Customer',
+          name: {
+            given_name: givenName,
+            surname,
+          },
           country_code: 'SE',
           experience_context: {
             locale: 'sv-SE',

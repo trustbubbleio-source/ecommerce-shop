@@ -262,7 +262,7 @@ describe('PaymentService card payload (network stub)', () => {
       processing_instruction?: string;
       payment_source: {
         swish: {
-          name: string;
+          name: { given_name: string; surname: string };
           country_code: string;
           experience_context: Record<string, string>;
         };
@@ -270,7 +270,8 @@ describe('PaymentService card payload (network stub)', () => {
     };
     expect(payload.processing_instruction).toBe('ORDER_COMPLETE_ON_PAYMENT_APPROVAL');
     expect(payload.payment_source.swish.country_code).toBe('SE');
-    expect(payload.payment_source.swish.name.length).toBeGreaterThan(0);
+    expect(payload.payment_source.swish.name.given_name).toBe('Ash');
+    expect(payload.payment_source.swish.name.surname).toBe('Ketchum');
     expect(payload.payment_source.swish.experience_context.locale).toBe('sv-SE');
   });
 });
