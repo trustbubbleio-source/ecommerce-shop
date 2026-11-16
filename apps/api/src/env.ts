@@ -148,8 +148,9 @@ export function assertProductionEnv(env: Env, source: NodeJS.ProcessEnv = proces
     );
   }
   if (env.paypalEnabled && !env.paypalWebhookId) {
-    problems.push(
-      'PAYPAL_WEBHOOK_ID must be set in production so PayPal webhook signatures can be verified.',
+    // Soft requirement: boot continues, but every webhook is rejected until set.
+    console.error(
+      '[env] PAYPAL_WEBHOOK_ID is missing — PayPal Dashboard webhooks will be ignored until it is configured.',
     );
   }
   if (

@@ -39,7 +39,7 @@ describe('loadEnv paypal', () => {
     expect(env.paypalWebhookId).toBe('');
   });
 
-  it('requires PAYPAL_WEBHOOK_ID in production when PayPal is enabled', () => {
+  it('boots in production without PAYPAL_WEBHOOK_ID but keeps PayPal enabled', () => {
     const env = loadEnv({
       NODE_ENV: 'production',
       DATABASE_URL: 'postgresql://localhost/db',
@@ -55,8 +55,10 @@ describe('loadEnv paypal', () => {
       assertProductionEnv(env, {
         NODE_ENV: 'production',
         DATABASE_URL: 'postgresql://localhost/db',
+        RESEND_API_KEY: 're_live_key',
       }),
-    ).toThrow(/PAYPAL_WEBHOOK_ID/);
+    ).not.toThrow();
+    expect(env.paypalWebhookId).toBe('');
   });
 });
 
