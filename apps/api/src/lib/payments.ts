@@ -66,7 +66,18 @@ export interface PayPalOrderDetails {
         authentication_result?: PayPalAuthenticationResult;
       };
     };
+    paypal?: Record<string, unknown>;
   };
+}
+
+/** Infer our checkout method from a PayPal Orders v2 payload. */
+export function paymentMethodFromPayPalOrder(
+  details: Pick<PayPalOrderDetails, 'payment_source'>,
+): import('@akknerds/shared').PaymentMethod | undefined {
+  if (details.payment_source?.google_pay) return 'google_pay';
+  if (details.payment_source?.card) return 'card';
+  if (details.payment_source?.paypal) return 'paypal';
+  return undefined;
 }
 
 /** Cents discounted off subtotal+shipping (matches `priceCart` ledger). */

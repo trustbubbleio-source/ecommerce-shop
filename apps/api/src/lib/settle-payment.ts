@@ -8,6 +8,7 @@ import {
 import { notifyPaidOrder } from './order-alert.js';
 import {
   evaluate3dsPolicy,
+  paymentMethodFromPayPalOrder,
   paypalAmountToOre,
   type CaptureOutcome,
   type PayPalOrderDetails,
@@ -173,6 +174,11 @@ export async function captureAndSettle(
   const latest = await deps.orders.get(order.id);
   if (!latest) {
     return { kind: 'conflict', status: 404, message: 'Order not found after capture.' };
+  }
+
+  const inferredMethod = paymentMethodFromPayPalOrder(details);
+  if (inferredMethod) {
+    await deps.orders.setPaymentMethod(latest.id, inferredMethod);
   }
 
   if (latest.status === 'cancelled') {

@@ -137,6 +137,11 @@ export interface Order {
   deliveryMethod?: DeliveryMethod;
   /** PayPal Order ID used to settle / refund the payment. */
   paymentSessionId?: string;
+  /**
+   * How the buyer paid online (`google_pay`, `card`, `paypal`, …).
+   * Omitted on older orders and in-store till sales.
+   */
+  paymentMethod?: PaymentMethod;
   /** Hosted invoice / receipt URL when the provider supplies one. */
   invoiceUrl?: string;
   shippingAddress?: Address;

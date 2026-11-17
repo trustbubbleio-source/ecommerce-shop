@@ -130,6 +130,7 @@ export function toOrder(row: DbOrder): Order {
     status: row.status as OrderStatus,
     channel: row.channel === 'in_store' ? 'in_store' : 'online',
     paymentSessionId: row.paymentSessionId ?? undefined,
+    paymentMethod: (row.paymentMethod as Order['paymentMethod'] | null) ?? undefined,
     invoiceUrl: row.invoiceUrl ?? undefined,
     fulfillmentStep: (row.fulfillmentStep as FulfillmentStep | null) ?? undefined,
     deliveryMethod: toDeliveryMethod(row.deliveryMethod),

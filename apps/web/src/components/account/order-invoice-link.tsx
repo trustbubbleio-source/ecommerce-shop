@@ -12,11 +12,14 @@ export function OrderInvoiceLink({ order, className }: OrderInvoiceLinkProps) {
   const link = orderInvoiceLink(order);
   if (!link) return null;
 
+  const shopReceipt = link.href.includes('/receipt');
+
   return (
     <a
       href={link.href}
-      target="_blank"
-      rel="noreferrer"
+      // Shop receipts open in the same tab and immediately trigger print.
+      target={shopReceipt ? undefined : '_blank'}
+      rel={shopReceipt ? undefined : 'noreferrer'}
       className={cn(
         'text-primary inline-flex items-center gap-1 text-xs font-medium hover:underline',
         className,

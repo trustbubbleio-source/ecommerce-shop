@@ -43,6 +43,7 @@ export class PrismaOrderRepository implements OrderRepository {
         shipping: input.shipping,
         total: input.total,
         currency: input.currency,
+        paymentMethod: input.paymentMethod,
         shippingAddress: (input.shippingAddress ?? undefined) as unknown as
           | Prisma.InputJsonValue
           | undefined,
@@ -72,6 +73,16 @@ export class PrismaOrderRepository implements OrderRepository {
     await prisma.order.updateMany({
       where: { id: orderId },
       data: { paymentSessionId: sessionId },
+    });
+  }
+
+  async setPaymentMethod(
+    orderId: string,
+    paymentMethod: import('@akknerds/shared').PaymentMethod,
+  ): Promise<void> {
+    await prisma.order.updateMany({
+      where: { id: orderId },
+      data: { paymentMethod },
     });
   }
 

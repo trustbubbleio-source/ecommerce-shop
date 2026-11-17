@@ -41,6 +41,7 @@ export class OrderRepository implements IOrderRepository {
       deliveryMethod,
       status,
       channel: input.channel ?? 'online',
+      paymentMethod: input.paymentMethod,
       fulfillmentStep:
         input.fulfillmentStep ??
         (status === 'fulfilled'
@@ -69,6 +70,15 @@ export class OrderRepository implements IOrderRepository {
     if (!order) return;
     order.paymentSessionId = sessionId;
     this.bySession.set(sessionId, orderId);
+  }
+
+  async setPaymentMethod(
+    orderId: string,
+    paymentMethod: import('@akknerds/shared').PaymentMethod,
+  ): Promise<void> {
+    const order = this.byId.get(orderId);
+    if (!order) return;
+    order.paymentMethod = paymentMethod;
   }
 
   async setInvoiceUrl(orderId: string, invoiceUrl: string): Promise<void> {

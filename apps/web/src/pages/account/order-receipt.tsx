@@ -1,84 +1,107 @@
 import {
   MERCHANT,
   VAT_PERCENT,
+  orderPaymentReceiptLabel,
   vatIncludedIn,
   type Order,
 } from '@akknerds/shared';
 import { Button, Skeleton } from '@akknerds/ui';
-import { ArrowLeft, PackageX, Printer } from 'lucide-react';
+import { PackageX } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import logoMark from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
+import { DocumentMeta } from '../../components/common/document-meta';
 import { EmptyState } from '../../components/common/empty-state';
 import { SITE } from '../../config/site';
 import { useFormatMoney } from '../../hooks/use-format-money';
 import { useOrder } from '../../hooks/use-orders';
+import { formatAddress } from '../../lib/order-progress';
 
 export function AccountOrderReceiptPage() {
   const { orderId } = useParams<{ orderId: string }>();
-  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useOrder(orderId);
   const formatMoney = useFormatMoney();
   const printedRef = useRef(false);
-  const autoPrint = searchParams.get('print') === '1';
 
   const order = data?.order;
   const paid = order?.status === 'paid' || order?.status === 'fulfilled';
 
   useEffect(() => {
-    if (!autoPrint || !paid || !order || printedRef.current) return;
+    if (!paid || !order || printedRef.current) return;
     printedRef.current = true;
-    const timer = window.setTimeout(() => window.print(), 200);
-    return () => window.clearTimeout(timer);
-  }, [autoPrint, paid, order]);
+    let left = false;
+
+    const leave = () => {
+      if (left) return;
+      left = true;
+      if (window.opener) {
+        window.close();
+        return;
+      }
+      navigate(`/account/orders/${encodeURIComponent(order.id)}`, { replace: true });
+    };
+
+    const onAfterPrint = () => leave();
+    window.addEventListener('afterprint', onAfterPrint);
+
+    const timer = window.setTimeout(() => {
+      const previousTitle = document.title;
+      document.title = ' ';
+      window.print();
+      document.title = previousTitle;
+      // Chrome usually fires afterprint; if not, leave once print() returns.
+      leave();
+    }, 150);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('afterprint', onAfterPrint);
+    };
+  }, [paid, order, navigate]);
 
   if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
-        <Skeleton className="h-8 w-40" />
-        <Skeleton className="h-96 w-full" />
+        <DocumentMeta title="Kvitto" robots="noindex,nofollow" />
+        <Skeleton className="mx-auto h-96 w-full max-w-md" />
       </div>
     );
   }
 
   if (isError || !order) {
     return (
-      <EmptyState
-        icon={<PackageX />}
-        title="Receipt not found"
-        description="This order may have been placed on another account."
-        action={
-          <Button asChild>
-            <Link to="/account/orders">Back to orders</Link>
-          </Button>
-        }
-      />
+      <>
+        <DocumentMeta title="Kvitto" robots="noindex,nofollow" />
+        <EmptyState
+          icon={<PackageX />}
+          title="Receipt not found"
+          description="This order may have been placed on another account."
+          action={
+            <Button asChild>
+              <Link to="/account/orders">Back to orders</Link>
+            </Button>
+          }
+        />
+      </>
+    );
+  }
+
+  if (!paid) {
+    return (
+      <>
+        <DocumentMeta title="Kvitto" robots="noindex,nofollow" />
+        <p className="text-muted-foreground text-sm">
+          A receipt is available once this order is paid.
+        </p>
+      </>
     );
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-4 print:max-w-none">
-      <div className="print:hidden flex flex-wrap items-center justify-between gap-3">
-        <Link
-          to={`/account/orders/${encodeURIComponent(order.id)}`}
-          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
-        >
-          <ArrowLeft className="size-4" /> Order details
-        </Link>
-        {paid ? (
-          <Button type="button" variant="outline" size="sm" onClick={() => window.print()}>
-            <Printer className="size-4" />
-            Print / Save PDF
-          </Button>
-        ) : null}
-      </div>
-
-      {!paid ? (
-        <p className="text-muted-foreground text-sm">
-          A receipt is available once this order is paid.
-        </p>
-      ) : (
-        <ReceiptDocument order={order} formatMoney={formatMoney} />
-      )}
+    <div className="receipt-print-root">
+      <DocumentMeta title="Kvitto" robots="noindex,nofollow" />
+      <ReceiptDocument order={order} formatMoney={formatMoney} />
     </div>
   );
 }
@@ -111,35 +134,46 @@ function ReceiptDocument({
   const isPickup = order.deliveryMethod === 'pickup';
   const vat = vatIncludedIn(order.total);
   const siteHost = SITE.url.replace(/^https?:\/\//, '');
+  const payment = orderPaymentReceiptLabel(order.paymentMethod);
 
   return (
-    <div className="receipt-stage -mx-4 bg-[#ececec] px-4 py-6 sm:mx-0 sm:rounded-2xl print:mx-0 print:bg-white print:p-0 print:rounded-none">
-      <article className="receipt-paper mx-auto max-w-[22rem] bg-white text-[15px] leading-snug text-[#222] shadow-sm print:max-w-none print:shadow-none">
-        <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-4 text-[12px] text-[#8a8a8a]">
-          <span>Kvitto</span>
-          <span className="text-right">{formatReceiptDateTime(order.createdAt)}</span>
+    <div className="receipt-stage bg-white px-0 py-0">
+      <article className="receipt-paper mx-auto w-full max-w-[32rem] bg-white text-[15px] leading-relaxed text-[#222]">
+        <div className="flex items-start justify-between gap-3 px-6 pb-4 pt-5">
+          <span className="text-[13px] font-bold text-[#222]">Kvitto</span>
+          <span className="text-right text-[13px] font-semibold text-[#a3a3a3]">
+            {formatReceiptDateTime(order.createdAt)}
+          </span>
         </div>
 
-        <header className="px-4 pb-4 text-center">
+        <div className="mx-6 border-t border-[#ddd]" />
+
+        <header className="px-6 pb-6 pt-6 text-center">
+          <img
+            src={logoMark}
+            alt=""
+            className="mx-auto mb-4 h-20 w-auto brightness-0"
+            width={80}
+            height={80}
+          />
           <h1 className="text-[20px] font-bold tracking-tight text-[#111]">{MERCHANT.legalName}</h1>
-          <p className="mt-1 text-[13px] text-[#666]">
+          <p className="mt-2 text-[13px] text-[#666]">
             {MERCHANT.store.street} {MERCHANT.store.city}, {MERCHANT.store.postalCode}
           </p>
           <a
             href={SITE.url}
-            className="mt-1 inline-block text-[13px] text-[#2f6fed] underline-offset-2 hover:underline"
+            className="mt-1.5 inline-block text-[13px] text-[#2f6fed] underline-offset-2 hover:underline"
             target="_blank"
             rel="noreferrer"
           >
             {siteHost}
           </a>
-          <p className="mt-2 font-mono text-[11px] text-[#999]">{order.id}</p>
         </header>
 
-        <div className="mx-4 border-t border-[#ddd]" />
+        <div className="mx-6 border-t border-[#ddd]" />
 
-        <section className="px-4 py-3">
-          <ul className="space-y-3">
+        <section className="px-6 py-5">
+          <ul className="space-y-4">
             {order.lines.map((line) => (
               <li key={line.productId}>
                 <div className="flex items-start justify-between gap-3">
@@ -148,7 +182,7 @@ function ReceiptDocument({
                     {formatMoney(line.unitPrice * line.quantity)}
                   </span>
                 </div>
-                <p className="mt-0.5 text-[13px] text-[#888]">
+                <p className="mt-1 text-[13px] text-[#888]">
                   {line.quantity} x {formatPlainAmount(line.unitPrice)}
                 </p>
               </li>
@@ -161,7 +195,7 @@ function ReceiptDocument({
                     {formatMoney(order.shipping)}
                   </span>
                 </div>
-                <p className="mt-0.5 text-[13px] text-[#888]">1 x {formatPlainAmount(order.shipping)}</p>
+                <p className="mt-1 text-[13px] text-[#888]">1 x {formatPlainAmount(order.shipping)}</p>
               </li>
             ) : isPickup ? (
               <li>
@@ -174,9 +208,9 @@ function ReceiptDocument({
           </ul>
         </section>
 
-        <div className="mx-4 border-t border-[#ddd]" />
+        <div className="mx-6 border-t border-[#ddd]" />
 
-        <section className="space-y-1 px-4 py-4 text-right">
+        <section className="space-y-2 px-6 py-5 text-right">
           <p className="text-[17px] font-bold text-[#111]">Totalt: {formatMoney(order.total)}</p>
           {vat > 0 ? (
             <>
@@ -188,25 +222,50 @@ function ReceiptDocument({
           ) : null}
         </section>
 
-        <section className="mx-4 mb-4 rounded-md border border-[#ddd] px-3 py-3">
+        <section
+          className="receipt-pay-box mx-6 mb-6 border border-[#d4d4d4] px-4 py-4"
+          style={{ backgroundColor: '#efefef' }}
+        >
           <p className="text-[11px] font-medium uppercase tracking-wide text-[#888]">Köp</p>
-          <div className="mt-1 flex items-start justify-between gap-3">
+          <div className="mt-2 flex items-start justify-between gap-3">
             <div>
-              <p className="font-bold text-[#222]">Onlinebetalning</p>
-              <p className="mt-0.5 text-[13px] text-[#777]">PayPal Checkout</p>
-              {order.email ? <p className="mt-1 text-[12px] text-[#999]">{order.email}</p> : null}
+              <p className="font-bold text-[#222]">
+                {payment.title} — {payment.detail}
+              </p>
+              {order.shippingAddress?.fullName ? (
+                <p className="mt-2 text-[13px] font-medium text-[#222]">
+                  {order.shippingAddress.fullName}
+                </p>
+              ) : null}
+              {order.shippingAddress ? (
+                <p className="mt-0.5 text-[12px] leading-relaxed text-[#777]">
+                  {formatAddress(order.shippingAddress)}
+                </p>
+              ) : null}
+              {order.email ? <p className="mt-1.5 text-[12px] text-[#999]">{order.email}</p> : null}
+              {order.paymentSessionId ? (
+                <p className="mt-3 text-[13px] font-bold tracking-wide text-[#222]">
+                  Ref.nr: {order.paymentSessionId}
+                </p>
+              ) : null}
             </div>
             <p className="shrink-0 font-bold tabular-nums text-[#222]">{formatMoney(order.total)}</p>
           </div>
         </section>
 
-        <footer className="px-4 pb-6 pt-1 text-center">
+        <footer className="px-6 pb-8 pt-2 text-center">
           <p className="text-[15px] font-bold text-[#222]">
             Tack för ditt köp hos {MERCHANT.legalName}!
           </p>
-          <p className="mt-3 text-[11px] leading-relaxed text-[#999]">
-            Org.nr {MERCHANT.organisationNumber} · VAT {MERCHANT.vatNumber}
-          </p>
+          <div className="mt-5 border-t border-[#ddd]" />
+          <div className="mt-5 space-y-1.5 text-[11px] leading-relaxed text-[#777]">
+            <p>
+              ● {MERCHANT.legalName} ● {MERCHANT.phoneDisplay} ● {MERCHANT.receiptEmail}
+            </p>
+            <p>
+              ● Org. nr: {MERCHANT.organisationNumber} ● Momsreg.nr: {MERCHANT.vatNumber}
+            </p>
+          </div>
         </footer>
       </article>
     </div>

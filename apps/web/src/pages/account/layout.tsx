@@ -15,7 +15,7 @@ export function AccountLayout() {
 
   if (receiptOnly) {
     return (
-      <div className="container max-w-lg py-6 print:max-w-none print:px-0 print:py-0">
+      <div className="container max-w-md py-6 print:max-w-none print:px-0 print:py-0">
         <Outlet />
       </div>
     );

@@ -41,6 +41,7 @@ const order: Order = {
   status: 'paid',
   channel: 'online',
   createdAt: '2024-02-01T00:00:00.000Z',
+  paymentSessionId: 'PAYPAL_REF_F3HSHRS4CF',
   invoiceUrl: 'https://pay.stripe.com/invoice/acct/inv_1/pdf',
   shippingAddress: {
     fullName: 'Ash Ketchum',
@@ -123,6 +124,7 @@ describe('Account pages', () => {
     vi.spyOn(api, 'getOrder').mockResolvedValue({
       order: {
         ...order,
+        paymentMethod: 'google_pay',
         invoiceUrl: 'https://www.onemorerip.cards/account/orders/ord_123/receipt?print=1',
       },
     });
@@ -132,16 +134,20 @@ describe('Account pages', () => {
     expect(await screen.findByRole('heading', { name: 'One More Rip' })).toBeInTheDocument();
     expect(screen.getByText('Kvitto')).toBeInTheDocument();
     expect(screen.getByText('Booster Box')).toBeInTheDocument();
-    expect(screen.getByText('PayPal Checkout')).toBeInTheDocument();
+    expect(screen.getByText(/Onlinebetalning — Google Pay/)).toBeInTheDocument();
+    expect(screen.getByText('Ash Ketchum')).toBeInTheDocument();
+    expect(screen.getByText(/1 Pallet Path/)).toBeInTheDocument();
+    expect(screen.getByText(/Ref\.nr: PAYPAL_REF_F3HSHRS4CF/i)).toBeInTheDocument();
     expect(screen.getByText(/Tack för ditt köp hos One More Rip/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /print \/ save pdf/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /order details/i })).toHaveAttribute(
-      'href',
-      '/account/orders/ord_123',
-    );
+    expect(screen.getByText(/to@onemorerip\.cards/)).toBeInTheDocument();
+    expect(screen.getByText(/Org\. nr: 920108-4937/)).toBeInTheDocument();
+    expect(screen.getByText(/Momsreg\.nr: SE920108493701/)).toBeInTheDocument();
+    expect(screen.queryByText('ord_123')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /print \/ save pdf/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /order details/i })).not.toBeInTheDocument();
   });
 
-  it('opens the print dialog when the receipt URL has print=1', async () => {
+  it('opens the print dialog as soon as a paid receipt loads', async () => {
     useAuthStore.setState({ token: 'tok_1', user });
     vi.spyOn(api, 'me').mockResolvedValue({ user });
     vi.spyOn(api, 'getOrder').mockResolvedValue({

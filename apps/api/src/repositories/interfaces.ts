@@ -40,6 +40,8 @@ export interface CreateOrderInput {
   status?: import('@akknerds/shared').OrderStatus;
   channel?: import('@akknerds/shared').OrderChannel;
   fulfillmentStep?: import('@akknerds/shared').FulfillmentStep;
+  /** Online checkout payment method chosen at create time. */
+  paymentMethod?: import('@akknerds/shared').PaymentMethod;
 }
 
 export interface AdminUserSummary {
@@ -110,6 +112,10 @@ export interface OrderRepository {
   getByPaymentSession(sessionId: string): Promise<Order | undefined>;
   listAll(): Promise<Order[]>;
   attachSession(orderId: string, sessionId: string): Promise<void>;
+  setPaymentMethod(
+    orderId: string,
+    paymentMethod: import('@akknerds/shared').PaymentMethod,
+  ): Promise<void>;
   setInvoiceUrl(orderId: string, invoiceUrl: string): Promise<void>;
   updateFulfillment(orderId: string, input: OrderFulfillmentPatch): Promise<Order | undefined>;
   /** Marks the order cancelled and stores the customer-facing reason. */

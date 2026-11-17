@@ -176,6 +176,7 @@ export function checkoutRoutes(deps: AppDeps) {
         currency: priced.currency,
         deliveryMethod,
         shippingAddress,
+        paymentMethod: method,
       });
       orderId = order.id;
 
@@ -256,6 +257,7 @@ export function checkoutRoutes(deps: AppDeps) {
       try {
         const checkout = await deps.payments.createCheckout(order, { method });
         await deps.orders.attachSession(order.id, checkout.sessionId);
+        await deps.orders.setPaymentMethod(order.id, method);
         return c.json(checkoutResponse(order.id, checkout, method, false));
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Could not create payment session';

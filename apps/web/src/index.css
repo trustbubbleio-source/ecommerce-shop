@@ -42,5 +42,13 @@
 
   .receipt-paper {
     break-inside: avoid;
+    width: 120mm !important;
+    max-width: 120mm !important;
+  }
+
+  .receipt-pay-box {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: #efefef !important;
   }
 }
