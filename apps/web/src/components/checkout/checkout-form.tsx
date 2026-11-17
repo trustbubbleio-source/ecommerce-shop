@@ -188,7 +188,7 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
 
   const ensureSession = async (
     data: FormValues,
-    paymentMethod: 'card' | 'paypal' | 'redirect' | 'swish',
+    paymentMethod: 'card' | 'paypal' | 'redirect' | 'swish' | 'google_pay',
   ) => {
     const input = buildInput(data);
     const fingerprint = checkoutFingerprint({
@@ -354,6 +354,20 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
     const data = validateForm();
     if (!data) throw new Error(isPickup ? 'Please complete your contact details first.' : 'Please complete the shipping form first.');
     const session = await ensureSession(data, 'paypal');
+    if (!session) throw new Error('Order already paid');
+    return { orderId: session.orderId, paypalOrderId: session.paypalOrderId };
+  };
+
+  const ensureGooglePayOrder = async () => {
+    const data = validateForm();
+    if (!data) {
+      throw new Error(
+        isPickup
+          ? 'Please complete your contact details first.'
+          : 'Please complete the shipping form first.',
+      );
+    }
+    const session = await ensureSession(data, 'google_pay');
     if (!session) throw new Error('Order already paid');
     return { orderId: session.orderId, paypalOrderId: session.paypalOrderId };
   };
@@ -564,6 +578,7 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
                 }}
                 cardSubmitRef={cardSubmitRef}
                 ensurePaypalOrder={ensurePaypalOrder}
+                ensureGooglePayOrder={ensureGooglePayOrder}
                 onSwishPay={onSwishPay}
                 disabled={disabled || busy}
               />

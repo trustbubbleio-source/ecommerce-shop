@@ -33,7 +33,13 @@ beforeEach(() => {
     clientId: '',
     currency: 'SEK',
     locale: 'sv-SE',
-    methods: { cardFields: false, paypalButton: false, swishButton: false, redirect: true },
+    methods: {
+      cardFields: false,
+      paypalButton: false,
+      googlePayButton: false,
+      swishButton: false,
+      redirect: true,
+    },
   });
 });
 

@@ -61,6 +61,11 @@ export interface PayPalOrderDetails {
     card?: {
       authentication_result?: PayPalAuthenticationResult;
     };
+    google_pay?: {
+      card?: {
+        authentication_result?: PayPalAuthenticationResult;
+      };
+    };
   };
 }
 
@@ -328,6 +333,16 @@ export class PaymentService {
           experience_context: {
             return_url: returnUrl,
             cancel_url: cancelUrl,
+          },
+        },
+      };
+    }
+
+    if (method === 'google_pay') {
+      return {
+        google_pay: {
+          attributes: {
+            verification: { method: this.env.paypalScaMethod },
           },
         },
       };

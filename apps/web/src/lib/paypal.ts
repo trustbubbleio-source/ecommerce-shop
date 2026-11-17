@@ -10,10 +10,13 @@ export {
   PayPalCardExpiryField,
   PayPalCardCvvField,
   PayPalOneTimePaymentButton,
+  GooglePayOneTimePaymentButton,
   usePayPalCardFieldsOneTimePaymentSession,
   useEligibleMethods,
   usePayPal,
 } from '@paypal/react-paypal-js/sdk-v6';
+
+export type { GooglePayOneTimePaymentButtonProps } from '@paypal/react-paypal-js/sdk-v6';
 
 export type CardSubmitState = 'succeeded' | 'canceled' | 'failed';
 

@@ -8,6 +8,7 @@ import {
 } from '../../lib/paypal';
 import { CardPaymentFields, type CardSubmitFn } from './card-payment-fields';
 import { ExpressCheckout } from './express-checkout';
+import type { GooglePayConfig } from './google-pay-button';
 
 export type PaymentUiMethod = 'card' | 'paypal';
 
@@ -21,15 +22,23 @@ interface PaymentSectionProps {
   onUnavailable?: () => void;
   cardSubmitRef: MutableRefObject<CardSubmitFn | null>;
   ensurePaypalOrder: () => Promise<{ orderId: string; paypalOrderId: string }>;
+  ensureGooglePayOrder?: () => Promise<{ orderId: string; paypalOrderId: string }>;
   onSwishPay?: () => Promise<void>;
   disabled?: boolean;
 }
+
+type EligibleSnapshot = {
+  card: boolean;
+  paypal: boolean;
+  googlePay: boolean;
+  googlePayConfig: GooglePayConfig | null;
+};
 
 function EligibilityGate({
   children,
   onIneligible,
 }: {
-  children: (eligible: { card: boolean; paypal: boolean }) => ReactNode;
+  children: (eligible: EligibleSnapshot) => ReactNode;
   onIneligible: () => void;
 }) {
   const { eligiblePaymentMethods, isLoading, error } = useEligibleMethods({
@@ -42,25 +51,26 @@ function EligibilityGate({
   // PayPal's eligibility service can hard-fail (ERR_INIT_FIND_ELIGIBLE_METHODS) even when
   // card-fields / paypal-payments sessions create successfully. In that case keep offering UI.
   const eligibilityBroken = Boolean(error);
+  const methods = eligiblePaymentMethods as {
+    isEligible?: (method: string) => boolean;
+    getDetails?: (method: string) => { config?: GooglePayConfig } | undefined;
+  } | null;
+
   const card =
-    eligibilityBroken ||
-    Boolean(
-      (eligiblePaymentMethods as { isEligible?: (method: string) => boolean } | null)?.isEligible?.(
-        'advanced_cards',
-      ),
-    );
-  const paypal =
-    eligibilityBroken ||
-    Boolean(
-      (eligiblePaymentMethods as { isEligible?: (method: string) => boolean } | null)?.isEligible?.(
-        'paypal',
-      ),
-    );
+    eligibilityBroken || Boolean(methods?.isEligible?.('advanced_cards'));
+  const paypal = eligibilityBroken || Boolean(methods?.isEligible?.('paypal'));
+  const googlePayEligible = Boolean(methods?.isEligible?.('googlepay'));
+  const googlePayConfig =
+    googlePayEligible && methods?.getDetails
+      ? (methods.getDetails('googlepay')?.config ?? null)
+      : null;
+  // Prefer hide until ready-to-pay config exists (do not show live button on eligibilityBroken alone).
+  const googlePay = Boolean(googlePayConfig);
 
   useEffect(() => {
     if (isLoading || eligibilityBroken) return;
-    if (!card && !paypal) onIneligible();
-  }, [isLoading, eligibilityBroken, card, paypal, onIneligible]);
+    if (!card && !paypal && !googlePay) onIneligible();
+  }, [isLoading, eligibilityBroken, card, paypal, googlePay, onIneligible]);
 
   if (isLoading) {
     return (
@@ -70,7 +80,7 @@ function EligibilityGate({
     );
   }
 
-  if (!eligibilityBroken && !card && !paypal) {
+  if (!eligibilityBroken && !card && !paypal && !googlePay) {
     return (
       <Alert variant="info">
         Card fields could not load. You can still pay with PayPal below.
@@ -78,7 +88,7 @@ function EligibilityGate({
     );
   }
 
-  return <>{children({ card, paypal })}</>;
+  return <>{children({ card, paypal, googlePay, googlePayConfig })}</>;
 }
 
 export function PaymentSection({
@@ -90,6 +100,7 @@ export function PaymentSection({
   onUnavailable,
   cardSubmitRef,
   ensurePaypalOrder,
+  ensureGooglePayOrder,
   onSwishPay,
   disabled,
 }: PaymentSectionProps) {
@@ -115,15 +126,17 @@ export function PaymentSection({
     <PayPalProvider
       clientId={config.clientId}
       environment={config.environment === 'live' ? 'production' : 'sandbox'}
-      components={['card-fields', 'paypal-payments']}
+      components={['card-fields', 'paypal-payments', 'googlepay-payments']}
       pageType="checkout"
       locale={config.locale}
     >
       <EligibilityGate onIneligible={markUnavailable}>
-        {({ card, paypal }) => (
+        {({ card, paypal, googlePay, googlePayConfig }) => (
           <EligibleMethods
             card={card}
             paypal={paypal}
+            googlePay={googlePay}
+            googlePayConfig={googlePayConfig}
             config={config}
             method={method}
             onMethodChange={onMethodChange}
@@ -131,6 +144,7 @@ export function PaymentSection({
             onCardValidityChange={onCardValidityChange}
             cardSubmitRef={cardSubmitRef}
             ensurePaypalOrder={ensurePaypalOrder}
+            ensureGooglePayOrder={ensureGooglePayOrder}
             onSwishPay={onSwishPay}
             disabled={disabled}
           />
@@ -143,6 +157,8 @@ export function PaymentSection({
 function EligibleMethods({
   card,
   paypal,
+  googlePay,
+  googlePayConfig,
   config,
   method,
   onMethodChange,
@@ -150,11 +166,14 @@ function EligibleMethods({
   onCardValidityChange,
   cardSubmitRef,
   ensurePaypalOrder,
+  ensureGooglePayOrder,
   onSwishPay,
   disabled,
 }: {
   card: boolean;
   paypal: boolean;
+  googlePay: boolean;
+  googlePayConfig: GooglePayConfig | null;
   config: CheckoutConfig;
   method: PaymentUiMethod;
   onMethodChange: (method: PaymentUiMethod) => void;
@@ -162,11 +181,13 @@ function EligibleMethods({
   onCardValidityChange: (valid: boolean) => void;
   cardSubmitRef: MutableRefObject<CardSubmitFn | null>;
   ensurePaypalOrder: () => Promise<{ orderId: string; paypalOrderId: string }>;
+  ensureGooglePayOrder?: () => Promise<{ orderId: string; paypalOrderId: string }>;
   onSwishPay?: () => Promise<void>;
   disabled?: boolean;
 }) {
   const showCard = card && config.methods.cardFields;
   const showPaypal = paypal && config.methods.paypalButton;
+  const showGooglePay = googlePay && config.methods.googlePayButton;
   const showSwish = Boolean(config.methods.swishButton && onSwishPay);
 
   useEffect(() => {
@@ -178,8 +199,13 @@ function EligibleMethods({
     <div className="flex flex-col gap-6">
       <ExpressCheckout
         ensurePaypalOrder={ensurePaypalOrder}
+        ensureGooglePayOrder={ensureGooglePayOrder}
         onSwishPay={onSwishPay}
         showPaypal={showPaypal}
+        showGooglePay={showGooglePay}
+        googlePayConfig={googlePayConfig}
+        amountValue={amountValue}
+        environment={config.environment}
         showSwish={showSwish}
         disabled={disabled}
       />

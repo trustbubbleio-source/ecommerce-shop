@@ -171,6 +171,17 @@ describe('checkoutInputSchema', () => {
     ).toBe(true);
   });
 
+  it('accepts paymentMethod google_pay', () => {
+    expect(
+      checkoutInputSchema.safeParse({
+        items: [{ productId: 'bb-151', quantity: 1 }],
+        email: 'buyer@example.com',
+        shippingAddress,
+        paymentMethod: 'google_pay',
+      }).success,
+    ).toBe(true);
+  });
+
   it('rejects quantities above the per-line cap', () => {
     expect(
       checkoutInputSchema.safeParse({

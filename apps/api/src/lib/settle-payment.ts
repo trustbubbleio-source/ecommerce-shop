@@ -138,10 +138,15 @@ export async function captureAndSettle(
     return { kind: 'mismatch', code: 'ORDER_MISMATCH', message: match.message };
   }
 
-  if (!options.skip3ds && details.payment_source?.card) {
-    const sca = evaluate3dsPolicy(details.payment_source.card.authentication_result);
-    if (!sca.ok) {
-      return { kind: 'sca_failed', reason: sca.reason };
+  if (!options.skip3ds) {
+    const authResult =
+      details.payment_source?.card?.authentication_result ??
+      details.payment_source?.google_pay?.card?.authentication_result;
+    if (details.payment_source?.card || details.payment_source?.google_pay?.card) {
+      const sca = evaluate3dsPolicy(authResult);
+      if (!sca.ok) {
+        return { kind: 'sca_failed', reason: sca.reason };
+      }
     }
   }
 

@@ -29,7 +29,21 @@ describe('GET /api/checkout/config', () => {
     const { data } = await jsonRequest(app, 'GET', '/api/checkout/config');
     expect(data.provider).toBe('paypal');
     expect(data.methods.cardFields).toBe(false);
+    expect(data.methods.googlePayButton).toBe(false);
     expect(data.clientId).toBe('test_paypal_client');
+  });
+
+  it('enables googlePayButton with the card fields kill-switch', async () => {
+    const env = testEnv({
+      PAYPAL_API_KEY: 'test_paypal_client',
+      PAYPAL_SECRET_KEY: 'test_secret',
+      PAYPAL_CARD_FIELDS: 'on',
+    });
+    const { app } = makeApp({ env, payments: new PaymentService(env) });
+    const { data } = await jsonRequest(app, 'GET', '/api/checkout/config');
+    expect(data.methods.cardFields).toBe(true);
+    expect(data.methods.paypalButton).toBe(true);
+    expect(data.methods.googlePayButton).toBe(true);
   });
 
   it('enables card fields for admins when flag is admin', async () => {
@@ -92,6 +106,24 @@ describe('POST /api/checkout with paymentMethod', () => {
     expect(res.status).toBe(201);
     expect(data.url).toBeNull();
     expect(data.paypalOrderId).toContain('_card_');
+    expect((await deps.orders.get(data.orderId))?.status).toBe('pending');
+  });
+
+  it('returns paypalOrderId without url for google_pay method', async () => {
+    const env = testEnv({
+      PAYPAL_API_KEY: 'test_paypal_client',
+      PAYPAL_SECRET_KEY: 'test_secret',
+    });
+    const { app, deps } = makeApp({ env, payments: new PaymentService(env) });
+    const { res, data } = await jsonRequest(
+      app,
+      'POST',
+      '/api/checkout',
+      checkoutBody({ paymentMethod: 'google_pay' }),
+    );
+    expect(res.status).toBe(201);
+    expect(data.url).toBeNull();
+    expect(data.paypalOrderId).toContain('_google_pay_');
     expect((await deps.orders.get(data.orderId))?.status).toBe('pending');
   });
 });
@@ -267,6 +299,55 @@ describe('payment-session and capture', () => {
           authentication_result: {
             liability_shift: 'NO',
             three_d_secure: { enrollment_status: 'Y', authentication_status: 'N' },
+          },
+        },
+      },
+    });
+
+    const { res, data } = await jsonRequest(
+      app,
+      'POST',
+      `/api/checkout/${created.orderId}/capture`,
+      { paypalOrderId: created.paypalOrderId },
+    );
+    expect(res.status).toBe(402);
+    expect(data.code).toBe('SCA_FAILED');
+    expect((await deps.orders.get(created.orderId))?.status).toBe('pending');
+  });
+
+  it('returns 402 when Google Pay 3DS policy fails', async () => {
+    const env = testEnv({
+      PAYPAL_API_KEY: 'test_paypal_client',
+      PAYPAL_SECRET_KEY: 'test_secret',
+    });
+    const payments = new PaymentService(env);
+    const { app, deps } = makeApp({ env, payments });
+    const { data: created } = await jsonRequest(
+      app,
+      'POST',
+      '/api/checkout',
+      checkoutBody({ paymentMethod: 'google_pay' }),
+    );
+    expect(created.url).toBeNull();
+    expect(created.paypalOrderId).toBeTruthy();
+    const order = (await deps.orders.get(created.orderId))!;
+
+    payments.getOrder = async () => ({
+      id: created.paypalOrderId,
+      status: 'APPROVED',
+      purchase_units: [
+        {
+          custom_id: order.id,
+          amount: { currency_code: 'SEK', value: (order.total / 100).toFixed(2) },
+        },
+      ],
+      payment_source: {
+        google_pay: {
+          card: {
+            authentication_result: {
+              liability_shift: 'NO',
+              three_d_secure: { enrollment_status: 'Y', authentication_status: 'N' },
+            },
           },
         },
       },

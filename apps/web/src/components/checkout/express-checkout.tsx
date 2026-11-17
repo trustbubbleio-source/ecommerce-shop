@@ -1,28 +1,41 @@
 import type { ReactNode } from 'react';
+import { GooglePayButton, type GooglePayConfig } from './google-pay-button';
 import { PaypalWalletButton } from './paypal-wallet-button';
 
 interface ExpressCheckoutProps {
   ensurePaypalOrder: () => Promise<{ orderId: string; paypalOrderId: string }>;
+  ensureGooglePayOrder?: () => Promise<{ orderId: string; paypalOrderId: string }>;
   /** Starts Swish via PayPal (creates order + redirects to payer-action). */
   onSwishPay?: () => Promise<void>;
   showPaypal: boolean;
+  showGooglePay?: boolean;
+  googlePayConfig?: GooglePayConfig | null;
+  amountValue?: string;
+  environment?: 'sandbox' | 'live';
   showSwish?: boolean;
   disabled?: boolean;
 }
 
 /**
- * Express checkout strip — Apple/Google Pay shown as branded slots (enabled after
- * domain association + PayPal wallet eligibility). PayPal and Swish are live when
- * the config flags say so.
+ * Express checkout strip — Apple Pay stays a stub until domain association.
+ * Google Pay, PayPal, and Swish are live when their config/eligibility flags say so.
  */
 export function ExpressCheckout({
   ensurePaypalOrder,
+  ensureGooglePayOrder,
   onSwishPay,
   showPaypal,
+  showGooglePay,
+  googlePayConfig,
+  amountValue,
+  environment = 'live',
   showSwish,
   disabled,
 }: ExpressCheckoutProps) {
-  if (!showPaypal && !showSwish) return null;
+  if (!showPaypal && !showGooglePay && !showSwish) return null;
+
+  const googlePayReady =
+    Boolean(showGooglePay && ensureGooglePayOrder && googlePayConfig && amountValue);
 
   return (
     <div className="flex flex-col gap-4">
@@ -42,16 +55,32 @@ export function ExpressCheckout({
           </span>
         </ExpressSlot>
 
-        <ExpressSlot
-          label="Google Pay"
-          title="Google Pay will appear here once PayPal wallet eligibility is confirmed for this domain."
-          disabled
-        >
-          <span className="inline-flex items-center gap-1.5">
-            <GoogleGLogo />
-            <span className="text-[15px] font-medium tracking-tight text-white">Pay</span>
-          </span>
-        </ExpressSlot>
+        {googlePayReady ? (
+          <div
+            className={`flex h-11 items-center justify-center overflow-hidden rounded-lg bg-black ${
+              disabled ? 'pointer-events-none opacity-50' : ''
+            }`}
+          >
+            <GooglePayButton
+              ensureGooglePayOrder={ensureGooglePayOrder!}
+              googlePayConfig={googlePayConfig!}
+              amountValue={amountValue!}
+              environment={environment}
+              disabled={disabled}
+            />
+          </div>
+        ) : (
+          <ExpressSlot
+            label="Google Pay"
+            title="Google Pay will appear here once PayPal wallet eligibility is confirmed for this domain."
+            disabled
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <GoogleGLogo />
+              <span className="text-[15px] font-medium tracking-tight text-white">Pay</span>
+            </span>
+          </ExpressSlot>
+        )}
 
         {showPaypal ? (
           <div

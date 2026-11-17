@@ -41,7 +41,13 @@ function buildCheckoutConfig(deps: AppDeps, isAdmin: boolean): CheckoutConfig {
       clientId: '',
       currency: 'SEK',
       locale: 'sv-SE',
-      methods: { cardFields: false, paypalButton: false, swishButton: false, redirect: true },
+      methods: {
+        cardFields: false,
+        paypalButton: false,
+        googlePayButton: false,
+        swishButton: false,
+        redirect: true,
+      },
     };
   }
 
@@ -57,6 +63,8 @@ function buildCheckoutConfig(deps: AppDeps, isAdmin: boolean): CheckoutConfig {
     methods: {
       cardFields,
       paypalButton: cardFields,
+      // Same kill-switch as card/PayPal wallet; SDK eligibility still gates the live button.
+      googlePayButton: cardFields,
       // Off until PayPal Business has Swish onboarded (PAYMENT_SOURCE_CANNOT_BE_USED otherwise).
       swishButton: false,
       redirect: true,

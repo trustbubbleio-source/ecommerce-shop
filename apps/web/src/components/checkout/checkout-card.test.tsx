@@ -9,8 +9,14 @@ import { CheckoutForm } from './checkout-form';
 
 const eligibleMethodsState = vi.hoisted(() => ({
   current: {
-    eligiblePaymentMethods: { isEligible: () => true } as
-      | { isEligible: (method: string) => boolean }
+    eligiblePaymentMethods: {
+      isEligible: () => true,
+      getDetails: () => ({ config: { allowedPaymentMethods: [] } }),
+    } as
+      | {
+          isEligible: (method: string) => boolean;
+          getDetails?: (method: string) => { config?: unknown };
+        }
       | null,
     isLoading: false,
     error: null as Error | null,
@@ -45,6 +51,11 @@ vi.mock('../../lib/paypal', () => {
     PayPalCardExpiryField: () => <div />,
     PayPalCardCvvField: () => <div />,
     PayPalOneTimePaymentButton: () => <button type="button">PayPal wallet</button>,
+    GooglePayOneTimePaymentButton: () => (
+      <button type="button" data-testid="google-pay-button">
+        Google Pay
+      </button>
+    ),
     useEligibleMethods: () => ({ ...eligibleMethodsState.current }),
     usePayPalCardFieldsOneTimePaymentSession: () => ({
       submit: vi.fn(async () => undefined),
@@ -84,7 +95,10 @@ beforeEach(() => {
   useCheckoutStore.getState().clear();
   vi.restoreAllMocks();
   eligibleMethodsState.current = {
-    eligiblePaymentMethods: { isEligible: () => true },
+    eligiblePaymentMethods: {
+      isEligible: () => true,
+      getDetails: () => ({ config: { allowedPaymentMethods: [] } }),
+    },
     isLoading: false,
     error: null,
   };
@@ -94,7 +108,13 @@ beforeEach(() => {
     clientId: 'test-client',
     currency: 'SEK',
     locale: 'sv-SE',
-    methods: { cardFields: true, paypalButton: true, swishButton: true, redirect: true },
+    methods: {
+      cardFields: true,
+      paypalButton: true,
+      googlePayButton: true,
+      swishButton: true,
+      redirect: true,
+    },
   });
 });
 
@@ -155,12 +175,46 @@ describe('CheckoutForm card flow', () => {
       clientId: 'test-client',
       currency: 'SEK',
       locale: 'sv-SE',
-      methods: { cardFields: false, paypalButton: false, swishButton: false, redirect: true },
+      methods: {
+        cardFields: false,
+        paypalButton: false,
+        googlePayButton: false,
+        swishButton: false,
+        redirect: true,
+      },
     });
     renderWithProviders(<CheckoutForm />);
     expect(await screen.findByRole('button', { name: /pay now/i })).toBeInTheDocument();
     expect(screen.queryByTestId('card-fields')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('google-pay-button')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /continue with paypal/i })).toBeInTheDocument();
+  });
+
+  it('renders Google Pay when eligible and googlePayButton is on', async () => {
+    renderWithProviders(<CheckoutForm />);
+    expect(await screen.findByTestId('google-pay-button')).toBeInTheDocument();
+    expect(screen.getByText(/^Express checkout$/i)).toBeInTheDocument();
+  });
+
+  it('keeps Google Pay stub when eligible but googlePayButton is off', async () => {
+    vi.mocked(api.getCheckoutConfig).mockResolvedValue({
+      provider: 'paypal',
+      environment: 'sandbox',
+      clientId: 'test-client',
+      currency: 'SEK',
+      locale: 'sv-SE',
+      methods: {
+        cardFields: true,
+        paypalButton: true,
+        googlePayButton: false,
+        swishButton: false,
+        redirect: true,
+      },
+    });
+    renderWithProviders(<CheckoutForm />);
+    expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
+    expect(screen.queryByTestId('google-pay-button')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Google Pay \(coming soon\)/i })).toBeInTheDocument();
   });
 
   it('still shows card UI when PayPal eligibility service errors', async () => {

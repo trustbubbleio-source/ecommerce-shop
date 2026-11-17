@@ -225,6 +225,44 @@ describe('PaymentService card payload (network stub)', () => {
     ]);
   });
 
+  it('sends google_pay payment_source with SCA verification', async () => {
+    let posted: unknown;
+    const env = loadEnv({
+      PAYPAL_API_KEY: 'real_client',
+      PAYPAL_SECRET_KEY: 'real_secret',
+      PAYPAL_SCA_METHOD: 'SCA_ALWAYS',
+      CHECKOUT_SUCCESS_URL: 'https://shop.test/success',
+      CHECKOUT_CANCEL_URL: 'https://shop.test/cart',
+    });
+    const service = new PaymentService(env);
+    service.fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/v1/oauth2/token')) {
+        return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
+          status: 200,
+        });
+      }
+      if (url.includes('/v2/checkout/orders') && init?.method === 'POST') {
+        posted = JSON.parse(String(init.body));
+        return new Response(JSON.stringify({ id: 'GPAY123', links: [] }), { status: 201 });
+      }
+      return new Response('{}', { status: 404 });
+    }) as typeof fetch;
+
+    const result = await service.createCheckout(mockOrder(), { method: 'google_pay' });
+    expect(result.sessionId).toBe('GPAY123');
+    expect(result.url).toBeNull();
+
+    const payload = posted as {
+      payment_source: {
+        google_pay: {
+          attributes: { verification: { method: string } };
+        };
+      };
+    };
+    expect(payload.payment_source.google_pay.attributes.verification.method).toBe('SCA_ALWAYS');
+  });
+
   it('sends swish payment_source with auto-capture instruction', async () => {
     let posted: unknown;
     const env = loadEnv({
