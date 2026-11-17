@@ -1,6 +1,7 @@
 import { ApiError, api } from '@akknerds/api-client';
-import type { ComponentProps } from 'react';
+import { useEffect, useState, type ComponentProps } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loadGooglePaySdk } from '../../lib/google-pay-sdk';
 import { GooglePayOneTimePaymentButton } from '../../lib/paypal';
 import { useCheckoutStore } from '../../store/checkout';
 
@@ -19,6 +20,8 @@ interface GooglePayButtonProps {
 /**
  * Native Google Pay button via PayPal JS SDK v6. Confirms the PayPal order with
  * Google payment data, then captures through our existing checkout endpoint.
+ *
+ * PayPal's button throws if pay.js is missing — wait for it before mounting.
  */
 export function GooglePayButton({
   ensureGooglePayOrder,
@@ -30,6 +33,28 @@ export function GooglePayButton({
   const navigate = useNavigate();
   const clear = useCheckoutStore((s) => s.clear);
   const setError = useCheckoutStore((s) => s.setError);
+  const [sdkReady, setSdkReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadGooglePaySdk()
+      .then(() => {
+        if (!cancelled) setSdkReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSdkReady(false);
+          setError('Google Pay could not load. Use card or PayPal instead.');
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [setError]);
+
+  if (!sdkReady) {
+    return <div className="bg-black h-11 w-full rounded-lg" aria-hidden />;
+  }
 
   return (
     <div

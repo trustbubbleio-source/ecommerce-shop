@@ -23,6 +23,11 @@ const eligibleMethodsState = vi.hoisted(() => ({
   },
 }));
 
+vi.mock('../../lib/google-pay-sdk', () => ({
+  loadGooglePaySdk: () => Promise.resolve(),
+  isGooglePaySdkReady: () => true,
+}));
+
 vi.mock('../../lib/paypal', () => {
   const React = require('react') as typeof import('react');
   return {
