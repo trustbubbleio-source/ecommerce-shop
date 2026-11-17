@@ -42,6 +42,9 @@ function buildCsp() {
     'https://*.paypal.com',
     'https://*.paypalobjects.com',
     'https://accounts.google.com',
+    'https://pay.google.com',
+    'https://google.com',
+    'https://*.google.com',
     'https://nominatim.openstreetmap.org',
     'https://*.basemaps.cartocdn.com',
     'https://plausible.io',
@@ -56,14 +59,15 @@ function buildCsp() {
     "object-src 'none'",
     "frame-ancestors 'none'",
     "form-action 'self'",
-    "script-src 'self' https://*.paypal.com https://*.paypalobjects.com https://accounts.google.com https://plausible.io",
+    // pay.google.com + www.gstatic.com required for Google Pay (PayPal SDK button).
+    "script-src 'self' https://*.paypal.com https://*.paypalobjects.com https://accounts.google.com https://pay.google.com https://www.gstatic.com https://plausible.io",
     // React/Leaflet inline styles need 'unsafe-inline' for style attributes.
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: blob: https:",
     `media-src ${media}`,
     `connect-src ${connect}`,
-    'frame-src https://*.paypal.com https://*.paypalobjects.com https://accounts.google.com',
+    'frame-src https://*.paypal.com https://*.paypalobjects.com https://accounts.google.com https://pay.google.com',
     "worker-src 'self' blob:",
     'upgrade-insecure-requests',
   ].join('; ');
