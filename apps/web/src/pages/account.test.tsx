@@ -117,6 +117,47 @@ describe('Account pages', () => {
     expect(screen.getByText(/of which VAT \(25%\)/)).toBeInTheDocument();
   });
 
+  it('renders a printable receipt for a paid order', async () => {
+    useAuthStore.setState({ token: 'tok_1', user });
+    vi.spyOn(api, 'me').mockResolvedValue({ user });
+    vi.spyOn(api, 'getOrder').mockResolvedValue({
+      order: {
+        ...order,
+        invoiceUrl: 'https://www.onemorerip.cards/account/orders/ord_123/receipt',
+      },
+    });
+
+    renderApp('/account/orders/ord_123/receipt');
+
+    expect(await screen.findByRole('heading', { name: 'Receipt' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'One More Rip' })).toBeInTheDocument();
+    expect(screen.getByText('Booster Box')).toBeInTheDocument();
+    expect(screen.getByText(/Paid online \(PayPal Checkout\)/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /print \/ save pdf/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /order details/i })).toHaveAttribute(
+      'href',
+      '/account/orders/ord_123',
+    );
+  });
+
+  it('shows a Receipt link on order details when invoiceUrl is the receipt page', async () => {
+    useAuthStore.setState({ token: 'tok_1', user });
+    vi.spyOn(api, 'me').mockResolvedValue({ user });
+    vi.spyOn(api, 'getOrder').mockResolvedValue({
+      order: {
+        ...order,
+        invoiceUrl: 'https://www.onemorerip.cards/account/orders/ord_123/receipt',
+      },
+    });
+
+    renderApp('/account/orders/ord_123');
+
+    expect(await screen.findByRole('link', { name: 'Receipt' })).toHaveAttribute(
+      'href',
+      'https://www.onemorerip.cards/account/orders/ord_123/receipt',
+    );
+  });
+
   it('opens the account dropdown from the header', async () => {
     const click = userEvent.setup();
     useAuthStore.setState({ token: 'tok_1', user });

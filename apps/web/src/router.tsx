@@ -85,6 +85,13 @@ export const routes: RouteObject[] = [
             ),
           },
           {
+            path: 'orders/:orderId/receipt',
+            element: lazyNamed(
+              () => import('./pages/account/order-receipt'),
+              'AccountOrderReceiptPage',
+            ),
+          },
+          {
             path: 'favorites',
             element: lazyNamed(() => import('./pages/account/favorites'), 'AccountFavoritesPage'),
           },

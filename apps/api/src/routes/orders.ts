@@ -2,10 +2,11 @@ import type { Order } from '@akknerds/shared';
 import { Hono } from 'hono';
 import type { AppDeps, AppEnv } from '../context.js';
 import { cancelOrderAndReleaseStock } from '../lib/inventory.js';
+import { withReceiptInvoiceUrl } from '../lib/order-receipt.js';
 import { requireAuth } from '../middleware/auth.js';
 
-async function withInvoiceUrl(_deps: AppDeps, order: Order): Promise<Order> {
-  return order;
+async function withInvoiceUrl(deps: AppDeps, order: Order): Promise<Order> {
+  return withReceiptInvoiceUrl(deps.env, order);
 }
 
 /** Same access rules as GET /:id — owner session, or guest capability token. */

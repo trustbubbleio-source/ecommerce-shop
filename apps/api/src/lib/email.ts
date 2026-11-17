@@ -1,4 +1,9 @@
-import { formatPrice, type Order } from '@akknerds/shared';
+import {
+  VAT_PERCENT,
+  formatPrice,
+  vatIncludedIn,
+  type Order,
+} from '@akknerds/shared';
 import { Resend } from 'resend';
 import type { Env } from '../env.js';
 
@@ -316,15 +321,53 @@ export class EmailService {
     });
   }
 
-  async sendOrderConfirmation(order: Order, orderUrl: string): Promise<SendEmailResult> {
+  async sendOrderConfirmation(
+    order: Order,
+    urls: { orderUrl: string; receiptUrl: string },
+  ): Promise<SendEmailResult> {
     const name = order.shippingAddress?.fullName?.trim() || 'there';
+    const isPickup = order.deliveryMethod === 'pickup';
     const items = order.lines
       .map(
         (line) =>
           `<li style="margin:0 0 6px;">${line.quantity} × ${escapeHtml(line.name)} — ${escapeHtml(formatPrice(line.unitPrice * line.quantity, order.currency))}</li>`,
       )
       .join('');
+    const subtotal = formatPrice(order.subtotal, order.currency);
+    const shippingLabel =
+      order.shipping === 0
+        ? 'Free'
+        : formatPrice(order.shipping, order.currency);
     const total = formatPrice(order.total, order.currency);
+    const vat = vatIncludedIn(order.total);
+    const vatLabel = vat > 0 ? formatPrice(vat, order.currency) : null;
+    const deliveryLabel = isPickup ? 'Store pickup' : 'Shipping';
+    const addressLine = order.shippingAddress
+      ? [
+          order.shippingAddress.fullName,
+          order.shippingAddress.line1,
+          order.shippingAddress.line2,
+          `${order.shippingAddress.postalCode} ${order.shippingAddress.city}`,
+          order.shippingAddress.country,
+        ]
+          .filter(Boolean)
+          .join(', ')
+      : null;
+
+    const breakdownHtml = [
+      `<ul style="margin:0 0 12px;padding-left:18px;">${items}</ul>`,
+      `<p style="margin:0 0 4px;">Subtotal: ${escapeHtml(subtotal)}</p>`,
+      `<p style="margin:0 0 4px;">${escapeHtml(deliveryLabel)}: ${escapeHtml(shippingLabel)}</p>`,
+      `<p style="margin:0 0 4px;">Total: <strong>${escapeHtml(total)}</strong></p>`,
+      vatLabel
+        ? `<p style="margin:0 0 12px;color:#a1a1aa;font-size:13px;">of which VAT (${VAT_PERCENT}%): ${escapeHtml(vatLabel)}</p>`
+        : '',
+      addressLine
+        ? `<p style="margin:0 0 12px;color:#a1a1aa;font-size:13px;">${escapeHtml(deliveryLabel)}: ${escapeHtml(addressLine)}</p>`
+        : '',
+      `<p style="margin:0 0 16px;"><a href="${escapeHtml(urls.receiptUrl)}" style="color:#a78bfa;">View receipt</a></p>`,
+    ].join('');
+
     return this.send({
       to: order.email,
       replyTo: this.env.email.ordersInbox,
@@ -337,18 +380,23 @@ export class EmailService {
           (line) =>
             `${line.quantity} × ${line.name} — ${formatPrice(line.unitPrice * line.quantity, order.currency)}`,
         ),
+        `Subtotal: ${subtotal}`,
+        `${deliveryLabel}: ${shippingLabel}`,
         `Total: ${total}`,
+        ...(vatLabel ? [`of which VAT (${VAT_PERCENT}%): ${vatLabel}`] : []),
+        ...(addressLine ? [`${deliveryLabel}: ${addressLine}`] : []),
         '',
-        `View your order: ${orderUrl}`,
+        `View your order: ${urls.orderUrl}`,
+        `View receipt: ${urls.receiptUrl}`,
         '',
         '— One More Rip',
       ].join('\n'),
       html: brandedEmail({
         preheader: `Order ${order.id} is confirmed.`,
         title: `Hi ${escapeHtml(name)},`,
-        body: `<p style="margin:0 0 12px;">We've received your order <strong>${escapeHtml(order.id)}</strong>.</p><ul style="margin:0 0 12px;padding-left:18px;">${items}</ul><p style="margin:0 0 16px;">Total: <strong>${escapeHtml(total)}</strong></p>`,
+        body: `<p style="margin:0 0 12px;">We've received your order <strong>${escapeHtml(order.id)}</strong>.</p>${breakdownHtml}`,
         actionLabel: 'View your order',
-        actionUrl: orderUrl,
+        actionUrl: urls.orderUrl,
       }),
     });
   }

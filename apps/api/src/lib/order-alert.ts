@@ -1,6 +1,7 @@
 import { formatPrice, type FulfillmentStep, type Order } from '@akknerds/shared';
 import type { Env } from '../env.js';
 import type { EmailService } from './email.js';
+import { receiptPageUrl } from './order-receipt.js';
 
 function orderPageUrl(env: Env, orderId: string): string {
   const shop = env.webOrigins[0] ?? 'http://localhost:5173';
@@ -19,7 +20,10 @@ export async function notifyPaidOrder(email: EmailService, env: Env, order: Orde
   const first = order.lines[0]?.name ?? 'Order';
   const extra = order.lines.length - 1;
   try {
-    await email.sendOrderConfirmation(order, orderPageUrl(env, order.id));
+    await email.sendOrderConfirmation(order, {
+      orderUrl: orderPageUrl(env, order.id),
+      receiptUrl: receiptPageUrl(env, order.id),
+    });
   } catch (error) {
     console.error('[email] order confirmation failed', error);
   }

@@ -19,3 +19,4 @@ export * from './fulfillment.js';
 export * from './store.js';
 export * from './launch.js';
 export * from './text-encoding.js';
+export * from './merchant.js';

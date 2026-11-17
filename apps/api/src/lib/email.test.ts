@@ -68,4 +68,51 @@ describe('EmailService', () => {
     expect(info.mock.calls[0]?.[0]).toContain('ord_1');
     info.mockRestore();
   });
+
+  it('includes receipt breakdown and receipt link in order confirmation', async () => {
+    const send = vi.fn(async () => ({ id: 'mock_1', mocked: true }));
+    const email = new EmailService(loadEnv({ RESEND_API_KEY: '' }));
+    // Spy the public send path used by confirmation.
+    vi.spyOn(email, 'send').mockImplementation(send as never);
+
+    await email.sendOrderConfirmation(
+      {
+        id: 'ord_receipt_1',
+        email: 'buyer@example.com',
+        lines: [{ productId: 'sc-1', name: 'PKX Pokemon card', unitPrice: 100, quantity: 1 }],
+        subtotal: 100,
+        shipping: 0,
+        total: 100,
+        currency: 'sek',
+        status: 'paid',
+        channel: 'online',
+        deliveryMethod: 'pickup',
+        createdAt: new Date().toISOString(),
+        shippingAddress: {
+          fullName: 'Ash Ketchum',
+          line1: 'Hallandsvägen 21',
+          city: 'Båstad',
+          postalCode: '269 36',
+          country: 'Sweden',
+        },
+      },
+      {
+        orderUrl: 'http://localhost:5173/account/orders/ord_receipt_1',
+        receiptUrl: 'http://localhost:5173/account/orders/ord_receipt_1/receipt',
+      },
+    );
+
+    expect(send).toHaveBeenCalledOnce();
+    const payload = send.mock.calls[0]?.[0] as {
+      subject: string;
+      html: string;
+      text: string;
+    };
+    expect(payload.subject).toContain('ord_receipt_1');
+    expect(payload.html).toContain('Subtotal:');
+    expect(payload.html).toContain('Store pickup');
+    expect(payload.html).toContain('/account/orders/ord_receipt_1/receipt');
+    expect(payload.html).toContain('View receipt');
+    expect(payload.text).toContain('View receipt:');
+  });
 });

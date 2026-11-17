@@ -8,6 +8,7 @@ import {
   notifyOrderCancelledInApp,
   notifyOrderFulfillmentUpdate,
 } from '../lib/order-notifications.js';
+import { withReceiptInvoiceUrl } from '../lib/order-receipt.js';
 import { enrichOrderForPacking } from '../lib/order-packing.js';
 import { requireAdmin } from '../middleware/admin.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -17,14 +18,16 @@ export function adminOrderRoutes(deps: AppDeps) {
 
   app.get('/', requireAuth(), requireAdmin(deps), async (c) => {
     const orders = await deps.orders.listAll();
-    return c.json({ orders });
+    return c.json({
+      orders: orders.map((order) => withReceiptInvoiceUrl(deps.env, order)),
+    });
   });
 
   app.get('/:id', requireAuth(), requireAdmin(deps), async (c) => {
     const order = await deps.orders.get(c.req.param('id'));
     if (!order) return c.json({ error: 'Order not found' }, 404);
     const enriched = await enrichOrderForPacking(deps.products, order);
-    return c.json({ order: enriched });
+    return c.json({ order: withReceiptInvoiceUrl(deps.env, enriched) });
   });
 
   app.patch(

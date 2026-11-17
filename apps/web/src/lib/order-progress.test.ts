@@ -175,6 +175,18 @@ describe('orderInvoiceLink', () => {
     ).toBe('Receipt');
   });
 
+  it('labels the shop receipt page as Receipt', () => {
+    expect(
+      orderInvoiceLink({
+        ...order,
+        invoiceUrl: 'https://www.onemorerip.cards/account/orders/ord_123/receipt',
+      }),
+    ).toEqual({
+      href: 'https://www.onemorerip.cards/account/orders/ord_123/receipt',
+      label: 'Receipt',
+    });
+  });
+
   it('hides the link when Stripe has not issued a document yet', () => {
     expect(orderInvoiceLink(order)).toBeNull();
   });
