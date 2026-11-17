@@ -57,7 +57,8 @@ function buildCsp() {
     "default-src 'self'",
     "base-uri 'self'",
     "object-src 'none'",
-    "frame-ancestors 'none'",
+    // 'self' allows same-origin receipt print iframes; still blocks cross-site clickjacking.
+    "frame-ancestors 'self'",
     "form-action 'self'",
     // pay.google.com + www.gstatic.com required for Google Pay (PayPal SDK button).
     "script-src 'self' https://*.paypal.com https://*.paypalobjects.com https://accounts.google.com https://pay.google.com https://www.gstatic.com https://plausible.io",
@@ -67,7 +68,8 @@ function buildCsp() {
     "img-src 'self' data: blob: https:",
     `media-src ${media}`,
     `connect-src ${connect}`,
-    'frame-src https://*.paypal.com https://*.paypalobjects.com https://accounts.google.com https://pay.google.com',
+    // 'self' = shop receipt print iframe; PayPal/Google for checkout embeds.
+    "frame-src 'self' https://*.paypal.com https://*.paypalobjects.com https://accounts.google.com https://pay.google.com",
     "worker-src 'self' blob:",
     'upgrade-insecure-requests',
   ].join('; ');
@@ -75,7 +77,8 @@ function buildCsp() {
 
 const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
+  // SAMEORIGIN so the hidden receipt iframe can print; still blocks other sites.
+  'X-Frame-Options': 'SAMEORIGIN',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
   'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
