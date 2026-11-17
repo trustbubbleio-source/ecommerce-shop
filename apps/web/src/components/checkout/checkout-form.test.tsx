@@ -56,6 +56,7 @@ describe('CheckoutForm', () => {
   it('validates required fields before submitting', async () => {
     const spy = vi.spyOn(api, 'checkout');
     renderWithProviders(<CheckoutForm />);
+    await userEvent.click(screen.getByRole('checkbox', { name: /I agree to the/i }));
     await userEvent.click(screen.getByRole('button', { name: /pay now/i }));
     expect(await screen.findByText(/valid email/i)).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
