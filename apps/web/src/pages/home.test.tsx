@@ -16,7 +16,7 @@ describe('HomePage', () => {
       screen.getByRole('heading', { name: /Delta Reign, in store only/i }),
     ).toBeInTheDocument();
     expect(screen.getByText('Finally in store')).toBeInTheDocument();
-    expect(screen.getByText(/They are here — limited stock/i)).toBeInTheDocument();
+    expect(screen.getByText(/They are here\. Limited stock/i)).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Delta Reign ETB/i })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Delta Reign Blister Pack/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Get directions/i })).toHaveAttribute(

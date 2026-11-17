@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '@akknerds/api-client';
@@ -84,13 +84,18 @@ describe('ProductArt', () => {
     expect(screen.getByText('151')).toBeInTheDocument();
   });
 
-  it('renders a real image with overlay on sealed shop cards', () => {
+  it('renders a real image with overlay on sealed shop cards', async () => {
     renderWithProviders(
       <ProductArt product={makeProduct({ image: 'https://x/y.png' })} variant="card" />,
     );
     expect(screen.getByRole('img', { name: /151 Booster Box/i })).toBeInTheDocument();
     expect(screen.getByText('Scarlet & Violet')).toBeInTheDocument();
     expect(screen.getByText('151')).toBeInTheDocument();
+    const image = screen.getByRole('img', { name: /151 Booster Box/i }).querySelector('img');
+    expect(image).toBeTruthy();
+    expect(image).toHaveClass('opacity-0');
+    fireEvent.load(image!);
+    await waitFor(() => expect(image).toHaveClass('opacity-100'));
   });
 
   it('shows the product name on accessory shop cards instead of the shared set label', () => {
@@ -179,6 +184,23 @@ describe('ProductFiltersPanel', () => {
     expect(screen.getByRole('button', { name: 'Single Card' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Booster Box' }));
     expect(onChange).toHaveBeenCalledWith({ category: 'booster-box' });
+  });
+
+  it('prefetches category products on hover', async () => {
+    const listSpy = vi.spyOn(api, 'listProducts').mockResolvedValue({
+      products: [],
+      total: 0,
+      hasMore: false,
+    });
+    renderWithProviders(
+      <ProductFiltersPanel value={emptyFilters} onChange={vi.fn()} onReset={vi.fn()} />,
+    );
+    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Booster Box' }));
+    await waitFor(() =>
+      expect(listSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ category: 'booster-box', inStock: true, limit: 24, offset: 0 }),
+      ),
+    );
   });
 
   it('selects series from the static series list', async () => {

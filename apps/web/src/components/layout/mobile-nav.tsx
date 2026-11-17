@@ -11,6 +11,7 @@ import { ChevronDown, Menu } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { MAIN_NAV, type NavLink as SiteNavLink } from '../../config/site';
+import { usePrefetchShopHref } from '../../hooks/use-products';
 import { Brand } from '../common/brand';
 import { shopLinkActive } from './shop-nav-dropdown';
 
@@ -34,6 +35,7 @@ export function MobileNav() {
   const [open, setOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const location = useLocation();
+  const prefetchShopHref = usePrefetchShopHref();
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
@@ -122,6 +124,12 @@ export function MobileNav() {
                           key={link.to}
                           to={link.to}
                           onClick={() => setOpen(false)}
+                          onPointerEnter={
+                            entry.id === 'buy' ? () => prefetchShopHref(link.to) : undefined
+                          }
+                          onFocus={
+                            entry.id === 'buy' ? () => prefetchShopHref(link.to) : undefined
+                          }
                           className={cn(
                             'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                             itemActive

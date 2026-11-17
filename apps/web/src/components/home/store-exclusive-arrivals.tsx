@@ -7,7 +7,7 @@ import { SITE } from '../../config/site';
 
 const ARRIVAL_COPY = {
   badge: 'Finally in store',
-  when: 'They are here — limited stock. Exclusive to the physical shop.',
+  when: 'They are here. Limited stock. Exclusive to the physical shop.',
 } as const;
 
 export function StoreExclusiveArrivals() {

@@ -11,7 +11,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { CATEGORY_TILES } from '../../config/site';
 import { useBodyScrollLock } from '../../hooks/use-body-scroll-lock';
 import { useFormatMoney } from '../../hooks/use-format-money';
-import { useProducts } from '../../hooks/use-products';
+import { usePrefetchShopHref, useProducts } from '../../hooks/use-products';
 
 const QUICK_LINKS = CATEGORY_TILES.slice(0, 5).map((tile) => ({
   label: tile.label,
@@ -76,6 +76,7 @@ export function SearchDialog() {
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebouncedValue(query.trim(), 280);
   const navigate = useNavigate();
+  const prefetchShopHref = usePrefetchShopHref();
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -219,6 +220,8 @@ export function SearchDialog() {
                               key={link.href}
                               to={link.href}
                               onClick={close}
+                              onPointerEnter={() => prefetchShopHref(link.href)}
+                              onFocus={() => prefetchShopHref(link.href)}
                               className="border-border hover:bg-secondary rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
                             >
                               {link.label}

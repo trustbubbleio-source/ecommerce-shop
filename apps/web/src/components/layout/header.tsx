@@ -1,6 +1,7 @@
 import { cn } from '@akknerds/ui';
 import { NavLink } from 'react-router-dom';
 import { MAIN_NAV } from '../../config/site';
+import { usePrefetchShopHref } from '../../hooks/use-products';
 import { Brand } from '../common/brand';
 import { CartDrawer } from './cart-drawer';
 import { MobileNav } from './mobile-nav';
@@ -21,6 +22,8 @@ function navLinkClass(isActive: boolean): string {
 }
 
 export function Header() {
+  const prefetchShopHref = usePrefetchShopHref();
+
   return (
     <header className="border-border/80 bg-background/80 sticky top-0 z-40 border-b backdrop-blur-lg">
       <div className="container flex h-16 items-center gap-2">
@@ -48,6 +51,8 @@ export function Header() {
                 <NavLink
                   key={entry.id}
                   to="/shop"
+                  onPointerEnter={() => prefetchShopHref('/shop')}
+                  onFocus={() => prefetchShopHref('/shop')}
                   className={({ isActive }) => navLinkClass(isActive)}
                 >
                   {entry.label}

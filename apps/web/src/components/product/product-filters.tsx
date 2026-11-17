@@ -12,8 +12,8 @@ import {
 } from '@akknerds/shared';
 import { Button, Label, Separator, cn } from '@akknerds/ui';
 import { RotateCcw } from 'lucide-react';
-import { useCatalogMeta } from '../../hooks/use-products';
-import { type ProductFilters, isDefaultFilters } from '../../lib/filters';
+import { useCatalogMeta, usePrefetchShopProducts } from '../../hooks/use-products';
+import { type ProductFilters, isDefaultFilters, toProductsQuery } from '../../lib/filters';
 
 interface ProductFiltersPanelProps {
   value: ProductFilters;
@@ -96,7 +96,13 @@ const selectClassName =
 /** Shop sidebar filters — category/series/language/condition are static; artists come from catalogue meta. */
 export function ProductFiltersPanel({ value, onChange, onReset }: ProductFiltersPanelProps) {
   const meta = useCatalogMeta();
+  const prefetchShop = usePrefetchShopProducts();
   const artists = meta.data?.artists ?? [];
+
+  const prefetchCategory = (category: ProductCategory | 'all') => {
+    if (category === value.category) return;
+    prefetchShop(toProductsQuery({ ...value, category }));
+  };
 
   return (
     <div className="flex w-full min-w-0 flex-col gap-6">
@@ -112,6 +118,8 @@ export function ProductFiltersPanel({ value, onChange, onReset }: ProductFilters
                 key={category.value}
                 type="button"
                 onClick={() => onChange({ category: category.value })}
+                onPointerEnter={() => prefetchCategory(category.value)}
+                onFocus={() => prefetchCategory(category.value)}
                 aria-pressed={active}
                 className={cn(
                   'flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors',

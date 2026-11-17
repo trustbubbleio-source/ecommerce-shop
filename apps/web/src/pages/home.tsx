@@ -18,7 +18,7 @@ import { ProductGrid } from '../components/product/product-grid';
 import { isPrelaunchActive } from '../config/launch';
 import { CATEGORY_TILES, SITE } from '../config/site';
 import { useFormatMoney } from '../hooks/use-format-money';
-import { useProducts } from '../hooks/use-products';
+import { usePrefetchShopHref, useProducts } from '../hooks/use-products';
 
 function StoreOpenAnnouncement() {
   const storeImage = resolveAssetUrl(SITE.store.image, import.meta.env.VITE_ASSET_CDN_URL);
@@ -103,6 +103,7 @@ function pickCategoryImage(
 
 function Categories() {
   const catalog = useProducts({ limit: 60 });
+  const prefetchShopHref = usePrefetchShopHref();
   const categoryCta = isPrelaunchActive() ? 'Browse' : 'Buy now';
 
   return (
@@ -110,12 +111,15 @@ function Categories() {
       <SectionHeader title="Buy by category" subtitle="Find exactly what you're hunting for" />
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         {CATEGORY_TILES.map((tile) => {
+          const href = `/shop?category=${tile.category}`;
           const imageUrl = pickCategoryImage(catalog.data?.products, tile.category);
 
           return (
             <Link
               key={tile.category}
-              to={`/shop?category=${tile.category}`}
+              to={href}
+              onPointerEnter={() => prefetchShopHref(href)}
+              onFocus={() => prefetchShopHref(href)}
               className="border-border bg-card hover:border-foreground/25 hover:shadow-glow group relative overflow-hidden rounded-xl border p-5 transition-all hover:-translate-y-1"
             >
               {imageUrl ? (

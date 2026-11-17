@@ -1,5 +1,12 @@
-import { type Product, categoryLabel, isCardStyleCategory, primaryProductImage, resolveAssetUrl } from '@akknerds/shared';
-import { cn } from '@akknerds/ui';
+import {
+  type Product,
+  categoryLabel,
+  isCardStyleCategory,
+  primaryProductImage,
+  resolveAssetUrl,
+} from '@akknerds/shared';
+import { cn, Skeleton } from '@akknerds/ui';
+import { useEffect, useRef, useState } from 'react';
 import { Pokeball } from '../common/pokeball';
 
 type ArtProduct = Pick<Product, 'accent' | 'set' | 'series' | 'category' | 'name'> &
@@ -48,6 +55,46 @@ function ProductArtOverlay({
   );
 }
 
+function ProductArtImage({
+  src,
+  fitClass,
+}: {
+  src: string;
+  fitClass: string;
+}) {
+  const [ready, setReady] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    setReady(false);
+    const img = imgRef.current;
+    // Cached images may already be complete (and skip a new load event).
+    if (img?.complete && img.naturalWidth > 0) {
+      setReady(true);
+    }
+  }, [src]);
+
+  return (
+    <>
+      {!ready ? <Skeleton className="absolute inset-0 h-full w-full rounded-none" aria-hidden /> : null}
+      <img
+        ref={imgRef}
+        src={src}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setReady(true)}
+        onError={() => setReady(true)}
+        className={cn(
+          'h-full w-full transition-opacity duration-300',
+          fitClass,
+          ready ? 'opacity-100' : 'opacity-0',
+        )}
+      />
+    </>
+  );
+}
+
 /**
  * Branded product artwork.
  * - Shop cards (single): clean image + card number/rarity badge (handled in ProductCard).
@@ -82,12 +129,7 @@ export function ProductArt({
         role="img"
         aria-label={product.name}
       >
-        <img
-          src={imageUrl}
-          alt=""
-          loading="lazy"
-          className={cn('h-full w-full', imageFitClass)}
-        />
+        <ProductArtImage src={imageUrl} fitClass={imageFitClass} />
         <ProductArtOverlay product={product} show={showOverlay} showCategory={!isShopCard} />
       </div>
     );
