@@ -56,11 +56,16 @@ vi.mock('../../lib/paypal', () => {
     PayPalCardExpiryField: () => <div />,
     PayPalCardCvvField: () => <div />,
     PayPalOneTimePaymentButton: () => <button type="button">PayPal wallet</button>,
-    GooglePayOneTimePaymentButton: () => (
-      <button type="button" data-testid="google-pay-button">
-        Google Pay
-      </button>
-    ),
+    useGooglePayOneTimePaymentSession: () => ({
+      isPending: false,
+      error: null,
+      handleClick: vi.fn(async () => undefined),
+      handleCancel: vi.fn(),
+      handleDestroy: vi.fn(),
+      paymentsClient: null,
+      formattedConfig: null,
+      createGooglePayButton: vi.fn(async () => null),
+    }),
     useEligibleMethods: () => ({ ...eligibleMethodsState.current }),
     usePayPalCardFieldsOneTimePaymentSession: () => ({
       submit: vi.fn(async () => undefined),
@@ -197,7 +202,8 @@ describe('CheckoutForm card flow', () => {
 
   it('renders Google Pay when eligible and googlePayButton is on', async () => {
     renderWithProviders(<CheckoutForm />);
-    expect(await screen.findByTestId('google-pay-button')).toBeInTheDocument();
+    expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^pay with google pay$/i })).toBeInTheDocument();
     expect(screen.getByText(/^Express checkout$/i)).toBeInTheDocument();
   });
 
@@ -218,7 +224,7 @@ describe('CheckoutForm card flow', () => {
     });
     renderWithProviders(<CheckoutForm />);
     expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
-    expect(screen.queryByTestId('google-pay-button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^pay with google pay$/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Google Pay \(coming soon\)/i })).toBeInTheDocument();
   });
 

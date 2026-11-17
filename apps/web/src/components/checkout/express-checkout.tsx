@@ -56,19 +56,13 @@ export function ExpressCheckout({
         </ExpressSlot>
 
         {googlePayReady ? (
-          <div
-            className={`flex h-11 items-center justify-center overflow-hidden rounded-lg bg-black ${
-              disabled ? 'pointer-events-none opacity-50' : ''
-            }`}
-          >
-            <GooglePayButton
-              ensureGooglePayOrder={ensureGooglePayOrder!}
-              googlePayConfig={googlePayConfig!}
-              amountValue={amountValue!}
-              environment={environment}
-              disabled={disabled}
-            />
-          </div>
+          <GooglePayButton
+            ensureGooglePayOrder={ensureGooglePayOrder!}
+            googlePayConfig={googlePayConfig!}
+            amountValue={amountValue!}
+            environment={environment}
+            disabled={disabled}
+          />
         ) : (
           <ExpressSlot
             label="Google Pay"
