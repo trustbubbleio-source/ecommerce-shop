@@ -214,7 +214,7 @@ export function checkoutRoutes(deps: AppDeps) {
       const order = await deps.orders.get(orderId);
       if (!order) return c.json({ error: 'Order not found' }, 404);
 
-      const access = canAccessOrder(order, c.get('user')?.sub);
+      const access = await canAccessOrder(deps, order, c.get('user')?.sub);
       if (access !== 'ok') return accessDenied(c, access);
 
       if (order.status === 'paid' || order.status === 'fulfilled') {
@@ -277,7 +277,7 @@ export function checkoutRoutes(deps: AppDeps) {
       const order = await deps.orders.get(orderId);
       if (!order) return c.json({ error: 'Order not found' }, 404);
 
-      const access = canAccessOrder(order, c.get('user')?.sub);
+      const access = await canAccessOrder(deps, order, c.get('user')?.sub);
       if (access !== 'ok') return accessDenied(c, access);
 
       const result = await captureAndSettle(deps, order, paypalOrderId);

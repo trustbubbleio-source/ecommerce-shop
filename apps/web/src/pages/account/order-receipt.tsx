@@ -8,7 +8,7 @@ import {
 import { Button, Skeleton } from '@akknerds/ui';
 import { PackageX } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import logoMark from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
 import { DocumentMeta } from '../../components/common/document-meta';
 import { EmptyState } from '../../components/common/empty-state';
@@ -16,13 +16,16 @@ import { SITE } from '../../config/site';
 import { useFormatMoney } from '../../hooks/use-format-money';
 import { useOrder } from '../../hooks/use-orders';
 import { formatAddress } from '../../lib/order-progress';
+import { SHOP_RECEIPT_READY_MESSAGE } from '../../lib/print-shop-receipt';
 
 export function AccountOrderReceiptPage() {
   const { orderId } = useParams<{ orderId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { data, isLoading, isError } = useOrder(orderId);
   const formatMoney = useFormatMoney();
   const printedRef = useRef(false);
+  const embed = searchParams.get('embed') === '1';
 
   const order = data?.order;
   const paid = order?.status === 'paid' || order?.status === 'fulfilled';
@@ -30,8 +33,18 @@ export function AccountOrderReceiptPage() {
   useEffect(() => {
     if (!paid || !order || printedRef.current) return;
     printedRef.current = true;
-    let left = false;
 
+    // Hidden iframe print: signal parent, do not navigate this frame.
+    if (embed || window.parent !== window) {
+      window.parent.postMessage(
+        { type: SHOP_RECEIPT_READY_MESSAGE, orderId: order.id },
+        window.location.origin,
+      );
+      return;
+    }
+
+    // Direct open (e.g. email link): print, then return to the order.
+    let left = false;
     const leave = () => {
       if (left) return;
       left = true;
@@ -50,7 +63,6 @@ export function AccountOrderReceiptPage() {
       document.title = ' ';
       window.print();
       document.title = previousTitle;
-      // Chrome usually fires afterprint; if not, leave once print() returns.
       leave();
     }, 150);
 
@@ -58,13 +70,13 @@ export function AccountOrderReceiptPage() {
       window.clearTimeout(timer);
       window.removeEventListener('afterprint', onAfterPrint);
     };
-  }, [paid, order, navigate]);
+  }, [paid, order, navigate, embed]);
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className={embed ? 'receipt-screen-hidden' : 'flex flex-col gap-4'}>
         <DocumentMeta title="Kvitto" robots="noindex,nofollow" />
-        <Skeleton className="mx-auto h-96 w-full max-w-md" />
+        {embed ? null : <Skeleton className="mx-auto h-96 w-full max-w-md" />}
       </div>
     );
   }
@@ -99,7 +111,7 @@ export function AccountOrderReceiptPage() {
   }
 
   return (
-    <div className="receipt-print-root">
+    <div className={`receipt-print-root${embed ? '' : ' receipt-screen-hidden'}`}>
       <DocumentMeta title="Kvitto" robots="noindex,nofollow" />
       <ReceiptDocument order={order} formatMoney={formatMoney} />
     </div>

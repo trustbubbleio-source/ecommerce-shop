@@ -9,12 +9,21 @@ async function withInvoiceUrl(deps: AppDeps, order: Order): Promise<Order> {
   return withReceiptInvoiceUrl(deps.env, order);
 }
 
-/** Same access rules as GET /:id — owner session, or guest capability token. */
-export function canAccessOrder(order: Order, userSub: string | undefined): 'ok' | 401 | 403 {
+/**
+ * Same access rules as GET /:id — owner session, guest capability token,
+ * or an authenticated admin (so staff can open / print any receipt).
+ */
+export async function canAccessOrder(
+  deps: Pick<AppDeps, 'users'>,
+  order: Order,
+  userSub: string | undefined,
+): Promise<'ok' | 401 | 403> {
   if (!order.userId) return 'ok';
   if (!userSub) return 401;
-  if (order.userId !== userSub) return 403;
-  return 'ok';
+  if (order.userId === userSub) return 'ok';
+  const user = await deps.users.findById(userSub);
+  if (user?.role === 'admin') return 'ok';
+  return 403;
 }
 
 export function orderRoutes(deps: AppDeps) {
@@ -38,7 +47,7 @@ export function orderRoutes(deps: AppDeps) {
     if (!order) {
       return c.json({ error: 'Order not found' }, 404);
     }
-    const access = canAccessOrder(order, c.get('user')?.sub);
+    const access = await canAccessOrder(deps, order, c.get('user')?.sub);
     if (access !== 'ok') {
       return c.json(
         { error: access === 401 ? 'Authentication required' : 'You do not have access to this order' },
@@ -57,7 +66,7 @@ export function orderRoutes(deps: AppDeps) {
     if (!order) {
       return c.json({ error: 'Order not found' }, 404);
     }
-    const access = canAccessOrder(order, c.get('user')?.sub);
+    const access = await canAccessOrder(deps, order, c.get('user')?.sub);
     if (access !== 'ok') {
       return c.json(
         { error: access === 401 ? 'Authentication required' : 'You do not have access to this order' },

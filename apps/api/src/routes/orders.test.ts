@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { hashPassword } from '../lib/password.js';
 import { PaymentService } from '../lib/payments.js';
 import { jsonRequest, makeApp, registerAndLogin, TEST_SHIPPING_ADDRESS, testEnv } from '../test/helpers.js';
 
@@ -77,6 +78,34 @@ describe('GET /api/orders/:id', () => {
       authorization: `Bearer ${otherToken}`,
     });
     expect(res.status).toBe(403);
+  });
+
+  it('allows an admin to read another customer order (receipts)', async () => {
+    const created = makeApp();
+    const ownerToken = await registerAndLogin(created, 'owner-admin-receipt@a.com');
+    const orderId = await placeOrder(created.app, ownerToken);
+    const passwordHash = await hashPassword('adminpass123');
+    await created.deps.users.create({
+      name: 'Admin',
+      email: 'admin-receipt@test.local',
+      passwordHash,
+      role: 'admin',
+      emailVerifiedAt: new Date().toISOString(),
+    });
+    const { data: login } = await jsonRequest(created.app, 'POST', '/api/auth/login', {
+      email: 'admin-receipt@test.local',
+      password: 'adminpass123',
+    });
+    const { res, data } = await jsonRequest(
+      created.app,
+      'GET',
+      `/api/orders/${orderId}`,
+      undefined,
+      { authorization: `Bearer ${login.token}` },
+    );
+    expect(res.status).toBe(200);
+    expect(data.order.id).toBe(orderId);
+    expect(data.order.invoiceUrl).toContain('/receipt');
   });
 
   it('requires auth to read an account-linked order', async () => {

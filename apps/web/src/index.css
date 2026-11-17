@@ -29,6 +29,16 @@
   }
 }
 
+/* Hide receipt chrome on screen for direct / email opens — print still shows it. */
+@media screen {
+  .receipt-screen-hidden {
+    position: absolute;
+    left: -10000px;
+    top: 0;
+    width: 120mm;
+  }
+}
+
 @media print {
   @page {
     margin: 12mm;
@@ -38,6 +48,12 @@
     background: white !important;
     background-image: none !important;
     color: #1c1917 !important;
+  }
+
+  .receipt-screen-hidden {
+    position: static;
+    left: auto;
+    width: auto;
   }
 
   .receipt-paper {
