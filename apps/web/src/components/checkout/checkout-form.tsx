@@ -408,11 +408,10 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
   const amountOre = cartSubtotal(items) + cartShipping(items, deliveryMethod);
 
   const onSubmit = useCardUi && uiMethod === 'card' ? onCardPay : onRedirectPay;
+  const paymentsLocked = disabled || busy || items.length === 0 || !acceptTerms;
   const payDisabled =
-    disabled ||
-    busy ||
+    paymentsLocked ||
     checkout.isPending ||
-    items.length === 0 ||
     (useCardUi && uiMethod === 'card' && !cardValid);
 
   return (
@@ -558,33 +557,6 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
           </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
-          {cardFieldsEnabled && config ? (
-            <Suspense
-              fallback={
-                <div className="flex justify-center py-4">
-                  <Spinner label="Loading payment" />
-                </div>
-              }
-            >
-              <PaymentSection
-                config={config}
-                amountOre={amountOre}
-                method={uiMethod}
-                onMethodChange={setUiMethod}
-                onCardValidityChange={setCardValid}
-                onUnavailable={() => {
-                  setCardUiAvailable(false);
-                  setCardValid(false);
-                }}
-                cardSubmitRef={cardSubmitRef}
-                ensurePaypalOrder={ensurePaypalOrder}
-                ensureGooglePayOrder={ensureGooglePayOrder}
-                onSwishPay={onSwishPay}
-                disabled={disabled || busy}
-              />
-            </Suspense>
-          ) : null}
-
           <div className="flex flex-col gap-1.5">
             <label className="flex cursor-pointer items-start gap-3 text-sm leading-snug">
               <input
@@ -629,6 +601,33 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
             ) : null}
           </div>
 
+          {cardFieldsEnabled && config ? (
+            <Suspense
+              fallback={
+                <div className="flex justify-center py-4">
+                  <Spinner label="Loading payment" />
+                </div>
+              }
+            >
+              <PaymentSection
+                config={config}
+                amountOre={amountOre}
+                method={uiMethod}
+                onMethodChange={setUiMethod}
+                onCardValidityChange={setCardValid}
+                onUnavailable={() => {
+                  setCardUiAvailable(false);
+                  setCardValid(false);
+                }}
+                cardSubmitRef={cardSubmitRef}
+                ensurePaypalOrder={ensurePaypalOrder}
+                ensureGooglePayOrder={ensureGooglePayOrder}
+                onSwishPay={onSwishPay}
+                disabled={paymentsLocked}
+              />
+            </Suspense>
+          ) : null}
+
           {inlineError || checkoutStore.error ? (
             <Alert variant="destructive">{inlineError || checkoutStore.error}</Alert>
           ) : null}
@@ -651,7 +650,7 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
                 variant="outline"
                 size="lg"
                 block
-                disabled={disabled || busy || items.length === 0}
+                disabled={paymentsLocked}
                 onClick={(e) => void onRedirectPay(e as unknown as FormEvent)}
               >
                 Continue with PayPal
@@ -661,7 +660,7 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
                   type="button"
                   size="lg"
                   block
-                  disabled={disabled || busy || items.length === 0}
+                  disabled={paymentsLocked}
                   className="bg-[#ee2a7b] text-white hover:bg-[#ee2a7b]/90"
                   onClick={() => void onSwishPay()}
                 >
@@ -673,7 +672,7 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
             <button
               type="button"
               className="text-muted-foreground hover:text-foreground text-center text-xs underline-offset-2 hover:underline disabled:opacity-50"
-              disabled={disabled || busy || items.length === 0}
+              disabled={paymentsLocked}
               onClick={(e) => void onRedirectPay(e as unknown as FormEvent)}
             >
               Trouble with the buttons? Continue on PayPal

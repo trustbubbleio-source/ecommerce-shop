@@ -65,9 +65,11 @@ describe('CheckoutForm', () => {
     const spy = vi.spyOn(api, 'checkout');
     renderWithProviders(<CheckoutForm />);
     await fillAddress();
-    await userEvent.click(screen.getByRole('button', { name: /pay now/i }));
-    expect(await screen.findByText(/accept the Terms and Returns/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /pay now/i })).toBeDisabled();
     expect(spy).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('checkbox', { name: /I agree to the/i }));
+    expect(screen.getByRole('button', { name: /pay now/i })).toBeEnabled();
   });
 
   it('submits the order and redirects to the checkout URL', async () => {
