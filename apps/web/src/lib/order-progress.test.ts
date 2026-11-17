@@ -179,10 +179,10 @@ describe('orderInvoiceLink', () => {
     expect(
       orderInvoiceLink({
         ...order,
-        invoiceUrl: 'https://www.onemorerip.cards/account/orders/ord_123/receipt',
+        invoiceUrl: 'https://www.onemorerip.cards/account/orders/ord_123/receipt?print=1',
       }),
     ).toEqual({
-      href: 'https://www.onemorerip.cards/account/orders/ord_123/receipt',
+      href: 'https://www.onemorerip.cards/account/orders/ord_123/receipt?print=1',
       label: 'Receipt',
     });
   });

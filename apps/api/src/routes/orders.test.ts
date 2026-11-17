@@ -150,7 +150,7 @@ describe('GET /api/orders', () => {
     const { data } = await jsonRequest(created.app, 'GET', `/api/orders/${orderId}`);
     expect(data.order.status).toBe('paid');
     expect(data.order.invoiceUrl).toBe(
-      `http://localhost:5173/account/orders/${encodeURIComponent(orderId)}/receipt`,
+      `http://localhost:5173/account/orders/${encodeURIComponent(orderId)}/receipt?print=1`,
     );
   });
 });

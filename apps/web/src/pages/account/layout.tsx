@@ -1,14 +1,24 @@
 import { cn } from '@akknerds/ui';
-import { NavLink, Navigate, Outlet } from 'react-router-dom';
+import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { PageHeader } from '../../components/common/page-header';
 import { ACCOUNT_NAV } from '../../config/account';
 import { useAuthStore } from '../../store/auth';
 
 export function AccountLayout() {
   const user = useAuthStore((s) => s.user);
+  const { pathname } = useLocation();
+  const receiptOnly = /\/account\/orders\/[^/]+\/receipt\/?$/.test(pathname);
 
   if (!user) {
     return <Navigate to="/login" state={{ from: '/account' }} replace />;
+  }
+
+  if (receiptOnly) {
+    return (
+      <div className="container max-w-lg py-6 print:max-w-none print:px-0 print:py-0">
+        <Outlet />
+      </div>
+    );
   }
 
   return (

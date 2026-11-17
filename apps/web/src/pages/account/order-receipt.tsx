@@ -6,16 +6,30 @@ import {
 } from '@akknerds/shared';
 import { Button, Skeleton } from '@akknerds/ui';
 import { ArrowLeft, PackageX, Printer } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { EmptyState } from '../../components/common/empty-state';
+import { SITE } from '../../config/site';
 import { useFormatMoney } from '../../hooks/use-format-money';
 import { useOrder } from '../../hooks/use-orders';
-import { formatAddress, formatOrderDate } from '../../lib/order-progress';
 
 export function AccountOrderReceiptPage() {
   const { orderId } = useParams<{ orderId: string }>();
+  const [searchParams] = useSearchParams();
   const { data, isLoading, isError } = useOrder(orderId);
   const formatMoney = useFormatMoney();
+  const printedRef = useRef(false);
+  const autoPrint = searchParams.get('print') === '1';
+
+  const order = data?.order;
+  const paid = order?.status === 'paid' || order?.status === 'fulfilled';
+
+  useEffect(() => {
+    if (!autoPrint || !paid || !order || printedRef.current) return;
+    printedRef.current = true;
+    const timer = window.setTimeout(() => window.print(), 200);
+    return () => window.clearTimeout(timer);
+  }, [autoPrint, paid, order]);
 
   if (isLoading) {
     return (
@@ -26,7 +40,7 @@ export function AccountOrderReceiptPage() {
     );
   }
 
-  if (isError || !data) {
+  if (isError || !order) {
     return (
       <EmptyState
         icon={<PackageX />}
@@ -41,11 +55,8 @@ export function AccountOrderReceiptPage() {
     );
   }
 
-  const { order } = data;
-  const paid = order.status === 'paid' || order.status === 'fulfilled';
-
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-4 print:max-w-none">
       <div className="print:hidden flex flex-wrap items-center justify-between gap-3">
         <Link
           to={`/account/orders/${encodeURIComponent(order.id)}`}
@@ -72,6 +83,24 @@ export function AccountOrderReceiptPage() {
   );
 }
 
+function formatReceiptDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('sv-SE', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+/** Plain amount like Zettle's "25,00" (no currency suffix). */
+function formatPlainAmount(ore: number): string {
+  return new Intl.NumberFormat('sv-SE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(ore / 100);
+}
+
 function ReceiptDocument({
   order,
   formatMoney,
@@ -81,90 +110,105 @@ function ReceiptDocument({
 }) {
   const isPickup = order.deliveryMethod === 'pickup';
   const vat = vatIncludedIn(order.total);
+  const siteHost = SITE.url.replace(/^https?:\/\//, '');
 
   return (
-    <article className="receipt-paper border-border bg-white text-neutral-900 shadow-card rounded-xl border p-6 sm:p-8 print:rounded-none print:border-0 print:shadow-none">
-      <header className="border-neutral-200 flex flex-col gap-1 border-b pb-5">
-        <h1 className="text-xl font-extrabold tracking-tight">{MERCHANT.legalName}</h1>
-        <p className="text-neutral-600 text-sm">{MERCHANT.store.line}</p>
-        <p className="text-neutral-600 text-xs">
-          Org.nr {MERCHANT.organisationNumber} · VAT {MERCHANT.vatNumber}
-        </p>
-        <p className="text-neutral-600 text-xs">{MERCHANT.email}</p>
-      </header>
-
-      <div className="mt-5 flex flex-col gap-1">
-        <h2 className="text-lg font-bold tracking-tight">Receipt</h2>
-        <p className="font-mono text-xs text-neutral-600">{order.id}</p>
-        <p className="text-sm text-neutral-600">{formatOrderDate(order.createdAt)}</p>
-      </div>
-
-      <section className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
-        <div>
-          <p className="font-semibold text-neutral-800">Customer</p>
-          <p className="text-neutral-600">{order.email}</p>
-          {order.shippingAddress ? (
-            <div className="mt-2 text-neutral-600">
-              <p className="font-medium text-neutral-800">{order.shippingAddress.fullName}</p>
-              <p className="leading-relaxed">{formatAddress(order.shippingAddress)}</p>
-            </div>
-          ) : null}
+    <div className="receipt-stage -mx-4 bg-[#ececec] px-4 py-6 sm:mx-0 sm:rounded-2xl print:mx-0 print:bg-white print:p-0 print:rounded-none">
+      <article className="receipt-paper mx-auto max-w-[22rem] bg-white text-[15px] leading-snug text-[#222] shadow-sm print:max-w-none print:shadow-none">
+        <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-4 text-[12px] text-[#8a8a8a]">
+          <span>Kvitto</span>
+          <span className="text-right">{formatReceiptDateTime(order.createdAt)}</span>
         </div>
-        <div>
-          <p className="font-semibold text-neutral-800">Payment</p>
-          <p className="text-neutral-600">Paid online (PayPal Checkout)</p>
-          <p className="mt-2 font-semibold text-neutral-800">Delivery</p>
-          <p className="text-neutral-600">{isPickup ? 'Store pickup — Båstad' : 'Shipping'}</p>
-        </div>
-      </section>
 
-      <section className="mt-6">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-neutral-200 border-b text-left text-neutral-500">
-              <th className="pb-2 font-medium">Item</th>
-              <th className="pb-2 text-right font-medium">Qty</th>
-              <th className="pb-2 text-right font-medium">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
+        <header className="px-4 pb-4 text-center">
+          <h1 className="text-[20px] font-bold tracking-tight text-[#111]">{MERCHANT.legalName}</h1>
+          <p className="mt-1 text-[13px] text-[#666]">
+            {MERCHANT.store.street} {MERCHANT.store.city}, {MERCHANT.store.postalCode}
+          </p>
+          <a
+            href={SITE.url}
+            className="mt-1 inline-block text-[13px] text-[#2f6fed] underline-offset-2 hover:underline"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {siteHost}
+          </a>
+          <p className="mt-2 font-mono text-[11px] text-[#999]">{order.id}</p>
+        </header>
+
+        <div className="mx-4 border-t border-[#ddd]" />
+
+        <section className="px-4 py-3">
+          <ul className="space-y-3">
             {order.lines.map((line) => (
-              <tr key={line.productId} className="border-neutral-100 border-b">
-                <td className="py-2.5 pr-3 font-medium text-neutral-900">{line.name}</td>
-                <td className="py-2.5 text-right text-neutral-600">{line.quantity}</td>
-                <td className="py-2.5 text-right font-semibold">
-                  {formatMoney(line.unitPrice * line.quantity)}
-                </td>
-              </tr>
+              <li key={line.productId}>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-medium text-[#222]">{line.name}</span>
+                  <span className="shrink-0 tabular-nums text-[#222]">
+                    {formatMoney(line.unitPrice * line.quantity)}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-[13px] text-[#888]">
+                  {line.quantity} x {formatPlainAmount(line.unitPrice)}
+                </p>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </section>
+            {order.shipping > 0 ? (
+              <li>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-medium text-[#222]">Frakt</span>
+                  <span className="shrink-0 tabular-nums text-[#222]">
+                    {formatMoney(order.shipping)}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-[13px] text-[#888]">1 x {formatPlainAmount(order.shipping)}</p>
+              </li>
+            ) : isPickup ? (
+              <li>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-medium text-[#222]">Butikshämtning</span>
+                  <span className="shrink-0 tabular-nums text-[#222]">0,00&nbsp;kr</span>
+                </div>
+              </li>
+            ) : null}
+          </ul>
+        </section>
 
-      <section className="mt-4 flex flex-col gap-1.5 text-sm">
-        <div className="flex justify-between text-neutral-600">
-          <span>Subtotal</span>
-          <span>{formatMoney(order.subtotal)}</span>
-        </div>
-        <div className="flex justify-between text-neutral-600">
-          <span>{isPickup ? 'Pickup' : 'Shipping'}</span>
-          <span>{order.shipping === 0 ? 'Free' : formatMoney(order.shipping)}</span>
-        </div>
-        <div className="border-neutral-200 mt-2 flex justify-between border-t pt-3 text-base font-bold text-neutral-900">
-          <span>Total</span>
-          <span>{formatMoney(order.total)}</span>
-        </div>
-        {vat > 0 ? (
-          <div className="flex justify-between text-xs text-neutral-500">
-            <span>of which VAT ({VAT_PERCENT}%)</span>
-            <span>{formatMoney(vat)}</span>
+        <div className="mx-4 border-t border-[#ddd]" />
+
+        <section className="space-y-1 px-4 py-4 text-right">
+          <p className="text-[17px] font-bold text-[#111]">Totalt: {formatMoney(order.total)}</p>
+          {vat > 0 ? (
+            <>
+              <p className="font-bold text-[#222]">Total moms: {formatMoney(vat)}</p>
+              <p className="text-[13px] text-[#777]">
+                Moms ({VAT_PERCENT}%): {formatMoney(vat)}
+              </p>
+            </>
+          ) : null}
+        </section>
+
+        <section className="mx-4 mb-4 rounded-md border border-[#ddd] px-3 py-3">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-[#888]">Köp</p>
+          <div className="mt-1 flex items-start justify-between gap-3">
+            <div>
+              <p className="font-bold text-[#222]">Onlinebetalning</p>
+              <p className="mt-0.5 text-[13px] text-[#777]">PayPal Checkout</p>
+              {order.email ? <p className="mt-1 text-[12px] text-[#999]">{order.email}</p> : null}
+            </div>
+            <p className="shrink-0 font-bold tabular-nums text-[#222]">{formatMoney(order.total)}</p>
           </div>
-        ) : null}
-      </section>
+        </section>
 
-      <footer className="border-neutral-200 mt-8 border-t pt-4 text-xs text-neutral-500">
-        <p>Prices include VAT. Thank you for shopping at {MERCHANT.legalName}.</p>
-      </footer>
-    </article>
+        <footer className="px-4 pb-6 pt-1 text-center">
+          <p className="text-[15px] font-bold text-[#222]">
+            Tack för ditt köp hos {MERCHANT.legalName}!
+          </p>
+          <p className="mt-3 text-[11px] leading-relaxed text-[#999]">
+            Org.nr {MERCHANT.organisationNumber} · VAT {MERCHANT.vatNumber}
+          </p>
+        </footer>
+      </article>
+    </div>
   );
 }

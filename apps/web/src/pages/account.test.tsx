@@ -123,21 +123,40 @@ describe('Account pages', () => {
     vi.spyOn(api, 'getOrder').mockResolvedValue({
       order: {
         ...order,
-        invoiceUrl: 'https://www.onemorerip.cards/account/orders/ord_123/receipt',
+        invoiceUrl: 'https://www.onemorerip.cards/account/orders/ord_123/receipt?print=1',
       },
     });
 
     renderApp('/account/orders/ord_123/receipt');
 
-    expect(await screen.findByRole('heading', { name: 'Receipt' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'One More Rip' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'One More Rip' })).toBeInTheDocument();
+    expect(screen.getByText('Kvitto')).toBeInTheDocument();
     expect(screen.getByText('Booster Box')).toBeInTheDocument();
-    expect(screen.getByText(/Paid online \(PayPal Checkout\)/i)).toBeInTheDocument();
+    expect(screen.getByText('PayPal Checkout')).toBeInTheDocument();
+    expect(screen.getByText(/Tack för ditt köp hos One More Rip/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /print \/ save pdf/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /order details/i })).toHaveAttribute(
       'href',
       '/account/orders/ord_123',
     );
+  });
+
+  it('opens the print dialog when the receipt URL has print=1', async () => {
+    useAuthStore.setState({ token: 'tok_1', user });
+    vi.spyOn(api, 'me').mockResolvedValue({ user });
+    vi.spyOn(api, 'getOrder').mockResolvedValue({
+      order: {
+        ...order,
+        invoiceUrl: 'https://www.onemorerip.cards/account/orders/ord_123/receipt?print=1',
+      },
+    });
+    const print = vi.spyOn(window, 'print').mockImplementation(() => {});
+
+    renderApp('/account/orders/ord_123/receipt?print=1');
+
+    expect(await screen.findByRole('heading', { name: 'One More Rip' })).toBeInTheDocument();
+    await waitFor(() => expect(print).toHaveBeenCalled(), { timeout: 2000 });
+    print.mockRestore();
   });
 
   it('shows a Receipt link on order details when invoiceUrl is the receipt page', async () => {
@@ -146,7 +165,7 @@ describe('Account pages', () => {
     vi.spyOn(api, 'getOrder').mockResolvedValue({
       order: {
         ...order,
-        invoiceUrl: 'https://www.onemorerip.cards/account/orders/ord_123/receipt',
+        invoiceUrl: 'https://www.onemorerip.cards/account/orders/ord_123/receipt?print=1',
       },
     });
 
@@ -154,7 +173,7 @@ describe('Account pages', () => {
 
     expect(await screen.findByRole('link', { name: 'Receipt' })).toHaveAttribute(
       'href',
-      'https://www.onemorerip.cards/account/orders/ord_123/receipt',
+      'https://www.onemorerip.cards/account/orders/ord_123/receipt?print=1',
     );
   });
 

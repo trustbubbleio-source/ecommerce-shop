@@ -20,5 +20,6 @@ export function orderReceiptPath(orderId: string): string {
 
 export function orderReceiptUrl(webOrigin: string, orderId: string): string {
   const base = webOrigin.replace(/\/$/, '');
-  return `${base}${orderReceiptPath(orderId)}`;
+  // `print=1` opens the system print dialog as soon as the receipt is ready.
+  return `${base}${orderReceiptPath(orderId)}?print=1`;
 }

@@ -14,15 +14,19 @@ export function RootLayout() {
   return (
     <div className="flex min-h-dvh flex-col">
       <OrganizationJsonLd />
-      <Header />
+      <div className="print:hidden">
+        <Header />
+      </div>
       <main className="flex-1">
         <Outlet />
       </main>
-      <Footer />
-      <ChatWidget />
-      <CookieNotice />
-      <SignupPromptModal />
-      <SetPasswordDialog />
+      <div className="print:hidden">
+        <Footer />
+        <ChatWidget />
+        <CookieNotice />
+        <SignupPromptModal />
+        <SetPasswordDialog />
+      </div>
       <ScrollRestoration />
     </div>
   );

@@ -28,3 +28,19 @@
     -webkit-tap-highlight-color: transparent;
   }
 }
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  body {
+    background: white !important;
+    background-image: none !important;
+    color: #1c1917 !important;
+  }
+
+  .receipt-paper {
+    break-inside: avoid;
+  }
+}
