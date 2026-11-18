@@ -46,6 +46,7 @@ describe('GET /api/checkout/config', () => {
     expect(data.methods.paypalButton).toBe(true);
     expect(data.methods.googlePayButton).toBe(true);
     expect(data.methods.applePayButton).toBe(true);
+    expect(data.methods.swishButton).toBe(true);
   });
 
   it('enables card fields for admins when flag is admin', async () => {

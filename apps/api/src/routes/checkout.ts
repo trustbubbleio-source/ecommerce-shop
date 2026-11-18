@@ -67,8 +67,8 @@ function buildCheckoutConfig(deps: AppDeps, isAdmin: boolean): CheckoutConfig {
       // Same kill-switch as card/PayPal wallet; SDK eligibility still gates the live button.
       googlePayButton: cardFields,
       applePayButton: cardFields,
-      // Off until PayPal Business has Swish onboarded (PAYMENT_SOURCE_CANNOT_BE_USED otherwise).
-      swishButton: false,
+      // Same kill-switch; PayPal Business Swish onboarding must be complete first.
+      swishButton: cardFields,
       redirect: true,
     },
   };
