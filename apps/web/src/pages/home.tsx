@@ -5,7 +5,9 @@ import {
   type Product,
   type ProductCategory,
 } from '@akknerds/shared';
+import { Skeleton, cn } from '@akknerds/ui';
 import { ArrowRight, MapPin, ShieldCheck, Sparkles, Truck } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DocumentMeta } from '../components/common/document-meta';
 import { NewsletterSubscribe } from '../components/common/newsletter-subscribe';
@@ -20,8 +22,56 @@ import { CATEGORY_TILES, SITE } from '../config/site';
 import { useFormatMoney } from '../hooks/use-format-money';
 import { usePrefetchShopHref, useProducts } from '../hooks/use-products';
 
+function StoreOpenImage({
+  webpSrc,
+  jpegSrc,
+  alt,
+}: {
+  webpSrc: string;
+  jpegSrc?: string;
+  alt: string;
+}) {
+  const [ready, setReady] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    setReady(false);
+    const img = imgRef.current;
+    if (img?.complete && img.naturalWidth > 0) setReady(true);
+  }, [webpSrc, jpegSrc]);
+
+  return (
+    <>
+      {!ready ? (
+        <Skeleton className="absolute inset-0 h-full w-full rounded-none" aria-hidden />
+      ) : null}
+      <picture>
+        <source srcSet={webpSrc} type="image/webp" />
+        <img
+          ref={imgRef}
+          src={jpegSrc ?? webpSrc}
+          alt={alt}
+          width={900}
+          height={1200}
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setReady(true)}
+          onError={() => setReady(true)}
+          className={cn(
+            'absolute inset-0 size-full object-cover transition-[opacity,transform] duration-700 ease-out group-hover:scale-[1.03]',
+            ready ? 'opacity-100' : 'opacity-0',
+          )}
+        />
+      </picture>
+    </>
+  );
+}
+
 function StoreOpenAnnouncement() {
-  const storeImage = resolveAssetUrl(SITE.store.image, import.meta.env.VITE_ASSET_CDN_URL);
+  const cdn = import.meta.env.VITE_ASSET_CDN_URL;
+  const storeImage = resolveAssetUrl(SITE.store.image, cdn);
+  const storeImageFallback = resolveAssetUrl(SITE.store.imageFallback, cdn);
 
   return (
     <section className="container py-12">
@@ -63,11 +113,10 @@ function StoreOpenAnnouncement() {
               className="group relative block min-h-[18rem] overflow-hidden sm:min-h-[22rem] lg:min-h-full"
               aria-label={`Open ${SITE.name} in Google Maps`}
             >
-              <img
-                src={storeImage}
+              <StoreOpenImage
+                webpSrc={storeImage}
+                jpegSrc={storeImageFallback}
                 alt={`${SITE.name} storefront in ${SITE.store.city}`}
-                className="absolute inset-0 size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                loading="lazy"
               />
               <div
                 className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent lg:bg-gradient-to-l lg:from-transparent lg:via-black/20 lg:to-black/40"

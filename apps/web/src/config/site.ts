@@ -45,8 +45,12 @@ export const SITE = {
     /** Approx. pin for Contact map (Hallandsvägen / Malen, Båstad). */
     lat: 56.4294,
     lng: 12.8478,
-    /** S3/CloudFront object key for the storefront photo. */
-    image: 'storeImageFront.png',
+    /**
+     * Storefront photo on CDN (optimized ~110KB WebP + JPEG fallback).
+     * Original PNG kept as `storeImageFront.png` for archive.
+     */
+    image: 'storeImageFront.webp',
+    imageFallback: 'storeImageFront.jpg',
     /** S3/CloudFront object key for the looping store video on the home hero. */
     video: 'store.MP4',
     /**
