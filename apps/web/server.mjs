@@ -45,6 +45,8 @@ function buildCsp() {
     'https://pay.google.com',
     'https://google.com',
     'https://*.google.com',
+    'https://applepay.cdn-apple.com',
+    'https://*.apple.com',
     'https://nominatim.openstreetmap.org',
     'https://*.basemaps.cartocdn.com',
     'https://plausible.io',
@@ -60,8 +62,8 @@ function buildCsp() {
     // 'self' allows same-origin receipt print iframes; still blocks cross-site clickjacking.
     "frame-ancestors 'self'",
     "form-action 'self'",
-    // pay.google.com + www.gstatic.com required for Google Pay (PayPal SDK button).
-    "script-src 'self' https://*.paypal.com https://*.paypalobjects.com https://accounts.google.com https://pay.google.com https://www.gstatic.com https://plausible.io",
+    // pay.google.com + www.gstatic.com required for Google Pay; applepay.cdn-apple.com for Apple Pay.
+    "script-src 'self' https://*.paypal.com https://*.paypalobjects.com https://accounts.google.com https://pay.google.com https://www.gstatic.com https://applepay.cdn-apple.com https://plausible.io",
     // React/Leaflet inline styles need 'unsafe-inline' for style attributes.
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",

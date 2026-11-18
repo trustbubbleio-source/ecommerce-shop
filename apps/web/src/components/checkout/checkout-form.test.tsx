@@ -37,6 +37,7 @@ beforeEach(() => {
       cardFields: false,
       paypalButton: false,
       googlePayButton: false,
+      applePayButton: false,
       swishButton: false,
       redirect: true,
     },

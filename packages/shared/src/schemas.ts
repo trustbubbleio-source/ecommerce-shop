@@ -144,7 +144,14 @@ export const cartLineSchema = z.object({
   quantity: z.number().int().min(1).max(99),
 });
 
-export const paymentMethodSchema = z.enum(['card', 'paypal', 'redirect', 'swish', 'google_pay']);
+export const paymentMethodSchema = z.enum([
+  'card',
+  'paypal',
+  'redirect',
+  'swish',
+  'google_pay',
+  'apple_pay',
+]);
 
 export const deliveryMethodSchema = z.enum(['shipping', 'pickup']);
 
@@ -163,7 +170,7 @@ export const checkoutInputSchema = z.object({
   currency: z.enum(['sek']).optional(),
   /**
    * How the buyer will pay. Defaults to redirect so older clients keep working.
-   * `card` / `paypal` / `google_pay` return a PayPal order id for on-site capture;
+   * `card` / `paypal` / `google_pay` / `apple_pay` return a PayPal order id for on-site capture;
    * `redirect` / `swish` return a PayPal approve / payer-action URL.
    */
   paymentMethod: paymentMethodSchema.default('redirect'),

@@ -66,6 +66,11 @@ export interface PayPalOrderDetails {
         authentication_result?: PayPalAuthenticationResult;
       };
     };
+    apple_pay?: {
+      card?: {
+        authentication_result?: PayPalAuthenticationResult;
+      };
+    };
     paypal?: Record<string, unknown>;
   };
 }
@@ -74,6 +79,7 @@ export interface PayPalOrderDetails {
 export function paymentMethodFromPayPalOrder(
   details: Pick<PayPalOrderDetails, 'payment_source'>,
 ): import('@akknerds/shared').PaymentMethod | undefined {
+  if (details.payment_source?.apple_pay) return 'apple_pay';
   if (details.payment_source?.google_pay) return 'google_pay';
   if (details.payment_source?.card) return 'card';
   if (details.payment_source?.paypal) return 'paypal';
@@ -357,6 +363,12 @@ export class PaymentService {
           },
         },
       };
+    }
+
+    if (method === 'apple_pay') {
+      // Apple Pay one-time: empty payment_source; SDK confirmOrder attaches the token.
+      // (Unlike card/Google Pay, apple_pay_attributes has no verification/SCA field.)
+      return { apple_pay: {} };
     }
 
     if (method === 'swish') {

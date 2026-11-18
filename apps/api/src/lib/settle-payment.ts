@@ -142,8 +142,13 @@ export async function captureAndSettle(
   if (!options.skip3ds) {
     const authResult =
       details.payment_source?.card?.authentication_result ??
-      details.payment_source?.google_pay?.card?.authentication_result;
-    if (details.payment_source?.card || details.payment_source?.google_pay?.card) {
+      details.payment_source?.google_pay?.card?.authentication_result ??
+      details.payment_source?.apple_pay?.card?.authentication_result;
+    if (
+      details.payment_source?.card ||
+      details.payment_source?.google_pay?.card ||
+      details.payment_source?.apple_pay?.card
+    ) {
       const sca = evaluate3dsPolicy(authResult);
       if (!sca.ok) {
         return { kind: 'sca_failed', reason: sca.reason };

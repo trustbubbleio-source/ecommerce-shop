@@ -456,7 +456,7 @@ model Order {
   currency        String
   /** PayPal Order ID (or legacy Stripe Checkout session id). */
   paymentSessionId String?  @unique @map("payment_session_id")
-  /** Online checkout method: card | paypal | redirect | swish | google_pay. */
+  /** Online checkout method: card | paypal | redirect | swish | google_pay | apple_pay. */
   paymentMethod   String?  @map("payment_method")
   invoiceUrl      String?  @map("invoice_url")
   fulfillmentStep String?  @map("fulfillment_step")

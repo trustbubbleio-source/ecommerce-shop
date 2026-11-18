@@ -1,5 +1,14 @@
 /// <reference types="vite/client" />
 
+interface ApplePaySessionConstructor {
+  new (version: number, paymentRequest: unknown): unknown;
+  canMakePayments(): boolean;
+}
+
+interface Window {
+  ApplePaySession?: ApplePaySessionConstructor;
+}
+
 interface ImportMetaEnv {
   readonly VITE_API_URL: string;
   readonly VITE_ASSET_CDN_URL?: string;

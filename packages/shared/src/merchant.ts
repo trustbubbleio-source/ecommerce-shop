@@ -37,6 +37,8 @@ export function orderPaymentReceiptLabel(method?: PaymentMethod | null): {
   switch (method) {
     case 'google_pay':
       return { title: 'Onlinebetalning', detail: 'Google Pay' };
+    case 'apple_pay':
+      return { title: 'Onlinebetalning', detail: 'Apple Pay' };
     case 'card':
       return { title: 'Onlinebetalning', detail: 'Kort' };
     case 'paypal':

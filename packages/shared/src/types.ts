@@ -209,7 +209,13 @@ export interface RegisterPendingResponse {
   message: string;
 }
 
-export type PaymentMethod = 'card' | 'paypal' | 'redirect' | 'swish' | 'google_pay';
+export type PaymentMethod =
+  | 'card'
+  | 'paypal'
+  | 'redirect'
+  | 'swish'
+  | 'google_pay'
+  | 'apple_pay';
 
 export type PaymentErrorCode =
   | 'PAYMENT_DECLINED'
@@ -228,6 +234,8 @@ export interface CheckoutConfig {
     paypalButton: boolean;
     /** PayPal Google Pay — express strip via JS SDK googlepay-payments. */
     googlePayButton: boolean;
+    /** PayPal Apple Pay — express strip via JS SDK applepay-payments. */
+    applePayButton: boolean;
     /** PayPal Swish (SEK) — express strip + redirect to PayPal-hosted Swish. */
     swishButton: boolean;
     redirect: boolean;

@@ -263,6 +263,37 @@ describe('PaymentService card payload (network stub)', () => {
     expect(payload.payment_source.google_pay.attributes.verification.method).toBe('SCA_ALWAYS');
   });
 
+  it('sends apple_pay payment_source for on-site capture', async () => {
+    let posted: unknown;
+    const env = loadEnv({
+      PAYPAL_API_KEY: 'real_client',
+      PAYPAL_SECRET_KEY: 'real_secret',
+      CHECKOUT_SUCCESS_URL: 'https://shop.test/success',
+      CHECKOUT_CANCEL_URL: 'https://shop.test/cart',
+    });
+    const service = new PaymentService(env);
+    service.fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/v1/oauth2/token')) {
+        return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
+          status: 200,
+        });
+      }
+      if (url.includes('/v2/checkout/orders') && init?.method === 'POST') {
+        posted = JSON.parse(String(init.body));
+        return new Response(JSON.stringify({ id: 'APAY123', links: [] }), { status: 201 });
+      }
+      return new Response('{}', { status: 404 });
+    }) as typeof fetch;
+
+    const result = await service.createCheckout(mockOrder(), { method: 'apple_pay' });
+    expect(result.sessionId).toBe('APAY123');
+    expect(result.url).toBeNull();
+
+    const payload = posted as { payment_source: { apple_pay: Record<string, unknown> } };
+    expect(payload.payment_source.apple_pay).toEqual({});
+  });
+
   it('sends swish payment_source with auto-capture instruction', async () => {
     let posted: unknown;
     const env = loadEnv({

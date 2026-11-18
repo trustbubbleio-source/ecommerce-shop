@@ -6,6 +6,7 @@ import {
   useEligibleMethods,
   type CardSubmitResult,
 } from '../../lib/paypal';
+import type { ApplePayConfig } from './apple-pay-button';
 import { CardPaymentFields, type CardSubmitFn } from './card-payment-fields';
 import { ExpressCheckout } from './express-checkout';
 import type { GooglePayConfig } from './google-pay-button';
@@ -23,6 +24,7 @@ interface PaymentSectionProps {
   cardSubmitRef: MutableRefObject<CardSubmitFn | null>;
   ensurePaypalOrder: () => Promise<{ orderId: string; paypalOrderId: string }>;
   ensureGooglePayOrder?: () => Promise<{ orderId: string; paypalOrderId: string }>;
+  ensureApplePayOrder?: () => Promise<{ orderId: string; paypalOrderId: string }>;
   onSwishPay?: () => Promise<void>;
   disabled?: boolean;
 }
@@ -32,6 +34,8 @@ type EligibleSnapshot = {
   paypal: boolean;
   googlePay: boolean;
   googlePayConfig: GooglePayConfig | null;
+  applePay: boolean;
+  applePayConfig: ApplePayConfig | null;
 };
 
 function EligibilityGate({
@@ -53,7 +57,7 @@ function EligibilityGate({
   const eligibilityBroken = Boolean(error);
   const methods = eligiblePaymentMethods as {
     isEligible?: (method: string) => boolean;
-    getDetails?: (method: string) => { config?: GooglePayConfig } | undefined;
+    getDetails?: (method: string) => { config?: GooglePayConfig | ApplePayConfig } | undefined;
   } | null;
 
   const card =
@@ -62,15 +66,22 @@ function EligibilityGate({
   const googlePayEligible = Boolean(methods?.isEligible?.('googlepay'));
   const googlePayConfig =
     googlePayEligible && methods?.getDetails
-      ? (methods.getDetails('googlepay')?.config ?? null)
+      ? ((methods.getDetails('googlepay')?.config as GooglePayConfig | undefined) ?? null)
       : null;
   // Prefer hide until ready-to-pay config exists (do not show live button on eligibilityBroken alone).
   const googlePay = Boolean(googlePayConfig);
 
+  const applePayEligible = Boolean(methods?.isEligible?.('applepay'));
+  const applePayConfig =
+    applePayEligible && methods?.getDetails
+      ? ((methods.getDetails('applepay')?.config as ApplePayConfig | undefined) ?? null)
+      : null;
+  const applePay = Boolean(applePayConfig);
+
   useEffect(() => {
     if (isLoading || eligibilityBroken) return;
-    if (!card && !paypal && !googlePay) onIneligible();
-  }, [isLoading, eligibilityBroken, card, paypal, googlePay, onIneligible]);
+    if (!card && !paypal && !googlePay && !applePay) onIneligible();
+  }, [isLoading, eligibilityBroken, card, paypal, googlePay, applePay, onIneligible]);
 
   if (isLoading) {
     return (
@@ -80,7 +91,7 @@ function EligibilityGate({
     );
   }
 
-  if (!eligibilityBroken && !card && !paypal && !googlePay) {
+  if (!eligibilityBroken && !card && !paypal && !googlePay && !applePay) {
     return (
       <Alert variant="info">
         Card fields could not load. You can still pay with PayPal below.
@@ -88,7 +99,7 @@ function EligibilityGate({
     );
   }
 
-  return <>{children({ card, paypal, googlePay, googlePayConfig })}</>;
+  return <>{children({ card, paypal, googlePay, googlePayConfig, applePay, applePayConfig })}</>;
 }
 
 export function PaymentSection({
@@ -101,6 +112,7 @@ export function PaymentSection({
   cardSubmitRef,
   ensurePaypalOrder,
   ensureGooglePayOrder,
+  ensureApplePayOrder,
   onSwishPay,
   disabled,
 }: PaymentSectionProps) {
@@ -126,17 +138,19 @@ export function PaymentSection({
     <PayPalProvider
       clientId={config.clientId}
       environment={config.environment === 'live' ? 'production' : 'sandbox'}
-      components={['card-fields', 'paypal-payments', 'googlepay-payments']}
+      components={['card-fields', 'paypal-payments', 'googlepay-payments', 'applepay-payments']}
       pageType="checkout"
       locale={config.locale}
     >
       <EligibilityGate onIneligible={markUnavailable}>
-        {({ card, paypal, googlePay, googlePayConfig }) => (
+        {({ card, paypal, googlePay, googlePayConfig, applePay, applePayConfig }) => (
           <EligibleMethods
             card={card}
             paypal={paypal}
             googlePay={googlePay}
             googlePayConfig={googlePayConfig}
+            applePay={applePay}
+            applePayConfig={applePayConfig}
             config={config}
             method={method}
             onMethodChange={onMethodChange}
@@ -145,6 +159,7 @@ export function PaymentSection({
             cardSubmitRef={cardSubmitRef}
             ensurePaypalOrder={ensurePaypalOrder}
             ensureGooglePayOrder={ensureGooglePayOrder}
+            ensureApplePayOrder={ensureApplePayOrder}
             onSwishPay={onSwishPay}
             disabled={disabled}
           />
@@ -159,6 +174,8 @@ function EligibleMethods({
   paypal,
   googlePay,
   googlePayConfig,
+  applePay,
+  applePayConfig,
   config,
   method,
   onMethodChange,
@@ -167,6 +184,7 @@ function EligibleMethods({
   cardSubmitRef,
   ensurePaypalOrder,
   ensureGooglePayOrder,
+  ensureApplePayOrder,
   onSwishPay,
   disabled,
 }: {
@@ -174,6 +192,8 @@ function EligibleMethods({
   paypal: boolean;
   googlePay: boolean;
   googlePayConfig: GooglePayConfig | null;
+  applePay: boolean;
+  applePayConfig: ApplePayConfig | null;
   config: CheckoutConfig;
   method: PaymentUiMethod;
   onMethodChange: (method: PaymentUiMethod) => void;
@@ -182,12 +202,14 @@ function EligibleMethods({
   cardSubmitRef: MutableRefObject<CardSubmitFn | null>;
   ensurePaypalOrder: () => Promise<{ orderId: string; paypalOrderId: string }>;
   ensureGooglePayOrder?: () => Promise<{ orderId: string; paypalOrderId: string }>;
+  ensureApplePayOrder?: () => Promise<{ orderId: string; paypalOrderId: string }>;
   onSwishPay?: () => Promise<void>;
   disabled?: boolean;
 }) {
   const showCard = card && config.methods.cardFields;
   const showPaypal = paypal && config.methods.paypalButton;
   const showGooglePay = googlePay && config.methods.googlePayButton;
+  const showApplePay = applePay && config.methods.applePayButton;
   const showSwish = Boolean(config.methods.swishButton && onSwishPay);
 
   useEffect(() => {
@@ -200,10 +222,13 @@ function EligibleMethods({
       <ExpressCheckout
         ensurePaypalOrder={ensurePaypalOrder}
         ensureGooglePayOrder={ensureGooglePayOrder}
+        ensureApplePayOrder={ensureApplePayOrder}
         onSwishPay={onSwishPay}
         showPaypal={showPaypal}
         showGooglePay={showGooglePay}
+        showApplePay={showApplePay}
         googlePayConfig={googlePayConfig}
+        applePayConfig={applePayConfig}
         amountValue={amountValue}
         environment={config.environment}
         showSwish={showSwish}

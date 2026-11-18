@@ -30,6 +30,7 @@ describe('GET /api/checkout/config', () => {
     expect(data.provider).toBe('paypal');
     expect(data.methods.cardFields).toBe(false);
     expect(data.methods.googlePayButton).toBe(false);
+    expect(data.methods.applePayButton).toBe(false);
     expect(data.clientId).toBe('test_paypal_client');
   });
 
@@ -44,6 +45,7 @@ describe('GET /api/checkout/config', () => {
     expect(data.methods.cardFields).toBe(true);
     expect(data.methods.paypalButton).toBe(true);
     expect(data.methods.googlePayButton).toBe(true);
+    expect(data.methods.applePayButton).toBe(true);
   });
 
   it('enables card fields for admins when flag is admin', async () => {
@@ -124,6 +126,24 @@ describe('POST /api/checkout with paymentMethod', () => {
     expect(res.status).toBe(201);
     expect(data.url).toBeNull();
     expect(data.paypalOrderId).toContain('_google_pay_');
+    expect((await deps.orders.get(data.orderId))?.status).toBe('pending');
+  });
+
+  it('returns paypalOrderId without url for apple_pay method', async () => {
+    const env = testEnv({
+      PAYPAL_API_KEY: 'test_paypal_client',
+      PAYPAL_SECRET_KEY: 'test_secret',
+    });
+    const { app, deps } = makeApp({ env, payments: new PaymentService(env) });
+    const { res, data } = await jsonRequest(
+      app,
+      'POST',
+      '/api/checkout',
+      checkoutBody({ paymentMethod: 'apple_pay' }),
+    );
+    expect(res.status).toBe(201);
+    expect(data.url).toBeNull();
+    expect(data.paypalOrderId).toContain('_apple_pay_');
     expect((await deps.orders.get(data.orderId))?.status).toBe('pending');
   });
 });

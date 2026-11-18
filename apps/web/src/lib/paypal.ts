@@ -10,13 +10,17 @@ export {
   PayPalCardExpiryField,
   PayPalCardCvvField,
   PayPalOneTimePaymentButton,
+  useApplePayOneTimePaymentSession,
   useGooglePayOneTimePaymentSession,
   usePayPalCardFieldsOneTimePaymentSession,
   useEligibleMethods,
   usePayPal,
 } from '@paypal/react-paypal-js/sdk-v6';
 
-export type { UseGooglePayOneTimePaymentSessionProps } from '@paypal/react-paypal-js/sdk-v6';
+export type {
+  UseApplePayOneTimePaymentSessionProps,
+  UseGooglePayOneTimePaymentSessionProps,
+} from '@paypal/react-paypal-js/sdk-v6';
 
 export type CardSubmitState = 'succeeded' | 'canceled' | 'failed';
 

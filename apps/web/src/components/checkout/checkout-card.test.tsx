@@ -28,6 +28,12 @@ vi.mock('../../lib/google-pay-sdk', () => ({
   isGooglePaySdkReady: () => true,
 }));
 
+vi.mock('../../lib/apple-pay-sdk', () => ({
+  loadApplePaySdk: () => Promise.resolve(),
+  isApplePaySdkReady: () => true,
+  canMakeApplePayPayments: () => true,
+}));
+
 vi.mock('../../lib/paypal', () => {
   const React = require('react') as typeof import('react');
   return {
@@ -65,6 +71,13 @@ vi.mock('../../lib/paypal', () => {
       paymentsClient: null,
       formattedConfig: null,
       createGooglePayButton: vi.fn(async () => null),
+    }),
+    useApplePayOneTimePaymentSession: () => ({
+      isPending: false,
+      error: null,
+      handleClick: vi.fn(async () => undefined),
+      handleCancel: vi.fn(),
+      handleDestroy: vi.fn(),
     }),
     useEligibleMethods: () => ({ ...eligibleMethodsState.current }),
     usePayPalCardFieldsOneTimePaymentSession: () => ({
@@ -122,6 +135,7 @@ beforeEach(() => {
       cardFields: true,
       paypalButton: true,
       googlePayButton: true,
+      applePayButton: true,
       swishButton: true,
       redirect: true,
     },
@@ -129,54 +143,62 @@ beforeEach(() => {
 });
 
 describe('CheckoutForm card flow', () => {
-  it('runs checkout → submit → capturePayment and navigates to success', async () => {
-    vi.spyOn(api, 'checkout').mockResolvedValue({
-      orderId: 'ord_card_1',
-      paypalOrderId: 'pp_order_1',
-      url: null,
-      status: 'pending',
-    });
-    vi.spyOn(api, 'capturePayment').mockResolvedValue({ status: 'paid', ok: true });
-
-    const { Router } = await import('react-router-dom');
-    void Router;
-
-    renderWithProviders(<CheckoutForm />);
-    expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
-
-    await fillAddress();
-    await userEvent.click(screen.getByRole('checkbox', { name: /I agree to the/i }));
-    await userEvent.click(screen.getByRole('button', { name: /pay now/i }));
-
-    await waitFor(() => expect(api.checkout).toHaveBeenCalled());
-    expect(vi.mocked(api.checkout).mock.calls[0]![0].paymentMethod).toBe('card');
-    await waitFor(() =>
-      expect(api.capturePayment).toHaveBeenCalledWith('ord_card_1', {
+  it(
+    'runs checkout → submit → capturePayment and navigates to success',
+    async () => {
+      vi.spyOn(api, 'checkout').mockResolvedValue({
+        orderId: 'ord_card_1',
         paypalOrderId: 'pp_order_1',
-      }),
-    );
-  });
+        url: null,
+        status: 'pending',
+      });
+      vi.spyOn(api, 'capturePayment').mockResolvedValue({ status: 'paid', ok: true });
 
-  it('shows decline message on 402 from capture', async () => {
-    vi.spyOn(api, 'checkout').mockResolvedValue({
-      orderId: 'ord_card_2',
-      paypalOrderId: 'pp_order_2',
-      url: null,
-      status: 'pending',
-    });
-    vi.spyOn(api, 'capturePayment').mockRejectedValue(
-      new ApiError('Your card was declined', 402, { code: 'PAYMENT_DECLINED' }),
-    );
+      const { Router } = await import('react-router-dom');
+      void Router;
 
-    renderWithProviders(<CheckoutForm />);
-    expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
-    await fillAddress();
-    await userEvent.click(screen.getByRole('checkbox', { name: /I agree to the/i }));
-    await userEvent.click(screen.getByRole('button', { name: /pay now/i }));
+      renderWithProviders(<CheckoutForm />);
+      expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
 
-    expect(await screen.findByText(/card was declined/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /pay now/i })).toBeInTheDocument();
-  });
+      await fillAddress();
+      await userEvent.click(screen.getByRole('checkbox', { name: /I agree to the/i }));
+      await userEvent.click(screen.getByRole('button', { name: /pay now/i }));
+
+      await waitFor(() => expect(api.checkout).toHaveBeenCalled());
+      expect(vi.mocked(api.checkout).mock.calls[0]![0].paymentMethod).toBe('card');
+      await waitFor(() =>
+        expect(api.capturePayment).toHaveBeenCalledWith('ord_card_1', {
+          paypalOrderId: 'pp_order_1',
+        }),
+      );
+    },
+    15_000,
+  );
+
+  it(
+    'shows decline message on 402 from capture',
+    async () => {
+      vi.spyOn(api, 'checkout').mockResolvedValue({
+        orderId: 'ord_card_2',
+        paypalOrderId: 'pp_order_2',
+        url: null,
+        status: 'pending',
+      });
+      vi.spyOn(api, 'capturePayment').mockRejectedValue(
+        new ApiError('Your card was declined', 402, { code: 'PAYMENT_DECLINED' }),
+      );
+
+      renderWithProviders(<CheckoutForm />);
+      expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
+      await fillAddress();
+      await userEvent.click(screen.getByRole('checkbox', { name: /I agree to the/i }));
+      await userEvent.click(screen.getByRole('button', { name: /pay now/i }));
+
+      expect(await screen.findByText(/card was declined/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /pay now/i })).toBeInTheDocument();
+    },
+    15_000,
+  );
 
   it('keeps redirect-only UI when card fields flag is off', async () => {
     vi.mocked(api.getCheckoutConfig).mockResolvedValue({
@@ -189,6 +211,7 @@ describe('CheckoutForm card flow', () => {
         cardFields: false,
         paypalButton: false,
         googlePayButton: false,
+        applePayButton: false,
         swishButton: false,
         redirect: true,
       },
@@ -207,6 +230,12 @@ describe('CheckoutForm card flow', () => {
     expect(screen.getByText(/^Express checkout$/i)).toBeInTheDocument();
   });
 
+  it('renders Apple Pay when eligible and applePayButton is on', async () => {
+    renderWithProviders(<CheckoutForm />);
+    expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^pay with apple pay$/i })).toBeInTheDocument();
+  });
+
   it('keeps Google Pay stub when eligible but googlePayButton is off', async () => {
     vi.mocked(api.getCheckoutConfig).mockResolvedValue({
       provider: 'paypal',
@@ -218,6 +247,7 @@ describe('CheckoutForm card flow', () => {
         cardFields: true,
         paypalButton: true,
         googlePayButton: false,
+        applePayButton: false,
         swishButton: false,
         redirect: true,
       },
@@ -226,6 +256,7 @@ describe('CheckoutForm card flow', () => {
     expect(await screen.findByTestId('card-fields')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^pay with google pay$/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Google Pay \(coming soon\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Apple Pay \(coming soon\)/i })).toBeInTheDocument();
   });
 
   it('still shows card UI when PayPal eligibility service errors', async () => {

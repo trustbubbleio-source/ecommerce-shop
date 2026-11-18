@@ -1,15 +1,19 @@
 import type { ReactNode } from 'react';
+import { ApplePayButton, type ApplePayConfig } from './apple-pay-button';
 import { GooglePayButton, type GooglePayConfig } from './google-pay-button';
 import { PaypalWalletButton } from './paypal-wallet-button';
 
 interface ExpressCheckoutProps {
   ensurePaypalOrder: () => Promise<{ orderId: string; paypalOrderId: string }>;
   ensureGooglePayOrder?: () => Promise<{ orderId: string; paypalOrderId: string }>;
+  ensureApplePayOrder?: () => Promise<{ orderId: string; paypalOrderId: string }>;
   /** Starts Swish via PayPal (creates order + redirects to payer-action). */
   onSwishPay?: () => Promise<void>;
   showPaypal: boolean;
   showGooglePay?: boolean;
+  showApplePay?: boolean;
   googlePayConfig?: GooglePayConfig | null;
+  applePayConfig?: ApplePayConfig | null;
   amountValue?: string;
   environment?: 'sandbox' | 'live';
   showSwish?: boolean;
@@ -17,23 +21,28 @@ interface ExpressCheckoutProps {
 }
 
 /**
- * Express checkout strip — Apple Pay stays a stub until domain association.
- * Google Pay, PayPal, and Swish are live when their config/eligibility flags say so.
+ * Express checkout strip — Apple Pay / Google Pay / PayPal / Swish.
+ * Live wallets render when config + PayPal eligibility say so.
  */
 export function ExpressCheckout({
   ensurePaypalOrder,
   ensureGooglePayOrder,
+  ensureApplePayOrder,
   onSwishPay,
   showPaypal,
   showGooglePay,
+  showApplePay,
   googlePayConfig,
+  applePayConfig,
   amountValue,
   environment = 'live',
   showSwish,
   disabled,
 }: ExpressCheckoutProps) {
-  if (!showPaypal && !showGooglePay && !showSwish) return null;
+  if (!showPaypal && !showGooglePay && !showApplePay && !showSwish) return null;
 
+  const applePayReady =
+    Boolean(showApplePay && ensureApplePayOrder && applePayConfig && amountValue);
   const googlePayReady =
     Boolean(showGooglePay && ensureGooglePayOrder && googlePayConfig && amountValue);
 
@@ -44,16 +53,25 @@ export function ExpressCheckout({
       </p>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
-        <ExpressSlot
-          label="Apple Pay"
-          title="Apple Pay needs domain verification in PayPal / Apple before it can go live."
-          disabled
-        >
-          <span className="inline-flex items-center gap-1.5">
-            <AppleLogo />
-            <span className="text-[15px] font-medium tracking-tight text-white">Pay</span>
-          </span>
-        </ExpressSlot>
+        {applePayReady ? (
+          <ApplePayButton
+            ensureApplePayOrder={ensureApplePayOrder!}
+            applePayConfig={applePayConfig!}
+            amountValue={amountValue!}
+            disabled={disabled}
+          />
+        ) : (
+          <ExpressSlot
+            label="Apple Pay"
+            title="Apple Pay appears here on eligible Apple devices once PayPal domain verification is complete."
+            disabled
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <AppleLogo />
+              <span className="text-[15px] font-medium tracking-tight text-white">Pay</span>
+            </span>
+          </ExpressSlot>
+        )}
 
         {googlePayReady ? (
           <GooglePayButton

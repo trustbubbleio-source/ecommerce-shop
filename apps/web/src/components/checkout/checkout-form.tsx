@@ -188,7 +188,7 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
 
   const ensureSession = async (
     data: FormValues,
-    paymentMethod: 'card' | 'paypal' | 'redirect' | 'swish' | 'google_pay',
+    paymentMethod: 'card' | 'paypal' | 'redirect' | 'swish' | 'google_pay' | 'apple_pay',
   ) => {
     const input = buildInput(data);
     const fingerprint = checkoutFingerprint({
@@ -368,6 +368,20 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
       );
     }
     const session = await ensureSession(data, 'google_pay');
+    if (!session) throw new Error('Order already paid');
+    return { orderId: session.orderId, paypalOrderId: session.paypalOrderId };
+  };
+
+  const ensureApplePayOrder = async () => {
+    const data = validateForm();
+    if (!data) {
+      throw new Error(
+        isPickup
+          ? 'Please complete your contact details first.'
+          : 'Please complete the shipping form first.',
+      );
+    }
+    const session = await ensureSession(data, 'apple_pay');
     if (!session) throw new Error('Order already paid');
     return { orderId: session.orderId, paypalOrderId: session.paypalOrderId };
   };
@@ -622,6 +636,7 @@ export function CheckoutForm({ disabled = false }: { disabled?: boolean } = {}) 
                 cardSubmitRef={cardSubmitRef}
                 ensurePaypalOrder={ensurePaypalOrder}
                 ensureGooglePayOrder={ensureGooglePayOrder}
+                ensureApplePayOrder={ensureApplePayOrder}
                 onSwishPay={onSwishPay}
                 disabled={paymentsLocked}
               />
