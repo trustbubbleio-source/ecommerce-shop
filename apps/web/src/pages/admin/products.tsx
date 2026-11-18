@@ -21,12 +21,27 @@ import {
   Input,
   Select,
   Skeleton,
+  useToast,
 } from '@akknerds/ui';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, ArrowUpDown, Boxes, ImagePlus, Package, Search, Wallet } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Boxes,
+  Download,
+  ImagePlus,
+  Package,
+  Search,
+  Wallet,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { adminProductsListState } from '../../lib/admin-products-list';
+import {
+  downloadZettleProductsCsv,
+  fetchAllAdminProductsForZettleExport,
+} from '../../lib/zettle-products-csv';
 
 type SortDir = 'asc' | 'desc';
 
@@ -140,6 +155,7 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
 }
 
 export function AdminProductsPage() {
+  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const qFromUrl = searchParams.get('q') ?? '';
   const category = parseCategory(searchParams.get('category'));
@@ -148,6 +164,7 @@ export function AdminProductsPage() {
   const sortDir = parseSortDir(searchParams.get('dir'));
 
   const [search, setSearch] = useState(qFromUrl);
+  const [exporting, setExporting] = useState(false);
   const debouncedSearch = useDebouncedValue(search.trim(), 280);
 
   // Keep the text field in sync when returning via browser back / shared URL.
@@ -226,6 +243,27 @@ export function AdminProductsPage() {
 
   const listState = adminProductsListState(searchParams.toString() ? `?${searchParams}` : '');
 
+  const onExportZettleCsv = async () => {
+    setExporting(true);
+    try {
+      const catalog = await fetchAllAdminProductsForZettleExport();
+      downloadZettleProductsCsv(catalog);
+      toast({
+        title: 'Zettle CSV downloaded',
+        description: `${catalog.length} products — compare SKU / Variant id / Produkt id with PayPal Zettle export.`,
+        variant: 'success',
+      });
+    } catch {
+      toast({
+        title: 'Export failed',
+        description: 'Could not download the product CSV. Try again.',
+        variant: 'error',
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const cdn = import.meta.env.VITE_ASSET_CDN_URL;
 
   const columns: { key: AdminProductSortKey; label: string }[] = [
@@ -252,12 +290,23 @@ export function AdminProductsPage() {
             Manage your catalog and upload product images to the CDN.
           </p>
         </div>
-        <Button asChild>
-          <Link to="/admin/new" state={listState}>
-            <ImagePlus className="size-4" />
-            Add product
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={exporting}
+            onClick={() => void onExportZettleCsv()}
+          >
+            <Download className="size-4" />
+            {exporting ? 'Exporting…' : 'Export Zettle CSV'}
+          </Button>
+          <Button asChild>
+            <Link to="/admin/new" state={listState}>
+              <ImagePlus className="size-4" />
+              Add product
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <CatalogStatsRow stats={catalogStats} isLoading={products.isLoading && !products.data} />

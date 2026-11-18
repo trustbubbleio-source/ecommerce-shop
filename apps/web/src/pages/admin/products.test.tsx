@@ -67,6 +67,7 @@ describe('Admin products', () => {
     renderApp('/admin');
 
     expect(await screen.findByText('Listing 0')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /export zettle csv/i })).toBeInTheDocument();
     expect(screen.getByText(/Showing 1.10 of 11/)).toBeInTheDocument();
     expect(screen.queryByText('Listing 10')).not.toBeInTheDocument();
 
