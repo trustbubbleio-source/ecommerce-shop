@@ -250,7 +250,7 @@ export function AdminProductsPage() {
       downloadZettleProductsCsv(catalog);
       toast({
         title: 'Zettle CSV downloaded',
-        description: `${catalog.length} products — compare SKU / Variant id / Produkt id with PayPal Zettle export.`,
+        description: `${catalog.length} active products — compare SKU / Variant id / Produkt id with PayPal Zettle export.`,
         variant: 'success',
       });
     } catch {

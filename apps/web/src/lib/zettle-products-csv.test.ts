@@ -4,6 +4,7 @@ import { makeProduct } from '../test/utils';
 import {
   ZETTLE_PRODUCT_CSV_HEADERS,
   fetchAllAdminProductsForZettleExport,
+  filterProductsForZettleExport,
   formatZettlePriceSek,
   productToZettleCsvCells,
   productsToZettleCsv,
@@ -67,26 +68,49 @@ describe('zettle-products-csv', () => {
     expect(csv).toContain(',PK-1,100,');
   });
 
+  it('excludes inactive products from the CSV body', () => {
+    const csv = productsToZettleCsv([
+      makeProduct({ id: 'live', name: 'Live Pack', sku: 'LIVE-1', inactive: false }),
+      makeProduct({ id: 'dead', name: 'Dead Pack', sku: 'DEAD-1', inactive: true }),
+    ]);
+    expect(csv).toContain('Live Pack');
+    expect(csv).toContain('LIVE-1');
+    expect(csv).not.toContain('Dead Pack');
+    expect(csv).not.toContain('DEAD-1');
+  });
+
+  it('filterProductsForZettleExport drops inactive only', () => {
+    const products = filterProductsForZettleExport([
+      makeProduct({ id: 'a', inactive: false, storeOnly: true }),
+      makeProduct({ id: 'b', inactive: true }),
+      makeProduct({ id: 'c', inactive: false }),
+    ]);
+    expect(products.map((p) => p.id)).toEqual(['a', 'c']);
+  });
+
   it('pages through adminListProducts until hasMore is false', async () => {
     const spy = vi.spyOn(api, 'adminListProducts').mockImplementation(async (query = {}) => {
       const offset = query.offset ?? 0;
       if (offset === 0) {
         return {
-          products: [makeProduct({ id: 'a', name: 'A', sku: 'A-1' })],
-          total: 2,
+          products: [
+            makeProduct({ id: 'a', name: 'A', sku: 'A-1' }),
+            makeProduct({ id: 'gone', name: 'Gone', sku: 'G-1', inactive: true }),
+          ],
+          total: 3,
           limit: 50,
           offset: 0,
           hasMore: true,
-          stats: { listings: 2, unitsInStock: 2, inventoryValueCents: 100 },
+          stats: { listings: 3, unitsInStock: 3, inventoryValueCents: 100 },
         };
       }
       return {
         products: [makeProduct({ id: 'b', name: 'B', sku: 'B-1' })],
-        total: 2,
+        total: 3,
         limit: 50,
-        offset: 1,
+        offset: 2,
         hasMore: false,
-        stats: { listings: 2, unitsInStock: 2, inventoryValueCents: 100 },
+        stats: { listings: 3, unitsInStock: 3, inventoryValueCents: 100 },
       };
     });
 

@@ -67,16 +67,21 @@ export function productToZettleCsvCells(product: Product): string[] {
   ];
 }
 
+/** Active catalog only — deactivated products stay out of POS compare exports. */
+export function filterProductsForZettleExport(products: Product[]): Product[] {
+  return products.filter((product) => !product.inactive);
+}
+
 export function productsToZettleCsv(products: Product[]): string {
   const rows = [ZETTLE_PRODUCT_CSV_HEADERS.join(',')];
-  for (const product of products) {
+  for (const product of filterProductsForZettleExport(products)) {
     rows.push(productToZettleCsvCells(product).map(csvEscape).join(','));
   }
   // UTF-8 BOM so Excel keeps å/ä/ö when opening the CSV.
   return `\uFEFF${rows.join('\n')}\n`;
 }
 
-/** Pull the full admin catalog (paginated) for a Zettle-shaped export. */
+/** Pull the admin catalog for a Zettle-shaped export (excludes inactive). */
 export async function fetchAllAdminProductsForZettleExport(): Promise<Product[]> {
   const all: Product[] = [];
   let offset = 0;
@@ -91,7 +96,7 @@ export async function fetchAllAdminProductsForZettleExport(): Promise<Product[]>
     if (!page.hasMore || page.products.length === 0) break;
     offset += page.products.length;
   }
-  return all;
+  return filterProductsForZettleExport(all);
 }
 
 export function downloadZettleProductsCsv(
