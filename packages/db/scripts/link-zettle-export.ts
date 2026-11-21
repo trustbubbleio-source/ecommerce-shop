@@ -26,6 +26,9 @@ type ExportRow = {
   variantUuid: string;
 };
 
+const NAME_NOISE =
+  /boosterpacks?|boosterboxes?|elitetrainerboxes?|collectionboxes?|sleeved|blisters?|etb|packs?|boxes?/g;
+
 function norm(value: string | null | undefined): string {
   return (value ?? '')
     .normalize('NFKD')
@@ -33,6 +36,15 @@ function norm(value: string | null | undefined): string {
     .toLowerCase()
     .replace(/\([^)]*\)/g, ' ')
     .replace(/[^a-z0-9]+/g, '');
+}
+
+/** Stronger key: drop pack/box/etb noise so "Mega Brave (JP)" ≈ "Mega Brave Booster Pack". */
+function stem(value: string | null | undefined): string {
+  return norm(value).replace(NAME_NOISE, '');
+}
+
+function uniqueMatch<T>(candidates: T[]): T | undefined {
+  return candidates.length === 1 ? candidates[0] : undefined;
 }
 
 function loadExport(filePath: string): ExportRow[] {
@@ -71,11 +83,19 @@ async function main() {
   });
   const byId = new Map(products.map((p) => [p.id, p]));
   const byName = new Map<string, typeof products>();
+  const byStem = new Map<string, typeof products>();
   for (const product of products) {
     const key = norm(product.name);
     const list = byName.get(key) ?? [];
     list.push(product);
     byName.set(key, list);
+
+    const stemKey = stem(product.name);
+    if (stemKey) {
+      const stemList = byStem.get(stemKey) ?? [];
+      stemList.push(product);
+      byStem.set(stemKey, stemList);
+    }
   }
 
   let linked = 0;
@@ -88,10 +108,10 @@ async function main() {
 
     if (!match && row.name) {
       const exact = byName.get(norm(row.name)) ?? [];
-      if (exact.length === 1) {
-        match = exact[0];
-        how = 'name';
-      } else if (exact.length > 1 && row.sku.startsWith('GS-')) {
+      match = uniqueMatch(exact);
+      if (match) how = 'name';
+
+      if (!match && exact.length > 1 && row.sku.startsWith('GS-')) {
         const graded = exact.filter((p) => p.category === 'graded_slab' || String(p.category) === 'graded-slab');
         // Prisma enum may be graded_slab
         const gradedAlt = exact.filter((p) => String(p.category).toLowerCase().includes('graded'));
@@ -100,6 +120,25 @@ async function main() {
           match = pool[0];
           how = 'name+graded';
         }
+      }
+    }
+
+    if (!match && row.name) {
+      const stemExact = byStem.get(stem(row.name)) ?? [];
+      match = uniqueMatch(stemExact);
+      if (match) how = 'stem';
+    }
+
+    // Unique prefix/contains fallback (e.g. short Zettle titles).
+    if (!match && row.name) {
+      const rowStem = stem(row.name);
+      if (rowStem.length >= 6) {
+        const loose = products.filter((p) => {
+          const pStem = stem(p.name);
+          return pStem === rowStem || pStem.startsWith(rowStem) || rowStem.startsWith(pStem);
+        });
+        match = uniqueMatch(loose);
+        if (match) how = 'stem-loose';
       }
     }
 
