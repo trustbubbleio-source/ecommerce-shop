@@ -37,22 +37,10 @@ export function Header() {
                 <NavLink
                   key={entry.to}
                   to={entry.to}
-                  className={({ isActive }) => navLinkClass(isActive)}
-                >
-                  {entry.label}
-                </NavLink>
-              );
-            }
-
-            // Desktop: Buy goes straight to /shop — categories live in the shop sidebar.
-            // Mobile keeps the Buy accordion with category shortcuts.
-            if (entry.id === 'buy') {
-              return (
-                <NavLink
-                  key={entry.id}
-                  to="/shop"
-                  onPointerEnter={() => prefetchShopHref('/shop')}
-                  onFocus={() => prefetchShopHref('/shop')}
+                  onPointerEnter={
+                    entry.to === '/shop' ? () => prefetchShopHref('/shop') : undefined
+                  }
+                  onFocus={entry.to === '/shop' ? () => prefetchShopHref('/shop') : undefined}
                   className={({ isActive }) => navLinkClass(isActive)}
                 >
                   {entry.label}

@@ -13,21 +13,12 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { MAIN_NAV, type NavLink as SiteNavLink } from '../../config/site';
 import { usePrefetchShopHref } from '../../hooks/use-products';
 import { Brand } from '../common/brand';
-import { shopLinkActive } from './shop-nav-dropdown';
 
 function pathItemActive(to: string, pathname: string): boolean {
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 
-function menuActive(
-  id: string,
-  items: SiteNavLink[],
-  pathname: string,
-  search: string,
-): boolean {
-  if (id === 'buy') {
-    return items.some((link) => shopLinkActive(link.to, pathname, search));
-  }
+function menuActive(items: SiteNavLink[], pathname: string): boolean {
   return items.some((link) => pathItemActive(link.to, pathname));
 }
 
@@ -60,18 +51,23 @@ export function MobileNav() {
         </SheetHeader>
         <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain p-3">
           {MAIN_NAV.map((entry, index) => {
-            const divider = index === 1 ? <div className="border-border my-2 border-t" /> : null;
+            // Buy + Sell share the first section; divider before Services / Socials / Contact.
+            const divider = index === 2 ? <div className="border-border my-2 border-t" /> : null;
 
             if (entry.kind === 'link') {
               return (
-                <div key={entry.to}>
+                <div key={entry.to} className="flex flex-col gap-1">
                   {divider}
                   <NavLink
                     to={entry.to}
                     onClick={() => setOpen(false)}
+                    onPointerEnter={
+                      entry.to === '/shop' ? () => prefetchShopHref('/shop') : undefined
+                    }
+                    onFocus={entry.to === '/shop' ? () => prefetchShopHref('/shop') : undefined}
                     className={({ isActive }) =>
                       cn(
-                        'rounded-lg px-3 py-3 text-base font-medium transition-colors',
+                        'flex w-full items-center rounded-lg px-3 py-3 text-left text-base font-medium transition-colors',
                         isActive
                           ? 'bg-primary/15 text-primary'
                           : 'text-foreground hover:bg-secondary',
@@ -85,7 +81,7 @@ export function MobileNav() {
             }
 
             const expanded = Boolean(openMenus[entry.id]);
-            const active = menuActive(entry.id, entry.items, location.pathname, location.search);
+            const active = menuActive(entry.items, location.pathname);
             const panelId = `mobile-${entry.id}-nav`;
 
             return (
@@ -115,23 +111,14 @@ export function MobileNav() {
                 {expanded && (
                   <div id={panelId} className="flex flex-col gap-1 pb-1 pl-2">
                     {entry.items.map((link) => {
-                      const itemActive =
-                        entry.id === 'buy'
-                          ? shopLinkActive(link.to, location.pathname, location.search)
-                          : pathItemActive(link.to, location.pathname);
+                      const itemActive = pathItemActive(link.to, location.pathname);
                       return (
                         <NavLink
                           key={link.to}
                           to={link.to}
                           onClick={() => setOpen(false)}
-                          onPointerEnter={
-                            entry.id === 'buy' ? () => prefetchShopHref(link.to) : undefined
-                          }
-                          onFocus={
-                            entry.id === 'buy' ? () => prefetchShopHref(link.to) : undefined
-                          }
                           className={cn(
-                            'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                            'flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors',
                             itemActive
                               ? 'bg-primary/15 text-primary'
                               : 'text-muted-foreground hover:bg-secondary hover:text-foreground',

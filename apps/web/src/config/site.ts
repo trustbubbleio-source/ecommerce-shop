@@ -105,7 +105,7 @@ export type MainNavEntry =
   | { kind: 'link'; label: string; to: string }
   | { kind: 'menu'; id: string; label: string; items: NavLink[] };
 
-/** Category shortcuts under Buy in the mobile nav (desktop uses the shop sidebar). */
+/** Category shortcuts used in the footer (Buy itself is a top-level /shop link). */
 export const SHOP_NAV: NavLink[] = [
   { label: 'All products', to: '/shop' },
   { label: 'Booster Boxes', to: '/shop?category=booster-box' },
@@ -126,7 +126,7 @@ export const SOCIALS_NAV: NavLink[] = [
 ];
 
 export const MAIN_NAV: MainNavEntry[] = [
-  { kind: 'menu', id: 'buy', label: 'Buy', items: SHOP_NAV },
+  { kind: 'link', label: 'Buy', to: '/shop' },
   { kind: 'link', label: 'Sell', to: '/sell' },
   { kind: 'menu', id: 'services', label: 'Services', items: SERVICES_NAV },
   { kind: 'menu', id: 'socials', label: 'Socials', items: SOCIALS_NAV },
