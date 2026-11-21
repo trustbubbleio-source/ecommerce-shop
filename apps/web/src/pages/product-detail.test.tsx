@@ -58,6 +58,21 @@ describe('ProductDetailPage', () => {
     expect(screen.queryByText(/^14-day returns$/i)).not.toBeInTheDocument();
   });
 
+  it('preserves line breaks in the product description', async () => {
+    vi.spyOn(api, 'getProduct').mockResolvedValue({
+      product: makeProduct({
+        description: 'Japanskt Pokémon-boosterpaket.\nSpråk: japanska.\n\nFörpackningen innehåller ett boosterpaket.',
+      }),
+    });
+    vi.spyOn(api, 'listProducts').mockResolvedValue({ products: [], total: 0 });
+    renderApp('/product/pokemon-151-booster-box-bb-151');
+
+    const description = await screen.findByText(/Japanskt Pokémon-boosterpaket/);
+    expect(description).toHaveClass('whitespace-pre-line');
+    expect(description).toHaveTextContent(/Språk: japanska/);
+    expect(description).toHaveTextContent(/Förpackningen innehåller ett boosterpaket/);
+  });
+
   it('shows the full single-card image without cropping on the detail page', async () => {
     vi.spyOn(api, 'getProduct').mockResolvedValue({
       product: makeProduct({

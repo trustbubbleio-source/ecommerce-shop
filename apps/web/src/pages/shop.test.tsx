@@ -19,6 +19,9 @@ describe('ShopPage', () => {
 
     expect(await screen.findByText('1 product')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /151 Booster Box/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /open category filters/i })).toHaveTextContent(
+      'Category',
+    );
   });
 
   it('shows an empty state when nothing matches', async () => {

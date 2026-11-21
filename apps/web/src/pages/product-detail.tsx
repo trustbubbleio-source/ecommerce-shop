@@ -217,7 +217,9 @@ export function ProductDetailPage() {
 
           <PriceTag product={product} size="lg" />
 
-          <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+          <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
+            {product.description}
+          </p>
 
           <div className="flex items-center gap-2 text-sm">
             {product.storeOnly ? (

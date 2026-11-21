@@ -54,11 +54,27 @@ function MastercardMark() {
   );
 }
 
-function KlarnaMark() {
+function GooglePayMark() {
   return (
-    <span className="text-[11px] font-extrabold tracking-tight" aria-hidden="true">
-      Klarna
-    </span>
+    <svg viewBox="0 0 52 20" className="h-3.5 w-auto" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M12.4 9.8v2.3h3.3c-.1.8-.7 2.1-2.2 3-.9.6-2.1 1-3.5 1-2.9 0-5.3-2.4-5.3-5.3S7.1 5.5 10 5.5c1.6 0 2.7.7 3.3 1.3l1.8-1.7C13.9 3.8 12.1 3 10 3 5.9 3 2.6 6.3 2.6 10.4S5.9 17.8 10 17.8c2.9 0 4.9-1 6.5-2.7 1.7-1.7 2.2-4.1 2.2-5.9 0-.6-.1-1-.1-1.4h-8.2z"
+      />
+      <path fill="#34A853" d="M2.6 10.4c0-1.4.4-2.7 1.2-3.8l-2-1.6C.7 6.5 0 8.4 0 10.4c0 2 .7 3.9 1.8 5.4l2-1.6c-.8-1.1-1.2-2.4-1.2-3.8z" />
+      <path fill="#FBBC05" d="M10 17.8c2.1 0 3.9-.7 5.2-1.9l-2-1.6c-.7.5-1.7.9-3.2.9-2 0-3.7-1.3-4.3-3.1l-2.1 1.6c1.1 2.4 3.5 4.1 6.4 4.1z" />
+      <path fill="#EA4335" d="M15.2 6.8l-2 1.6c.6-.5 1.1-1.1 1.3-1.9H10V9.8h5.2c.1-.5.1-.9.1-1.4 0-.6-.1-1.1-.1-1.6z" />
+      <text
+        x="20"
+        y="14.5"
+        fill="currentColor"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontSize="11"
+        fontWeight="600"
+      >
+        Pay
+      </text>
+    </svg>
   );
 }
 
@@ -86,7 +102,7 @@ function ApplePayMark() {
 const METHODS = [
   { id: 'visa', label: 'Visa', mark: <VisaMark /> },
   { id: 'mastercard', label: 'Mastercard', mark: <MastercardMark /> },
-  { id: 'klarna', label: 'Klarna', mark: <KlarnaMark /> },
+  { id: 'google-pay', label: 'Google Pay', mark: <GooglePayMark /> },
   { id: 'apple-pay', label: 'Apple Pay', mark: <ApplePayMark /> },
 ] as const;
 

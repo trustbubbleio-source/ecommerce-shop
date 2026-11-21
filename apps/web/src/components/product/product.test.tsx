@@ -61,6 +61,30 @@ describe('ProductCard', () => {
     expect(screen.getByText('178/165')).toBeInTheDocument();
     expect(container.querySelector('.absolute.bottom-2 img')).toBeTruthy();
   });
+
+  it('keeps Add to cart aligned when only one product shows a rating', () => {
+    const { container: sealed } = renderWithProviders(
+      <ProductCard product={makeProduct({ rating: 4.5, reviewCount: 12 })} />,
+    );
+    const { container: single } = renderWithProviders(
+      <ProductCard
+        product={makeProduct({
+          category: 'single-card',
+          name: 'Pikachu Single',
+          slug: 'pikachu-single',
+          rating: 0,
+          reviewCount: 0,
+        })}
+      />,
+    );
+
+    expect(sealed.querySelector('[aria-label^="Rated"]')).toBeTruthy();
+    expect(single.querySelector('[aria-label^="Rated"]')).toBeNull();
+    expect(sealed.querySelector('[data-testid="product-card-rating-slot"]')).toBeTruthy();
+    expect(single.querySelector('[data-testid="product-card-rating-slot"]')).toBeTruthy();
+    expect(sealed.firstElementChild).toHaveClass('h-full');
+    expect(single.firstElementChild).toHaveClass('h-full');
+  });
 });
 
 describe('PriceTag', () => {

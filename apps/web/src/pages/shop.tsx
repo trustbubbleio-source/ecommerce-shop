@@ -77,8 +77,8 @@ export function ShopPage() {
             <div className="flex items-center gap-2">
               <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="lg:hidden" aria-label="Open filters">
-                    <SlidersHorizontal /> Filters
+                  <Button variant="outline" className="lg:hidden" aria-label="Open category filters">
+                    <SlidersHorizontal /> Category
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="bottom" className="max-h-[85vh] gap-0 overflow-y-auto p-0">

@@ -12,7 +12,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       type={type}
       aria-invalid={invalid || undefined}
       className={cn(
-        'border-input bg-background text-foreground flex h-11 w-full rounded-lg border px-3.5 text-sm shadow-sm transition-colors',
+        // text-base on mobile avoids iOS auto-zoom on focus; desktop keeps text-sm.
+        'border-input bg-background text-foreground flex h-11 w-full rounded-lg border px-3.5 text-base shadow-sm transition-colors md:text-sm',
         'placeholder:text-muted-foreground',
         'focus-visible:border-ring focus-visible:ring-ring/40 focus-visible:outline-none focus-visible:ring-2',
         'disabled:cursor-not-allowed disabled:opacity-50',

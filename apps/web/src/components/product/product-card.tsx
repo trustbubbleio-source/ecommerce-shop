@@ -14,7 +14,7 @@ export function ProductCard({ product }: { product: Product }) {
   const showCategoryChip = !isCardStyleCategory(product.category);
 
   return (
-    <Card className="hover:border-foreground/25 hover:shadow-glow group relative flex flex-col overflow-hidden transition-all hover:-translate-y-1">
+    <Card className="hover:border-foreground/25 hover:shadow-glow group relative flex h-full flex-col overflow-hidden transition-all hover:-translate-y-1">
       <FavoriteButton
         productId={product.id}
         productName={product.name}
@@ -22,7 +22,7 @@ export function ProductCard({ product }: { product: Product }) {
       />
       <Link
         to={`/product/${product.slug}`}
-        className="bg-muted/20 relative block aspect-[5/7] overflow-hidden"
+        className="bg-muted/20 relative block aspect-[5/7] shrink-0 overflow-hidden"
         aria-label={`${product.name}, ${languageLabel(product.language)} print`}
       >
         <div className="absolute left-2 top-2 z-20 flex h-11 items-center gap-1.5">
@@ -47,12 +47,17 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </Link>
 
-      <div className="flex flex-col gap-2 p-3">
+      <div className="flex flex-1 flex-col gap-2 p-3">
         <PriceTag product={product} />
-        {!isCardStyleCategory(product.category) && (
-          <Rating value={product.rating} reviewCount={product.reviewCount} size={13} />
-        )}
-        <AddToCartButton product={product} block size="sm" compact label="Add to cart" />
+        {/* Reserve rating-row height so Add to cart lines up across mixed rows. */}
+        <div data-testid="product-card-rating-slot" className="flex min-h-[1.125rem] items-center">
+          {!isCardStyleCategory(product.category) ? (
+            <Rating value={product.rating} reviewCount={product.reviewCount} size={13} />
+          ) : null}
+        </div>
+        <div className="mt-auto">
+          <AddToCartButton product={product} block size="sm" compact label="Add to cart" />
+        </div>
       </div>
     </Card>
   );
