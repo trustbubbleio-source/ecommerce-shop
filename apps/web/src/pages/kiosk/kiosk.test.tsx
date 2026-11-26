@@ -68,8 +68,9 @@ describe('Kiosk browse', () => {
     await userEvent.click(screen.getByRole('button', { name: 'A' }));
     await userEvent.click(screen.getByRole('button', { name: 'R' }));
 
-    await waitFor(() =>
-      expect(spy.mock.calls.some(([q]) => q?.search === 'char')).toBe(true),
+    await waitFor(
+      () => expect(spy.mock.calls.some(([q]) => q?.search === 'char' && q.limit === 12)).toBe(true),
+      { timeout: 2_000 },
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'Done' }));

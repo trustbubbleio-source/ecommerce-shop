@@ -68,18 +68,19 @@ export function useProducts(query: ProductsQuery = {}, options?: { enabled?: boo
 
 /** Paginated shop catalogue — load more appends the next offset page. */
 export function useInfiniteProducts(query: ProductsQuery = {}) {
+  const pageSize = query.limit ?? SHOP_PAGE_SIZE;
   return useInfiniteQuery({
     queryKey: productKeys.infinite(query),
     queryFn: ({ pageParam }) =>
       api.listProducts({
         ...query,
-        limit: SHOP_PAGE_SIZE,
+        limit: pageSize,
         offset: pageParam,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _pages, lastOffset) => {
       if (!lastPage.hasMore) return undefined;
-      return lastOffset + SHOP_PAGE_SIZE;
+      return lastOffset + pageSize;
     },
     staleTime: SHOP_STALE_TIME,
   });

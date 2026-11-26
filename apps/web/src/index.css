@@ -27,6 +27,15 @@
   .tap-highlight-none {
     -webkit-tap-highlight-color: transparent;
   }
+
+  /* Kiosk grid: skip layout/paint for off-screen cards while scrolling. */
+  .content-visibility-auto {
+    content-visibility: auto;
+  }
+
+  .contain-intrinsic-kiosk-card {
+    contain-intrinsic-size: 320px 520px;
+  }
 }
 
 /* Hide receipt chrome on screen for direct / email opens — print still shows it. */

@@ -1,20 +1,36 @@
-import { type Product, categoryLabel, languageLabel } from '@akknerds/shared';
+import {
+  type Product,
+  categoryLabel,
+  languageLabel,
+  primaryProductImage,
+  resolveAssetUrl,
+} from '@akknerds/shared';
 import { cn } from '@akknerds/ui';
 import { Link } from 'react-router-dom';
 import { PriceTag } from '../../components/product/price-tag';
-import { ProductArt } from '../../components/product/product-art';
 import { LanguageFlag } from '../../components/product/language-flag';
+import { KioskLazyImage } from './lazy-image';
 
-export function KioskProductCard({ product }: { product: Product }) {
+export function KioskProductCard({
+  product,
+  priority = false,
+}: {
+  product: Product;
+  priority?: boolean;
+}) {
   const soldOut = product.stock <= 0;
+  const imageUrl = resolveAssetUrl(
+    primaryProductImage(product),
+    import.meta.env.VITE_ASSET_CDN_URL,
+  );
 
   return (
     <Link
       to={`/kiosk/product/${product.slug}`}
       state={{ product }}
       className={cn(
-        'bg-card/80 border-border/60 tap-highlight-none group flex h-full flex-col overflow-hidden rounded-2xl border',
-        'transition-transform active:scale-[0.98]',
+        'bg-card/80 border-border/60 tap-highlight-none flex h-full flex-col overflow-hidden rounded-2xl border',
+        'content-visibility-auto contain-intrinsic-kiosk-card',
       )}
       aria-label={`${product.name}, ${languageLabel(product.language)}, ${soldOut ? 'sold out' : 'in stock'}`}
     >
@@ -25,7 +41,21 @@ export function KioskProductCard({ product }: { product: Product }) {
             {categoryLabel(product.category)}
           </span>
         </div>
-        <ProductArt product={product} variant="card" loading="eager" />
+        {imageUrl ? (
+          <KioskLazyImage
+            src={imageUrl}
+            alt={product.name}
+            priority={priority}
+            placeholderColor={product.accent}
+          />
+        ) : (
+          <div
+            className="size-full"
+            style={{ background: `linear-gradient(150deg, ${product.accent} -10%, #0b0712 78%)` }}
+            role="img"
+            aria-label={product.name}
+          />
+        )}
         {soldOut && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50">
             <span className="rounded-full bg-destructive px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white">

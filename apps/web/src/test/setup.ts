@@ -39,7 +39,32 @@ globalThis.ResizeObserver ||= class {
 };
 
 globalThis.IntersectionObserver ||= class {
-  observe() {}
+  readonly root = null;
+  readonly rootMargin = '';
+  readonly thresholds = [];
+  private readonly callback: IntersectionObserverCallback;
+
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback;
+  }
+
+  observe(target: Element) {
+    // Treat observed nodes as visible so lazy/infinite-scroll hooks work in jsdom.
+    this.callback(
+      [
+        {
+          isIntersecting: true,
+          target,
+          time: 0,
+          intersectionRatio: 1,
+          boundingClientRect: target.getBoundingClientRect(),
+          intersectionRect: target.getBoundingClientRect(),
+          rootBounds: null,
+        },
+      ],
+      this,
+    );
+  }
   unobserve() {}
   disconnect() {}
   takeRecords() {
