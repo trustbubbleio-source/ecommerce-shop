@@ -9,6 +9,7 @@ import { CartPage } from './pages/cart';
 import { CheckoutPage } from './pages/checkout';
 import { CheckoutSuccessPage } from './pages/checkout-success';
 import { HomePage } from './pages/home';
+import { KioskLayout } from './pages/kiosk/layout';
 import { LoginPage } from './pages/login';
 import { NotFoundPage } from './pages/not-found';
 import { RegisterPage } from './pages/register';
@@ -37,6 +38,21 @@ function lazyNamed(loader: () => Promise<Record<string, unknown>>, exportName: s
 }
 
 export const routes: RouteObject[] = [
+  /** In-store touchscreen catalogue — no storefront chrome / checkout / auth. */
+  {
+    path: '/kiosk',
+    element: <KioskLayout />,
+    children: [
+      {
+        index: true,
+        element: lazyNamed(() => import('./pages/kiosk/browse'), 'KioskBrowsePage'),
+      },
+      {
+        path: 'product/:slug',
+        element: lazyNamed(() => import('./pages/kiosk/product-detail'), 'KioskProductDetailPage'),
+      },
+    ],
+  },
   {
     path: '/',
     element: <RootLayout />,
