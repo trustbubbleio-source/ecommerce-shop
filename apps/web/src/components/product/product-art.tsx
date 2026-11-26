@@ -58,9 +58,11 @@ function ProductArtOverlay({
 function ProductArtImage({
   src,
   fitClass,
+  loading = 'lazy',
 }: {
   src: string;
   fitClass: string;
+  loading?: 'lazy' | 'eager';
 }) {
   const [ready, setReady] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -81,7 +83,7 @@ function ProductArtImage({
         ref={imgRef}
         src={src}
         alt=""
-        loading="lazy"
+        loading={loading}
         decoding="async"
         onLoad={() => setReady(true)}
         onError={() => setReady(true)}
@@ -105,10 +107,13 @@ export function ProductArt({
   product,
   className,
   variant = 'detail',
+  /** Native lazy-load fails inside overflow scrollers (kiosk) — use eager there. */
+  loading = 'lazy',
 }: {
   product: ArtProduct;
   className?: string;
   variant?: ProductArtVariant;
+  loading?: 'lazy' | 'eager';
 }) {
   const isCardStyle = isCardStyleCategory(product.category);
   const isShopCard = variant === 'card';
@@ -129,7 +134,7 @@ export function ProductArt({
         role="img"
         aria-label={product.name}
       >
-        <ProductArtImage src={imageUrl} fitClass={imageFitClass} />
+        <ProductArtImage src={imageUrl} fitClass={imageFitClass} loading={loading} />
         <ProductArtOverlay product={product} show={showOverlay} showCategory={!isShopCard} />
       </div>
     );

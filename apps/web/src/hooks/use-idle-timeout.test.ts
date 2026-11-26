@@ -52,4 +52,22 @@ describe('useIdleTimeout', () => {
     });
     expect(onIdle).not.toHaveBeenCalled();
   });
+
+  it('resets on touchstart when using kiosk events', async () => {
+    const { KIOSK_IDLE_EVENTS } = await import('./use-idle-timeout');
+    const onIdle = vi.fn();
+    renderHook(() => useIdleTimeout(onIdle, 1_000, true, KIOSK_IDLE_EVENTS));
+
+    act(() => {
+      vi.advanceTimersByTime(800);
+      window.dispatchEvent(new Event('touchstart'));
+      vi.advanceTimersByTime(800);
+    });
+    expect(onIdle).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    expect(onIdle).toHaveBeenCalledTimes(1);
+  });
 });

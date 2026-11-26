@@ -11,6 +11,7 @@ export function KioskProductCard({ product }: { product: Product }) {
   return (
     <Link
       to={`/kiosk/product/${product.slug}`}
+      state={{ product }}
       className={cn(
         'bg-card/80 border-border/60 tap-highlight-none group flex h-full flex-col overflow-hidden rounded-2xl border',
         'transition-transform active:scale-[0.98]',
@@ -24,7 +25,7 @@ export function KioskProductCard({ product }: { product: Product }) {
             {categoryLabel(product.category)}
           </span>
         </div>
-        <ProductArt product={product} variant="card" />
+        <ProductArt product={product} variant="card" loading="eager" />
         {soldOut && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50">
             <span className="rounded-full bg-destructive px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white">

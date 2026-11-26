@@ -1,7 +1,9 @@
 import { Button, Input, Skeleton, Spinner, cn } from '@akknerds/ui';
 import { AlertCircle, PackageOpen, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import logo from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
+import { SITE } from '../../config/site';
 import { useInfiniteProducts } from '../../hooks/use-products';
 import { KioskProductCard } from './product-card';
 
@@ -52,7 +54,15 @@ export function KioskBrowsePage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="shrink-0 px-8 pb-4 pt-10">
+      <header className="shrink-0 px-8 pb-4 pt-8">
+        <Link to="/kiosk" className="mx-auto mb-5 flex justify-center" aria-label={SITE.name}>
+          <img
+            src={logo}
+            alt={SITE.name}
+            className="h-20 w-auto object-contain sm:h-24"
+            draggable={false}
+          />
+        </Link>
         <p className="text-muted-foreground mb-2 text-center text-sm font-semibold uppercase tracking-[0.35em]">
           In-store catalogue
         </p>

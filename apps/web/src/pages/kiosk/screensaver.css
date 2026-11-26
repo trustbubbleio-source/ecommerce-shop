@@ -1,0 +1,56 @@
+.kiosk-screensaver-orbit {
+  animation: kiosk-screensaver-drift 18s ease-in-out infinite alternate;
+}
+
+.kiosk-screensaver-logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(42vw, 28rem);
+  height: auto;
+  opacity: 0.92;
+  transform: translate(-50%, -50%);
+  animation: kiosk-screensaver-pulse 4.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 28px rgb(255 255 255 / 0.12));
+}
+
+@keyframes kiosk-screensaver-drift {
+  0% {
+    transform: translate(-18%, -22%);
+  }
+  25% {
+    transform: translate(20%, -10%);
+  }
+  50% {
+    transform: translate(14%, 24%);
+  }
+  75% {
+    transform: translate(-22%, 12%);
+  }
+  100% {
+    transform: translate(8%, -18%);
+  }
+}
+
+@keyframes kiosk-screensaver-pulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    scale: 0.96;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.04;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kiosk-screensaver-orbit,
+  .kiosk-screensaver-logo {
+    animation: none;
+  }
+
+  .kiosk-screensaver-logo {
+    opacity: 0.9;
+  }
+}

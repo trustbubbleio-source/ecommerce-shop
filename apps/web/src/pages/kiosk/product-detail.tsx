@@ -1,4 +1,5 @@
 import {
+  type Product,
   categoryLabel,
   isCardStyleCategory,
   languageLabel,
@@ -7,7 +8,7 @@ import {
 import { Button, Skeleton, cn } from '@akknerds/ui';
 import { ArrowLeft, PackageX } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { PriceTag } from '../../components/product/price-tag';
 import { ProductArt } from '../../components/product/product-art';
 import { LanguageFlag } from '../../components/product/language-flag';
@@ -24,26 +25,49 @@ function DetailSkeleton() {
   );
 }
 
+function seededProduct(state: unknown, slug: string | undefined): Product | undefined {
+  if (!slug || !state || typeof state !== 'object') return undefined;
+  const product = (state as { product?: Product }).product;
+  return product?.slug === slug ? product : undefined;
+}
+
 export function KioskProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data, isLoading, isError } = useProduct(slug);
-  const product = data?.product;
+  const location = useLocation();
+  const seed = seededProduct(location.state, slug);
+  const { data, isLoading, isError, refetch, isFetching } = useProduct(slug);
+  const product = data?.product ?? seed;
   const [activeImage, setActiveImage] = useState(0);
 
-  if (isLoading) return <DetailSkeleton />;
+  if (!product && isLoading) return <DetailSkeleton />;
 
-  if (isError || !product) {
+  if (!product && (isError || !isLoading)) {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 px-8 text-center">
         <PackageX className="text-muted-foreground size-14" aria-hidden />
-        <h1 className="text-3xl font-bold">Product not found</h1>
-        <p className="text-muted-foreground text-xl">It may have sold out or moved.</p>
-        <Button asChild size="lg" className="h-16 rounded-2xl px-8 text-xl">
-          <Link to="/kiosk">Back to catalogue</Link>
-        </Button>
+        <h1 className="text-3xl font-bold">Couldn&apos;t open product</h1>
+        <p className="text-muted-foreground max-w-md text-xl">
+          Check the connection and try again, or go back to the catalogue.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button
+            type="button"
+            size="lg"
+            className="h-16 rounded-2xl px-8 text-xl"
+            disabled={isFetching}
+            onClick={() => void refetch()}
+          >
+            Try again
+          </Button>
+          <Button asChild size="lg" variant="outline" className="h-16 rounded-2xl px-8 text-xl">
+            <Link to="/kiosk">Back to catalogue</Link>
+          </Button>
+        </div>
       </div>
     );
   }
+
+  if (!product) return <DetailSkeleton />;
 
   const soldOut = product.stock <= 0;
   const gallery = productImageUrls(product, import.meta.env.VITE_ASSET_CDN_URL);
@@ -82,7 +106,7 @@ export function KioskProductDetailPage() {
                 className={cn('size-full', mainFit)}
               />
             ) : (
-              <ProductArt product={product} />
+              <ProductArt product={product} loading="eager" />
             )}
             {soldOut && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50">
@@ -114,7 +138,6 @@ export function KioskProductDetailPage() {
                       'size-full',
                       isCardStyle ? 'object-contain p-1' : 'object-cover',
                     )}
-                    loading="lazy"
                   />
                 </button>
               ))}

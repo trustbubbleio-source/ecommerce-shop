@@ -8,11 +8,25 @@ const DEFAULT_EVENTS = [
   'scroll',
 ] as const;
 
+/** Quieter set for kiosk screensaver — avoids cursor jitter blocking attract mode. */
+export const KIOSK_IDLE_EVENTS = [
+  'pointerdown',
+  'keydown',
+  'touchstart',
+  'wheel',
+  'scroll',
+] as const;
+
 /**
  * Fires `onIdle` after `timeoutMs` without pointer/keyboard/scroll activity.
  * Resets the timer on each qualifying event (capture phase, including scroll containers).
  */
-export function useIdleTimeout(onIdle: () => void, timeoutMs = 60_000, enabled = true) {
+export function useIdleTimeout(
+  onIdle: () => void,
+  timeoutMs = 60_000,
+  enabled = true,
+  events: readonly string[] = DEFAULT_EVENTS,
+) {
   const onIdleRef = useRef(onIdle);
   onIdleRef.current = onIdle;
 
@@ -27,15 +41,15 @@ export function useIdleTimeout(onIdle: () => void, timeoutMs = 60_000, enabled =
     };
 
     arm();
-    for (const event of DEFAULT_EVENTS) {
+    for (const event of events) {
       window.addEventListener(event, arm, { capture: true, passive: true });
     }
 
     return () => {
       if (timer) clearTimeout(timer);
-      for (const event of DEFAULT_EVENTS) {
+      for (const event of events) {
         window.removeEventListener(event, arm, { capture: true });
       }
     };
-  }, [timeoutMs, enabled]);
+  }, [timeoutMs, enabled, events]);
 }
