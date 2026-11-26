@@ -29,15 +29,15 @@ export function KioskProductCard({
       to={`/kiosk/product/${product.slug}`}
       state={{ product }}
       className={cn(
-        'bg-card/80 border-border/60 tap-highlight-none flex h-full flex-col overflow-hidden rounded-xl border',
+        'bg-card/80 border-border/60 tap-highlight-none flex h-full flex-col overflow-hidden rounded-lg border',
         'content-visibility-auto contain-intrinsic-kiosk-card',
       )}
       aria-label={`${product.name}, ${languageLabel(product.language)}, ${soldOut ? 'sold out' : 'in stock'}`}
     >
       <div className="bg-muted/20 relative aspect-[5/7] shrink-0 overflow-hidden">
-        <div className="absolute left-2 top-2 z-20 flex items-center gap-1.5">
-          <LanguageFlag language={product.language} />
-          <span className="rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/90 backdrop-blur-sm">
+        <div className="absolute left-1.5 top-1.5 z-20 flex items-center gap-1">
+          <LanguageFlag language={product.language} className="size-4" />
+          <span className="rounded-full bg-black/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white/90 backdrop-blur-sm">
             {categoryLabel(product.category)}
           </span>
         </div>
@@ -58,22 +58,22 @@ export function KioskProductCard({
         )}
         {soldOut && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-            <span className="rounded-full bg-destructive px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white">
+            <span className="rounded-full bg-destructive px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
               Sold out
             </span>
           </div>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+      <div className="flex flex-1 flex-col gap-1 p-2.5">
+        <p className="text-muted-foreground text-[10px] font-medium uppercase tracking-wide">
           {product.set}
         </p>
-        <h2 className="text-foreground line-clamp-2 text-base font-semibold leading-snug">
+        <h2 className="text-foreground line-clamp-2 text-sm font-semibold leading-snug">
           {product.name}
         </h2>
-        <div className="mt-auto pt-0.5">
-          <PriceTag product={product} className="[&_span]:text-lg" />
+        <div className="mt-auto">
+          <PriceTag product={product} className="[&_span]:text-base" />
         </div>
       </div>
     </Link>

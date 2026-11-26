@@ -1,6 +1,6 @@
 import { Button, Input, Skeleton, Spinner, cn } from '@akknerds/ui';
 import { AlertCircle, PackageOpen, Search, X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import logo from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
 import { SITE } from '../../config/site';
@@ -9,20 +9,20 @@ import { KioskKeyboard } from './keyboard';
 import { KioskProductCard } from './product-card';
 import { KioskScrollRootContext } from './scroll-root';
 
-/** Smaller pages keep swipe smoother on the portrait touchscreen. */
+/** Explicit pages keep swipe lighter than infinite auto-load. */
 const KIOSK_PAGE_SIZE = 12;
 const SEARCH_DEBOUNCE_MS = 180;
 
 function GridSkeleton() {
   return (
-    <div className="grid grid-cols-3 gap-4" data-testid="kiosk-grid-loading">
-      {Array.from({ length: 6 }, (_, i) => (
-        <div key={i} className="bg-card/50 overflow-hidden rounded-xl border border-white/5">
+    <div className="grid grid-cols-4 gap-3" data-testid="kiosk-grid-loading">
+      {Array.from({ length: 8 }, (_, i) => (
+        <div key={i} className="bg-card/50 overflow-hidden rounded-lg border border-white/5">
           <Skeleton className="aspect-[5/7] w-full rounded-none" />
-          <div className="flex flex-col gap-2 p-3">
+          <div className="flex flex-col gap-1.5 p-2.5">
             <Skeleton className="h-3 w-1/3" />
             <Skeleton className="h-4 w-4/5" />
-            <Skeleton className="h-5 w-1/2" />
+            <Skeleton className="h-4 w-1/2" />
           </div>
         </div>
       ))}
@@ -36,7 +36,6 @@ export function KioskBrowsePage() {
   const [draft, setDraft] = useState(search);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Idle reset navigates to `/kiosk` without remounting — keep the field in sync.
   useEffect(() => {
@@ -68,35 +67,6 @@ export function KioskBrowsePage() {
   );
   const isInitialLoading = products.isLoading && !products.data;
   const isCatalogError = products.isError && !products.data;
-
-  // Auto-load the next page when the sentinel approaches the scroll viewport.
-  useEffect(() => {
-    const node = loadMoreRef.current;
-    if (!node || !products.hasNextPage) return;
-
-    if (typeof IntersectionObserver === 'undefined') return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (
-          entries.some((entry) => entry.isIntersecting) &&
-          products.hasNextPage &&
-          !products.isFetchingNextPage
-        ) {
-          void products.fetchNextPage();
-        }
-      },
-      { root: scrollRoot, rootMargin: '400px 0px', threshold: 0 },
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [
-    scrollRoot,
-    products.hasNextPage,
-    products.isFetchingNextPage,
-    products.fetchNextPage,
-    flatProducts.length,
-  ]);
 
   const clearSearch = () => {
     setDraft('');
@@ -214,32 +184,35 @@ export function KioskBrowsePage() {
           ) : null}
 
           {!isInitialLoading && !isCatalogError && flatProducts.length > 0 ? (
-            <div className="flex flex-col gap-8">
-              <div className="grid grid-cols-3 gap-4">
+            <div className="flex flex-col gap-6">
+              <div className="grid grid-cols-4 gap-3">
                 {flatProducts.map((product, index) => (
                   <KioskProductCard
                     key={product.id}
                     product={product}
-                    priority={index < 6}
+                    priority={index < 8}
                   />
                 ))}
               </div>
 
-              <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center pb-4">
-                {products.isFetchingNextPage ? (
-                  <Spinner className="size-8" label="Loading more" />
-                ) : products.hasNextPage ? (
+              {products.hasNextPage ? (
+                <div className="flex justify-center pb-4">
                   <Button
                     type="button"
                     variant="outline"
                     size="lg"
                     className="h-16 min-w-[14rem] rounded-2xl text-xl"
+                    disabled={products.isFetchingNextPage}
                     onClick={() => void products.fetchNextPage()}
                   >
-                    Load more
+                    {products.isFetchingNextPage ? (
+                      <Spinner className="size-6" label="Loading more" />
+                    ) : (
+                      'Load more'
+                    )}
                   </Button>
-                ) : null}
-              </div>
+                </div>
+              ) : null}
             </div>
           ) : null}
         </div>
