@@ -15,14 +15,14 @@ const SEARCH_DEBOUNCE_MS = 180;
 
 function GridSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-6 md:grid-cols-3" data-testid="kiosk-grid-loading">
+    <div className="grid grid-cols-3 gap-4" data-testid="kiosk-grid-loading">
       {Array.from({ length: 6 }, (_, i) => (
-        <div key={i} className="bg-card/50 overflow-hidden rounded-2xl border border-white/5">
+        <div key={i} className="bg-card/50 overflow-hidden rounded-xl border border-white/5">
           <Skeleton className="aspect-[5/7] w-full rounded-none" />
-          <div className="flex flex-col gap-3 p-4">
-            <Skeleton className="h-4 w-1/3" />
-            <Skeleton className="h-6 w-4/5" />
-            <Skeleton className="h-7 w-1/2" />
+          <div className="flex flex-col gap-2 p-3">
+            <Skeleton className="h-3 w-1/3" />
+            <Skeleton className="h-4 w-4/5" />
+            <Skeleton className="h-5 w-1/2" />
           </div>
         </div>
       ))}
@@ -215,7 +215,7 @@ export function KioskBrowsePage() {
 
           {!isInitialLoading && !isCatalogError && flatProducts.length > 0 ? (
             <div className="flex flex-col gap-8">
-              <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
+              <div className="grid grid-cols-3 gap-4">
                 {flatProducts.map((product, index) => (
                   <KioskProductCard
                     key={product.id}

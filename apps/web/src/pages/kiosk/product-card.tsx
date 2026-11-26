@@ -29,15 +29,15 @@ export function KioskProductCard({
       to={`/kiosk/product/${product.slug}`}
       state={{ product }}
       className={cn(
-        'bg-card/80 border-border/60 tap-highlight-none flex h-full flex-col overflow-hidden rounded-2xl border',
+        'bg-card/80 border-border/60 tap-highlight-none flex h-full flex-col overflow-hidden rounded-xl border',
         'content-visibility-auto contain-intrinsic-kiosk-card',
       )}
       aria-label={`${product.name}, ${languageLabel(product.language)}, ${soldOut ? 'sold out' : 'in stock'}`}
     >
       <div className="bg-muted/20 relative aspect-[5/7] shrink-0 overflow-hidden">
-        <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
+        <div className="absolute left-2 top-2 z-20 flex items-center gap-1.5">
           <LanguageFlag language={product.language} />
-          <span className="rounded-full bg-black/40 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white/90 backdrop-blur-sm">
+          <span className="rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/90 backdrop-blur-sm">
             {categoryLabel(product.category)}
           </span>
         </div>
@@ -65,15 +65,15 @@ export function KioskProductCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <p className="text-muted-foreground text-sm font-medium uppercase tracking-wide">
+      <div className="flex flex-1 flex-col gap-1.5 p-3">
+        <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
           {product.set}
         </p>
-        <h2 className="text-foreground line-clamp-2 text-xl font-semibold leading-snug">
+        <h2 className="text-foreground line-clamp-2 text-base font-semibold leading-snug">
           {product.name}
         </h2>
-        <div className="mt-auto pt-1">
-          <PriceTag product={product} className="[&_span]:text-2xl" />
+        <div className="mt-auto pt-0.5">
+          <PriceTag product={product} className="[&_span]:text-lg" />
         </div>
       </div>
     </Link>
