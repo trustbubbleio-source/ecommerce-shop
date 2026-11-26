@@ -77,6 +77,25 @@ describe('Kiosk browse', () => {
     expect(screen.queryByRole('group', { name: /on-screen keyboard/i })).not.toBeInTheDocument();
   });
 
+  it('filters by category tab', async () => {
+    const spy = vi.spyOn(api, 'listProducts').mockResolvedValue({
+      products: [makeProduct()],
+      total: 1,
+      hasMore: false,
+      limit: SHOP_PAGE_SIZE,
+      offset: 0,
+    });
+    renderApp('/kiosk');
+    await screen.findByRole('heading', { name: 'ONE MORE RIP' });
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Single Cards' }));
+    await waitFor(() =>
+      expect(spy.mock.calls.some(([q]) => q?.category === 'single-card' && q.limit === 12)).toBe(
+        true,
+      ),
+    );
+  });
+
   it('opens a product detail without checkout actions', async () => {
     const product = makeProduct();
     vi.spyOn(api, 'listProducts').mockResolvedValue({

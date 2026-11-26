@@ -1,9 +1,10 @@
+import { PRODUCT_CATEGORIES, type ProductCategory } from '@akknerds/shared';
 import { Button, Input, Skeleton, Spinner, cn } from '@akknerds/ui';
 import { AlertCircle, PackageOpen, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import logo from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
-import { SITE } from '../../config/site';
+import { CATEGORY_TILES, SITE } from '../../config/site';
 import { useInfiniteProducts } from '../../hooks/use-products';
 import { KioskKeyboard } from './keyboard';
 import { KioskProductCard } from './product-card';
@@ -12,6 +13,13 @@ import { KioskScrollRootContext } from './scroll-root';
 /** Explicit pages keep swipe lighter than infinite auto-load. */
 const KIOSK_PAGE_SIZE = 12;
 const SEARCH_DEBOUNCE_MS = 180;
+
+const KIOSK_CATEGORY_TABS: { value: ProductCategory | 'all'; label: string }[] = [
+  { value: 'all', label: 'All' },
+  ...CATEGORY_TILES.map((tile) => ({ value: tile.category, label: tile.label })),
+];
+
+const VALID_CATEGORIES = new Set<string>(PRODUCT_CATEGORIES);
 
 function GridSkeleton() {
   return (
@@ -30,9 +38,15 @@ function GridSkeleton() {
   );
 }
 
+function parseCategory(value: string | null): ProductCategory | 'all' {
+  if (value && VALID_CATEGORIES.has(value)) return value as ProductCategory;
+  return 'all';
+}
+
 export function KioskBrowsePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get('search') ?? '';
+  const category = parseCategory(searchParams.get('category'));
   const [draft, setDraft] = useState(search);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
@@ -43,21 +57,37 @@ export function KioskBrowsePage() {
     if (!search) setKeyboardOpen(false);
   }, [search]);
 
+  const writeParams = (patch: { search?: string; category?: ProductCategory | 'all' }) => {
+    const nextSearch = (patch.search !== undefined ? patch.search : search).trim();
+    const nextCategory = patch.category !== undefined ? patch.category : category;
+    const params = new URLSearchParams();
+    if (nextSearch) params.set('search', nextSearch);
+    if (nextCategory !== 'all') params.set('category', nextCategory);
+    setSearchParams(params, { replace: true });
+  };
+
   // Debounce URL/search updates so each keypress doesn't refetch immediately.
   useEffect(() => {
     const next = draft.trim();
-    const current = search.trim();
-    if (next === current) return;
+    if (next === search.trim()) return;
 
     const timer = window.setTimeout(() => {
-      setSearchParams(next ? { search: next } : {}, { replace: true });
+      const params = new URLSearchParams();
+      if (next) params.set('search', next);
+      if (category !== 'all') params.set('category', category);
+      setSearchParams(params, { replace: true });
     }, SEARCH_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
-  }, [draft, search, setSearchParams]);
+  }, [draft, search, category, setSearchParams]);
 
   const query = useMemo(
-    () => ({ search: search || undefined, inStock: true, limit: KIOSK_PAGE_SIZE }),
-    [search],
+    () => ({
+      search: search || undefined,
+      category,
+      inStock: true,
+      limit: KIOSK_PAGE_SIZE,
+    }),
+    [search, category],
   );
   const products = useInfiniteProducts(query);
 
@@ -70,7 +100,13 @@ export function KioskBrowsePage() {
 
   const clearSearch = () => {
     setDraft('');
-    setSearchParams({}, { replace: true });
+    writeParams({ search: '' });
+  };
+
+  const selectCategory = (value: ProductCategory | 'all') => {
+    setKeyboardOpen(false);
+    writeParams({ category: value });
+    scrollRoot?.scrollTo({ top: 0 });
   };
 
   const typeChar = (char: string) => {
@@ -81,9 +117,11 @@ export function KioskBrowsePage() {
     setDraft((prev) => prev.slice(0, -1));
   };
 
+  const hasFilters = Boolean(search) || category !== 'all';
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="shrink-0 px-8 pb-4 pt-8">
+      <header className="shrink-0 px-8 pb-3 pt-8">
         <Link to="/kiosk" className="mx-auto mb-5 flex justify-center" aria-label={SITE.name}>
           <img
             src={logo}
@@ -135,6 +173,33 @@ export function KioskBrowsePage() {
             </button>
           ) : null}
         </div>
+
+        <div
+          className="mt-5 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          role="tablist"
+          aria-label="Product categories"
+        >
+          {KIOSK_CATEGORY_TABS.map((tab) => {
+            const active = category === tab.value;
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => selectCategory(tab.value)}
+                className={cn(
+                  'tap-highlight-none shrink-0 rounded-2xl px-5 py-3.5 text-base font-semibold transition-colors',
+                  active
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-white/8 text-muted-foreground active:bg-white/15',
+                )}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </header>
 
       <KioskScrollRootContext.Provider value={scrollRoot}>
@@ -167,17 +232,20 @@ export function KioskBrowsePage() {
               <PackageOpen className="text-muted-foreground size-12" aria-hidden />
               <h2 className="text-3xl font-bold">No products found</h2>
               <p className="text-muted-foreground text-xl">
-                {search ? 'Try another search term.' : 'Nothing in stock right now.'}
+                {hasFilters ? 'Try another search or category.' : 'Nothing in stock right now.'}
               </p>
-              {search ? (
+              {hasFilters ? (
                 <Button
                   type="button"
                   variant="outline"
                   size="lg"
                   className="h-14 rounded-2xl text-lg"
-                  onClick={clearSearch}
+                  onClick={() => {
+                    setDraft('');
+                    setSearchParams({}, { replace: true });
+                  }}
                 >
-                  Clear search
+                  Clear filters
                 </Button>
               ) : null}
             </div>
