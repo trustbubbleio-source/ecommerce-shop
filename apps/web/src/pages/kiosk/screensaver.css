@@ -1,52 +1,177 @@
+.kiosk-screensaver-glow {
+  background:
+    radial-gradient(40% 35% at 50% 45%, rgb(247 209 46 / 0.12), transparent 70%),
+    radial-gradient(30% 25% at 20% 70%, rgb(232 93 76 / 0.08), transparent 70%),
+    radial-gradient(28% 22% at 80% 25%, rgb(255 255 255 / 0.06), transparent 70%);
+}
+
 .kiosk-screensaver-orbit {
   animation: kiosk-screensaver-drift 18s ease-in-out infinite alternate;
 }
 
-.kiosk-screensaver-logo {
+.kiosk-screensaver-cluster {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(42vw, 28rem);
-  height: auto;
-  opacity: 0.92;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
   transform: translate(-50%, -50%);
+}
+
+.kiosk-screensaver-logo {
+  width: min(38vw, 24rem);
+  height: auto;
+  opacity: 0.95;
   animation: kiosk-screensaver-pulse 4.5s ease-in-out infinite;
-  filter: drop-shadow(0 0 28px rgb(255 255 255 / 0.12));
+  filter: drop-shadow(0 0 28px rgb(255 255 255 / 0.14));
+}
+
+.kiosk-screensaver-mascot {
+  width: min(28vw, 11rem);
+  height: auto;
+  animation: kiosk-screensaver-bounce 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 12px 24px rgb(247 209 46 / 0.35));
+}
+
+.kiosk-screensaver-ball {
+  opacity: 0.55;
+  filter: drop-shadow(0 0 12px rgb(255 255 255 / 0.15));
+}
+
+.kiosk-screensaver-ball-a {
+  top: 12%;
+  left: 10%;
+  animation: kiosk-screensaver-float-a 11s ease-in-out infinite;
+}
+
+.kiosk-screensaver-ball-b {
+  top: 68%;
+  right: 12%;
+  animation: kiosk-screensaver-float-b 14s ease-in-out infinite;
+}
+
+.kiosk-screensaver-ball-c {
+  top: 22%;
+  right: 16%;
+  animation: kiosk-screensaver-float-c 12s ease-in-out infinite;
+}
+
+.kiosk-screensaver-spark {
+  opacity: 0.7;
+}
+
+.kiosk-screensaver-spark-a {
+  top: 18%;
+  left: 28%;
+  animation: kiosk-screensaver-zap 2.8s ease-in-out infinite;
+}
+
+.kiosk-screensaver-spark-b {
+  top: 58%;
+  left: 14%;
+  animation: kiosk-screensaver-zap 3.4s ease-in-out infinite 0.6s;
+}
+
+.kiosk-screensaver-spark-c {
+  top: 42%;
+  right: 18%;
+  animation: kiosk-screensaver-zap 3s ease-in-out infinite 1.1s;
 }
 
 @keyframes kiosk-screensaver-drift {
   0% {
-    transform: translate(-18%, -22%);
+    transform: translate(-16%, -18%);
   }
   25% {
-    transform: translate(20%, -10%);
+    transform: translate(18%, -8%);
   }
   50% {
-    transform: translate(14%, 24%);
+    transform: translate(12%, 20%);
   }
   75% {
-    transform: translate(-22%, 12%);
+    transform: translate(-18%, 10%);
   }
   100% {
-    transform: translate(8%, -18%);
+    transform: translate(6%, -14%);
   }
 }
 
 @keyframes kiosk-screensaver-pulse {
   0%,
   100% {
-    opacity: 0.75;
-    scale: 0.96;
+    opacity: 0.78;
+    scale: 0.97;
   }
   50% {
     opacity: 1;
-    scale: 1.04;
+    scale: 1.03;
+  }
+}
+
+@keyframes kiosk-screensaver-bounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(4deg);
+  }
+}
+
+@keyframes kiosk-screensaver-float-a {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(40px, 70px) rotate(25deg);
+  }
+}
+
+@keyframes kiosk-screensaver-float-b {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-50px, -40px) rotate(-30deg);
+  }
+}
+
+@keyframes kiosk-screensaver-float-c {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(10deg);
+  }
+  50% {
+    transform: translate(-30px, 55px) rotate(-15deg);
+  }
+}
+
+@keyframes kiosk-screensaver-zap {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85) rotate(-8deg);
+  }
+  40% {
+    opacity: 0.95;
+    transform: scale(1.15) rotate(6deg);
+  }
+  60% {
+    opacity: 0.4;
+    transform: scale(0.9) rotate(-4deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .kiosk-screensaver-orbit,
-  .kiosk-screensaver-logo {
+  .kiosk-screensaver-logo,
+  .kiosk-screensaver-mascot,
+  .kiosk-screensaver-ball,
+  .kiosk-screensaver-spark {
     animation: none;
   }
 
