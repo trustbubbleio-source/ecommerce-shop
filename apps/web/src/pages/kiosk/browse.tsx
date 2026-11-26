@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import logo from '../../assets/rarity/onemorerip-logo-transparent-bg-white.png';
 import { SITE } from '../../config/site';
 import { useInfiniteProducts } from '../../hooks/use-products';
+import { KioskKeyboard } from './keyboard';
 import { KioskProductCard } from './product-card';
 
 function GridSkeleton() {
@@ -28,10 +29,12 @@ export function KioskBrowsePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get('search') ?? '';
   const [draft, setDraft] = useState(search);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   // Idle reset navigates to `/kiosk` without remounting — keep the field in sync.
   useEffect(() => {
     setDraft(search);
+    if (!search) setKeyboardOpen(false);
   }, [search]);
 
   const query = useMemo(() => ({ search: search || undefined, inStock: true }), [search]);
@@ -52,6 +55,14 @@ export function KioskBrowsePage() {
 
   const clearSearch = () => applySearch('');
 
+  const typeChar = (char: string) => {
+    applySearch(draft + char.toLowerCase());
+  };
+
+  const backspace = () => {
+    applySearch(draft.slice(0, -1));
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <header className="shrink-0 px-8 pb-4 pt-8">
@@ -70,38 +81,42 @@ export function KioskBrowsePage() {
           ONE MORE RIP
         </h1>
 
-        <form
-          className="relative mx-auto mt-8 max-w-3xl"
-          onSubmit={(e) => {
-            e.preventDefault();
-            applySearch(draft);
-          }}
-        >
+        <div className="relative mx-auto mt-8 max-w-3xl">
           <Search className="text-muted-foreground pointer-events-none absolute left-5 top-1/2 size-7 -translate-y-1/2" />
           <Input
-            type="search"
+            type="text"
             value={draft}
-            onChange={(e) => applySearch(e.target.value)}
+            readOnly
+            inputMode="none"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
             placeholder="Search products, sets, cards…"
             aria-label="Search products"
-            enterKeyHint="search"
-            autoComplete="off"
+            aria-expanded={keyboardOpen}
+            aria-controls="kiosk-keyboard"
+            onFocus={() => setKeyboardOpen(true)}
+            onClick={() => setKeyboardOpen(true)}
             className={cn(
-              'h-20 rounded-2xl border-white/10 bg-white/5 pl-16 pr-16 text-2xl',
+              'h-20 cursor-pointer rounded-2xl border-white/10 bg-white/5 pl-16 pr-16 text-2xl',
               'placeholder:text-muted-foreground/70 focus-visible:ring-2',
+              keyboardOpen && 'ring-ring ring-2',
             )}
           />
           {draft ? (
             <button
               type="button"
-              onClick={clearSearch}
+              onClick={() => {
+                clearSearch();
+                setKeyboardOpen(true);
+              }}
               aria-label="Clear search"
               className="text-muted-foreground hover:text-foreground absolute right-4 top-1/2 flex size-12 -translate-y-1/2 items-center justify-center rounded-xl"
             >
               <X className="size-6" />
             </button>
           ) : null}
-        </form>
+        </div>
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-8 pb-10 pt-2">
@@ -175,6 +190,17 @@ export function KioskBrowsePage() {
           </div>
         ) : null}
       </div>
+
+      {keyboardOpen ? (
+        <div id="kiosk-keyboard">
+          <KioskKeyboard
+            onType={typeChar}
+            onBackspace={backspace}
+            onClear={clearSearch}
+            onDone={() => setKeyboardOpen(false)}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -49,7 +49,7 @@ describe('Kiosk browse', () => {
     expect(screen.queryByRole('button', { name: /tap to browse/i })).not.toBeInTheDocument();
   });
 
-  it('passes the search term to the api', async () => {
+  it('opens the on-screen keyboard and searches', async () => {
     const spy = vi.spyOn(api, 'listProducts').mockResolvedValue({
       products: [],
       total: 0,
@@ -60,10 +60,20 @@ describe('Kiosk browse', () => {
     renderApp('/kiosk');
     await screen.findByRole('heading', { name: 'ONE MORE RIP' });
 
-    await userEvent.type(screen.getByLabelText('Search products'), 'char');
+    await userEvent.click(screen.getByLabelText('Search products'));
+    expect(screen.getByRole('group', { name: /on-screen keyboard/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'C' }));
+    await userEvent.click(screen.getByRole('button', { name: 'H' }));
+    await userEvent.click(screen.getByRole('button', { name: 'A' }));
+    await userEvent.click(screen.getByRole('button', { name: 'R' }));
+
     await waitFor(() =>
       expect(spy.mock.calls.some(([q]) => q?.search === 'char')).toBe(true),
     );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByRole('group', { name: /on-screen keyboard/i })).not.toBeInTheDocument();
   });
 
   it('opens a product detail without checkout actions', async () => {
