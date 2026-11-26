@@ -106,7 +106,12 @@ export function KioskBrowsePage() {
   const selectCategory = (value: ProductCategory | 'all') => {
     setKeyboardOpen(false);
     writeParams({ category: value });
-    scrollRoot?.scrollTo({ top: 0 });
+    if (!scrollRoot) return;
+    if (typeof scrollRoot.scrollTo === 'function') {
+      scrollRoot.scrollTo({ top: 0 });
+    } else {
+      scrollRoot.scrollTop = 0;
+    }
   };
 
   const typeChar = (char: string) => {
