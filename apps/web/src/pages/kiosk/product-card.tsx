@@ -3,7 +3,9 @@ import {
   categoryLabel,
   languageLabel,
   primaryProductImage,
+  productImageObjectKey,
   resolveAssetUrl,
+  resolveProductThumbUrl,
 } from '@akknerds/shared';
 import { cn } from '@akknerds/ui';
 import { Link } from 'react-router-dom';
@@ -19,10 +21,10 @@ export function KioskProductCard({
   priority?: boolean;
 }) {
   const soldOut = product.stock <= 0;
-  const imageUrl = resolveAssetUrl(
-    primaryProductImage(product),
-    import.meta.env.VITE_ASSET_CDN_URL,
-  );
+  const imagePath = primaryProductImage(product);
+  const imageKey = productImageObjectKey(imagePath);
+  const imageUrl = resolveAssetUrl(imagePath, import.meta.env.VITE_ASSET_CDN_URL);
+  const thumbUrl = resolveProductThumbUrl(imagePath, import.meta.env.VITE_ASSET_CDN_URL);
 
   return (
     <Link
@@ -44,6 +46,8 @@ export function KioskProductCard({
         {imageUrl ? (
           <KioskLazyImage
             src={imageUrl}
+            thumbSrc={thumbUrl}
+            imageKey={imageKey}
             alt={product.name}
             priority={priority}
             placeholderColor={product.accent}

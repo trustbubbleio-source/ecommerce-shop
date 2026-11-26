@@ -1,6 +1,17 @@
-import { detectProductImageMime } from '@akknerds/shared';
-import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  PRODUCT_THUMB_MAX_WIDTH,
+  detectProductImageMime,
+  productImageObjectKey,
+  productThumbObjectKey,
+} from '@akknerds/shared';
+import {
+  GetObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { nanoid } from 'nanoid';
+import sharp from 'sharp';
 import type { StorageEnv } from '../env.js';
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -20,6 +31,22 @@ export interface UploadableFile {
 
 export interface StorageServiceOptions {
   client?: Pick<S3Client, 'send'>;
+}
+
+async function bodyToBuffer(body: unknown): Promise<Buffer> {
+  if (!body) return Buffer.alloc(0);
+  if (Buffer.isBuffer(body)) return body;
+  if (body instanceof Uint8Array) return Buffer.from(body);
+  if (typeof (body as { transformToByteArray?: () => Promise<Uint8Array> }).transformToByteArray === 'function') {
+    const bytes = await (body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray();
+    return Buffer.from(bytes);
+  }
+  // Node.js Readable
+  const chunks: Buffer[] = [];
+  for await (const chunk of body as AsyncIterable<Uint8Array>) {
+    chunks.push(Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
 }
 
 /** Uploads product images to S3 and returns CDN-relative object keys. */
@@ -93,10 +120,46 @@ export class StorageService {
 
   /** Upload a restoration assessment photo under restorations/. */
   async uploadRestorationImage(file: UploadableFile, key: string): Promise<string> {
-    return this.uploadOne(file, key);
+    return this.uploadOne(file, key, { makeThumb: false });
   }
 
-  private async uploadOne(file: UploadableFile, keyOverride?: string): Promise<string> {
+  /**
+   * Ensure a WebP kiosk/grid thumbnail exists for a product image key.
+   * Returns the thumb object key (and public CDN URL when configured).
+   */
+  async ensureProductThumb(imagePathOrUrl: string): Promise<{ key: string; url?: string }> {
+    if (!this.enabled || !this.client) {
+      throw new Error('Object storage is not configured');
+    }
+    const sourceKey = productImageObjectKey(imagePathOrUrl);
+    if (!sourceKey || sourceKey.startsWith('products/thumbs/')) {
+      throw new Error('Invalid product image key');
+    }
+    const thumbKey = productThumbObjectKey(sourceKey);
+    if (!thumbKey) throw new Error('Invalid product image key');
+
+    if (await this.objectExists(thumbKey)) {
+      return { key: thumbKey, url: this.resolvePublicUrl(thumbKey) };
+    }
+
+    const original = await this.client.send(
+      new GetObjectCommand({
+        Bucket: this.env.bucket,
+        Key: sourceKey,
+      }),
+    );
+    const buffer = await bodyToBuffer(original.Body);
+    if (!buffer.byteLength) throw new Error('Empty source image');
+
+    await this.writeProductThumb(thumbKey, buffer);
+    return { key: thumbKey, url: this.resolvePublicUrl(thumbKey) };
+  }
+
+  private async uploadOne(
+    file: UploadableFile,
+    keyOverride?: string,
+    options: { makeThumb?: boolean } = {},
+  ): Promise<string> {
     if (!this.client) {
       throw new Error('Object storage is not configured');
     }
@@ -122,6 +185,40 @@ export class StorageService {
       }),
     );
 
+    const makeThumb = options.makeThumb ?? key.startsWith('products/');
+    if (makeThumb) {
+      try {
+        const thumbKey = productThumbObjectKey(key);
+        if (thumbKey) await this.writeProductThumb(thumbKey, file.buffer);
+      } catch (error) {
+        console.warn('[storage] product thumb failed', key, error);
+      }
+    }
+
     return key;
+  }
+
+  private async writeProductThumb(thumbKey: string, source: Buffer): Promise<void> {
+    if (!this.client) throw new Error('Object storage is not configured');
+    const webp = await sharp(source)
+      .rotate()
+      .resize({
+        width: PRODUCT_THUMB_MAX_WIDTH,
+        height: PRODUCT_THUMB_MAX_WIDTH,
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .webp({ quality: 72, effort: 4 })
+      .toBuffer();
+
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.env.bucket,
+        Key: thumbKey,
+        Body: webp,
+        ContentType: 'image/webp',
+        CacheControl: 'public, max-age=31536000, immutable',
+      }),
+    );
   }
 }

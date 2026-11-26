@@ -65,6 +65,8 @@ export interface ApiClient {
     input: CreateProductReviewInput,
   ): Promise<{ review: ProductReview }>;
   catalogMeta(): Promise<CatalogMeta>;
+  /** Create/cache a WebP product thumb on the CDN (kiosk grid). */
+  ensureProductThumb(key: string): Promise<{ key: string; url: string | null }>;
   register(input: RegisterInput): Promise<RegisterPendingResponse>;
   verifyEmail(input: VerifyEmailInput): Promise<AuthResponse>;
   login(input: LoginInput): Promise<AuthResponse>;
@@ -258,6 +260,12 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     },
     catalogMeta() {
       return request('/products/meta');
+    },
+    ensureProductThumb(key: string) {
+      return request('/assets/ensure-thumb', {
+        method: 'POST',
+        body: JSON.stringify({ key }),
+      });
     },
     register(input) {
       return request('/auth/register', { method: 'POST', body: JSON.stringify(input) });

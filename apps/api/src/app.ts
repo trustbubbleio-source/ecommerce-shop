@@ -29,6 +29,7 @@ import {
 } from './routes/restoration.js';
 import { sellRoutes } from './routes/sell.js';
 import { adminWantListRoutes, wantListRoutes } from './routes/want-list.js';
+import { assetRoutes } from './routes/assets.js';
 import { webhookRoutes } from './routes/webhooks.js';
 
 export interface CreatedApp {
@@ -92,6 +93,7 @@ export function createApp(overrides: Partial<AppDeps> = {}): CreatedApp {
     }),
   );
   api.route('/products', productRoutes(deps));
+  api.route('/assets', assetRoutes(deps));
   api.route('/auth', authRoutes(deps));
   api.route('/admin', adminRoutes(deps));
   api.route('/admin/orders', adminOrderRoutes(deps));
